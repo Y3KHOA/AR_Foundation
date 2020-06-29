@@ -5,13 +5,17 @@ Window > Package Manager, search for those pacakage and install it one by one
 (Advanced > Show preview package and install preview.2-4.1.0)
 
 ![alt text](Screenshot/package-manager.png)
-###Add XR Object To Scene
+
+### Add XR Object To Scene
 Add Game Object > XR > AR Session <br>
 Add Game Object > XR > AR Session Origin
 ![alt text](Screenshot/add-xr.png)
+
 Add Component AR Plane Manager<br>
 Add Component AR Point Cloud Manager
-![alt text](Screenshot/add-component.png)
+
+![alt text](Screenshot/add-component.PNG)
+
 Create Game Object > XR > AR Default Plane <br>
 Create Prefabs folder and drag AR Default Plane to create new prefab, then
 drag AR Default Plane prefab to AR Plane Manager > Plane Prefab
@@ -20,7 +24,7 @@ Do the same with Point Cloud <br>
 Create Game Object > XR > AR Default Point Cloud, drag it to prefabas folder
 then drag that prefab to AR Point Cloud Manager > Point Cloud Prefab
 
-![alt text](Screenshot/create-prefabs.png)
+![alt text](Screenshot/create-prefabs.PNG)
 
 Next is create game object that will place on deteted plane with touch
 First in Hierachy create new Empty Gameobject, then rename it to AR Object
@@ -28,9 +32,10 @@ next right click on it > 3D Object > Sphere, set sclae to (0.1, 0.1, 0.1)
 and position (0, 0.05, 1)
 Drag AR Object to prefab folder to create AR Object prefab
 
-![alt text](Screenshot/ar-object-prefab.png)
+![alt text](Screenshot/ar-object-prefab.PNG)
 
-####Let's do some coding 
+#### Let's do some coding 
+
 Create new folder named it Scripts <br>
 Create new C# script ARPlaceObject.cs, this script will handle the touch and place object on detected plane
 
@@ -62,4 +67,4 @@ Drag ARPlaceObject.cs to AR Session Origin in hierarchy, drag AR Object prefab f
 * Remove Vulkan graphic in Player setting > Other Setting > Graphics APIs
 
 Ready to build and test place some object on plane!
-###Just clone this repo and try it your own!
+### Just clone this repo and try it your own!
