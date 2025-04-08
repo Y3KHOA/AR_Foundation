@@ -13,6 +13,8 @@ public class CheckpointManager : MonoBehaviour
     public UndoRedoManager undoRedoManager;
 
     private List<GameObject> checkpoints = new List<GameObject>(); // Danh sách checkpoint
+    private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
+    private List<GameObject> currentCheckpoints = new List<GameObject>();
     private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển
     private float closeThreshold = 0.5f; // Khoảng cách tối đa để chọn điểm
     private bool isDragging = false; // Kiểm tra xem có đang kéo điểm không
@@ -62,9 +64,9 @@ public class CheckpointManager : MonoBehaviour
                 isPreviewing = true;
                 previewPosition = GetWorldPositionFromScreen(Input.mousePosition);
 
-                if (checkpoints.Count > 0)
+                if (currentCheckpoints.Count > 0)
                 {
-                    Vector3 lastPoint = checkpoints[checkpoints.Count - 1].transform.position;
+                    Vector3 lastPoint = currentCheckpoints[^1].transform.position;
                     DrawingTool.DrawPreviewLine(lastPoint, previewPosition);
                 }
 
@@ -107,26 +109,24 @@ public class CheckpointManager : MonoBehaviour
         if (selectedCheckpoint != null) return; // Nếu đã chọn điểm, không cần đặt mới
 
         // Kiểm tra nếu điểm mới gần p1, chỉ nối lại các điểm
-        if (checkpoints.Count > 2 && Vector3.Distance(checkpoints[0].transform.position, position) < closeThreshold)
+        if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, position) < closeThreshold)
         {
-            DrawingTool.DrawLineAndDistance(checkpoints[checkpoints.Count - 1].transform.position, checkpoints[0].transform.position);
-            isClosedLoop = true; // Đánh dấu mạch kín
+            DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
+            isClosedLoop = true;
 
-            // Sau khi mạch kín, tính diện tích và hiển thị
-            // float area = AreaCalculator.CalculateArea(GetCheckpointPositions());
-            // Vector3 center = GetPolygonCenter(checkpoints);
-            // AreaCalculator.ShowAreaText(center, area);
-
-            return; // Không tạo checkpoint mới
+            allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
+            currentCheckpoints.Clear(); // Tạo mạch mới
+            return;
         }
 
         GameObject checkpoint = Instantiate(checkpointPrefab, position, Quaternion.identity);
-        checkpoints.Add(checkpoint);
+        // checkpoints.Add(checkpoint);
+        currentCheckpoints.Add(checkpoint);
 
         // Nếu có ít nhất 2 điểm, nối chúng lại
-        if (checkpoints.Count > 1)
+        if (currentCheckpoints.Count > 1)
         {
-            Vector3 start = checkpoints[checkpoints.Count - 2].transform.position;
+            Vector3 start = currentCheckpoints[^2].transform.position;
             Vector3 end = checkpoint.transform.position;
             DrawingTool.DrawLineAndDistance(start, end);
         }
@@ -134,12 +134,16 @@ public class CheckpointManager : MonoBehaviour
 
     bool TrySelectCheckpoint(Vector3 position)
     {
-        if (!isClosedLoop) return false;
+        // if (!isClosedLoop) return false;
+        if (!isClosedLoop && currentCheckpoints.Count > 0)
+        {
+            allCheckpoints.Add(new List<GameObject>(currentCheckpoints));
+        }
 
         float minDistance = closeThreshold;
         GameObject nearestCheckpoint = null;
 
-        foreach (var checkpoint in checkpoints)
+        foreach (var checkpoint in currentCheckpoints)
         {
             float distance = Vector3.Distance(checkpoint.transform.position, position);
             if (distance < minDistance)
@@ -163,7 +167,7 @@ public class CheckpointManager : MonoBehaviour
 
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
         selectedCheckpoint.transform.position = newPosition;
-        DrawingTool.UpdateLinesAndDistances(checkpoints);
+        DrawingTool.UpdateLinesAndDistances(currentCheckpoints);
     }
 
     void DeselectCheckpoint()
@@ -198,19 +202,19 @@ public class CheckpointManager : MonoBehaviour
         {
             Vector3 worldPos = new Vector3(points[i].x, 0, points[i].y); // Y=0 vì 2D
             GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
-            checkpoints.Add(checkpoint);
+            currentCheckpoints.Add(checkpoint);
 
             // Nếu có ít nhất 2 điểm, vẽ đường nối
             if (i > 0)
             {
-                DrawingTool.DrawLineAndDistance(checkpoints[i - 1].transform.position, worldPos);
+                DrawingTool.DrawLineAndDistance(currentCheckpoints[i - 1].transform.position, worldPos);
             }
         }
 
         // Tự động nối điểm cuối với điểm đầu nếu mạch đã khép kín
-        if (checkpoints.Count > 2 && Vector3.Distance(checkpoints[0].transform.position, checkpoints[checkpoints.Count - 1].transform.position) < closeThreshold)
+        if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, currentCheckpoints[^1].transform.position) < closeThreshold)
         {
-            DrawingTool.DrawLineAndDistance(checkpoints[checkpoints.Count - 1].transform.position, checkpoints[0].transform.position);
+            DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
             isClosedLoop = true;
         }
     }
@@ -218,7 +222,7 @@ public class CheckpointManager : MonoBehaviour
     List<Vector3> GetCheckpointPositions()
     {
         List<Vector3> positions = new List<Vector3>();
-        foreach (GameObject checkpoint in checkpoints)
+        foreach (GameObject checkpoint in currentCheckpoints)
         {
             positions.Add(checkpoint.transform.position);
         }
@@ -240,28 +244,64 @@ public class CheckpointManager : MonoBehaviour
         List<Vector2> points2D = new List<Vector2>();
         List<float> distances = new List<float>();
 
-        for (int i = 0; i < checkpoints.Count; i++)
+        for (int i = 0; i < currentCheckpoints.Count; i++)
         {
-            Vector3 pos = checkpoints[i].transform.position;
+            Vector3 pos = currentCheckpoints[i].transform.position;
             points2D.Add(new Vector2(pos.x, pos.z));
 
-            // Tính khoảng cách nếu không phải điểm đầu
             if (i > 0)
             {
-                Vector3 prev = checkpoints[i - 1].transform.position;
+                Vector3 prev = currentCheckpoints[i - 1].transform.position;
                 float dist = Vector3.Distance(prev, pos);
                 distances.Add(dist);
             }
         }
 
-        // Nếu là mạch kín, thêm khoảng cách từ điểm cuối về điểm đầu
-        if (points2D.Count > 2 && Vector3.Distance(checkpoints[0].transform.position, checkpoints[^1].transform.position) < 0.5f)
+        if (points2D.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, currentCheckpoints[^1].transform.position) < closeThreshold)
         {
-            float closingDist = Vector3.Distance(checkpoints[^1].transform.position, checkpoints[0].transform.position);
+            float closingDist = Vector3.Distance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
             distances.Add(closingDist);
         }
 
-        string path = "/storage/emulated/0/Download/ARK/Drawing.pdf";
+        string path = "/storage/emulated/0/Download/ARK/DrawingTest.pdf";
         PdfExporter.ExportPolygonToPDF(points2D, distances, path, "m");
+    }
+    public void ExportAllDrawingsToPDF()
+    {
+        List<List<Vector2>> allPolygons = new List<List<Vector2>>();
+        List<List<float>> allDistances = new List<List<float>>();
+
+        foreach (var checkpointLoop in allCheckpoints)
+        {
+            if (checkpointLoop.Count < 2) continue;
+
+            List<Vector2> polygon = new List<Vector2>();
+            List<float> distances = new List<float>();
+
+            for (int i = 0; i < checkpointLoop.Count; i++)
+            {
+                Vector3 pos = checkpointLoop[i].transform.position;
+                polygon.Add(new Vector2(pos.x, pos.z));
+
+                if (i > 0)
+                {
+                    Vector3 prev = checkpointLoop[i - 1].transform.position;
+                    distances.Add(Vector3.Distance(prev, pos));
+                }
+            }
+
+            bool shouldClose = Vector3.Distance(checkpointLoop[0].transform.position, checkpointLoop[^1].transform.position) < closeThreshold;
+            if (shouldClose && polygon[0] != polygon[^1])  // tránh double-close
+            {
+                polygon.Add(polygon[0]);
+                distances.Add(Vector3.Distance(checkpointLoop[^1].transform.position, checkpointLoop[0].transform.position));
+            }
+
+            allPolygons.Add(polygon);
+            allDistances.Add(distances);
+        }
+
+        string path = "/storage/emulated/0/Download/ARK/Drawing_All_Test.pdf";
+        PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
     }
 }
