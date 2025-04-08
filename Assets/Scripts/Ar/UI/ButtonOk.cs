@@ -30,6 +30,6 @@ public class ButtonOk : MonoBehaviour
     void ShowOkButton()
     {
         isOkButtonShown = true;
-        Debug.Log("[ButtonOk] OK Button hiển thị do flag=1");
+        Debug.Log("[ButtonOk] OK Button hien thi do flag=1");
     }
 }
