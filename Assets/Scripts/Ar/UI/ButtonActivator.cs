@@ -38,34 +38,58 @@ public class ButtonActivator : MonoBehaviour
 
     void TransferData()
     {
-        List<Vector3> basePoints = btnController.GetBasePoints();
-        List<Vector3> heightPoints = btnController.GetHeightPoints();
-        List<Vector2> projectedPoints = new List<Vector2>();
-        List<float> heightValues = new List<float>();
+        // Lấy nested list từ BtnController
+        List<List<GameObject>> allBasePoints = btnController.GetAllBasePoints();
+        List<List<GameObject>> allHeightPoints = btnController.GetAllHeightPoints();
 
-        for (int i = 0; i < basePoints.Count; i++)
+        List<List<Vector2>> allProjectedPoints = new List<List<Vector2>>();
+        List<List<float>> allHeights = new List<List<float>>();
+
+        for (int i = 0; i < allBasePoints.Count; i++)
         {
-            projectedPoints.Add(new Vector2(basePoints[i].x, basePoints[i].z));
-            heightValues.Add(heightPoints[i].y - basePoints[i].y); // Tính chiều cao thực tế
+            List<Vector2> path2D = new List<Vector2>();
+            List<float> heightList = new List<float>();
+
+            for (int j = 0; j < allBasePoints[i].Count; j++)
+            {
+                Vector3 basePos = allBasePoints[i][j].transform.position;
+                Vector3 heightPos = allHeightPoints[i][j].transform.position;
+
+                path2D.Add(new Vector2(basePos.x, basePos.z));
+                heightList.Add(heightPos.y - basePos.y);
+            }
+
+            allProjectedPoints.Add(path2D);
+            allHeights.Add(heightList);
         }
 
-        DataTransfer.Instance.SetPoints(projectedPoints);
-        DataTransfer.Instance.SetHeights(heightValues);
+        DataTransfer.Instance.SetAllPoints(allProjectedPoints);
+        DataTransfer.Instance.SetAllHeights(allHeights);
 
-        Debug.Log($"[TransferData] da luu {projectedPoints.Count} diem va {heightValues.Count} chieu cao!");
+        Debug.Log($"[TransferData] Đã lưu {allProjectedPoints.Count} mạch và tổng cộng {CountTotalPoints(allProjectedPoints)} điểm.");
+    }
+
+    int CountTotalPoints(List<List<Vector2>> data)
+    {
+        int total = 0;
+        foreach (var list in data)
+        {
+            total += list.Count;
+        }
+        return total;
     }
 }
 
 public class DataTransfer
 {
     private static DataTransfer instance;
-    private List<Vector2> points;
-    private List<float> heights;
+    private List<List<Vector2>> allPoints;
+    private List<List<float>> allHeights;
 
     private DataTransfer()
     {
-        points = new List<Vector2>();
-        heights = new List<float>();
+        allPoints = new List<List<Vector2>>();
+        allHeights = new List<List<float>>();
     }
 
     public static DataTransfer Instance
@@ -78,23 +102,23 @@ public class DataTransfer
         }
     }
 
-    public void SetPoints(List<Vector2> newPoints)
+    public void SetAllPoints(List<List<Vector2>> newPoints)
     {
-        points = newPoints;
+        allPoints = newPoints;
     }
 
-    public List<Vector2> GetPoints()
+    public List<List<Vector2>> GetAllPoints()
     {
-        return points;
+        return allPoints;
     }
 
-    public void SetHeights(List<float> newHeights)
+    public void SetAllHeights(List<List<float>> newHeights)
     {
-        heights = newHeights;
+        allHeights = newHeights;
     }
 
-    public List<float> GetHeights()
+    public List<List<float>> GetAllHeights()
     {
-        return heights;
+        return allHeights;
     }
 }
