@@ -70,30 +70,55 @@ public class DrawingTool : MonoBehaviour
         int pointCount = checkpoints.Count;
         if (pointCount < 2) return;
 
+        // Đảm bảo linePool có đủ line
+        while (linePool.Count < pointCount)
+        {
+            GameObject newLine = Instantiate(linePrefab);
+            LineRenderer lr = newLine.GetComponent<LineRenderer>();
+            linePool.Add(lr);
+        }
+
+        // Đảm bảo textPool có đủ text
+        while (textPool.Count < pointCount)
+        {
+            GameObject newText = Instantiate(distanceTextPrefab);
+            TextMeshPro tmp = newText.GetComponent<TextMeshPro>();
+            textPool.Add(tmp);
+        }
+
+        // Cập nhật line và text
         for (int i = 0; i < pointCount; i++)
         {
             int nextIndex = (i + 1) % pointCount;
 
-            if (i < linePool.Count)
-            {
-                linePool[i].SetPosition(0, checkpoints[i].transform.position);
-                linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
-            }
+            // Cập nhật vị trí line
+            linePool[i].gameObject.SetActive(true);
+            linePool[i].SetPosition(0, checkpoints[i].transform.position);
+            linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
 
+            // Tính khoảng cách và cập nhật text
             float distanceInCm = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 100f;
+            textPool[i].gameObject.SetActive(true);
+            textPool[i].text = $"{distanceInCm:F1} cm";
+            textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
 
-            // Debug Log để kiểm tra cập nhật khoảng cách
-            Debug.Log($"[UpdateLinesAndDistances] Canh {i + 1}: {distanceInCm:F1} cm | " +
-                      $"Start: {checkpoints[i].transform.position} | " +
-                      $"End: {checkpoints[nextIndex].transform.position}");
+            // Debug kiểm tra
+            Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInCm:F1} cm | " +
+                        $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
+        }
 
-            if (i < textPool.Count)
-            {
-                textPool[i].text = $"{distanceInCm:F1} cm";
-                textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
-            }
+        // Ẩn các line và text dư thừa (nếu có)
+        for (int i = pointCount; i < linePool.Count; i++)
+        {
+            linePool[i].gameObject.SetActive(false);
+        }
+
+        for (int i = pointCount; i < textPool.Count; i++)
+        {
+            textPool[i].gameObject.SetActive(false);
         }
     }
+
 
     public void DrawPreviewLine(Vector3 start, Vector3 end)
     {

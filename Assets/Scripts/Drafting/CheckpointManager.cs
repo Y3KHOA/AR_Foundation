@@ -12,7 +12,6 @@ public class CheckpointManager : MonoBehaviour
     public PenManager penManager;
     public UndoRedoManager undoRedoManager;
 
-    private List<GameObject> checkpoints = new List<GameObject>(); // Danh sách checkpoint
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
     private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển
@@ -56,7 +55,7 @@ public class CheckpointManager : MonoBehaviour
         {
             if (selectedCheckpoint != null && isClosedLoop) // Nếu đã chọn điểm và mạch kín, di chuyển điểm
             {
-                MoveSelectedCheckpoint();
+                // MoveSelectedCheckpoint();
                 isDragging = true;
             }
             else // Nếu chưa chọn điểm, hiển thị preview để đặt điểm mới
@@ -218,54 +217,7 @@ public class CheckpointManager : MonoBehaviour
             isClosedLoop = true;
         }
     }
-    // Lấy các vị trí của checkpoints
-    List<Vector3> GetCheckpointPositions()
-    {
-        List<Vector3> positions = new List<Vector3>();
-        foreach (GameObject checkpoint in currentCheckpoints)
-        {
-            positions.Add(checkpoint.transform.position);
-        }
-        return positions;
-    }
-    // Tính toán tâm của đa giác
-    Vector3 GetPolygonCenter(List<GameObject> points)
-    {
-        Vector3 center = Vector3.zero;
-        foreach (var point in points)
-        {
-            center += point.transform.position;
-        }
-        return center / points.Count;
-    }
 
-    public void ExportDrawingToPDF()
-    {
-        List<Vector2> points2D = new List<Vector2>();
-        List<float> distances = new List<float>();
-
-        for (int i = 0; i < currentCheckpoints.Count; i++)
-        {
-            Vector3 pos = currentCheckpoints[i].transform.position;
-            points2D.Add(new Vector2(pos.x, pos.z));
-
-            if (i > 0)
-            {
-                Vector3 prev = currentCheckpoints[i - 1].transform.position;
-                float dist = Vector3.Distance(prev, pos);
-                distances.Add(dist);
-            }
-        }
-
-        if (points2D.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, currentCheckpoints[^1].transform.position) < closeThreshold)
-        {
-            float closingDist = Vector3.Distance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
-            distances.Add(closingDist);
-        }
-
-        string path = "/storage/emulated/0/Download/ARK/DrawingTest.pdf";
-        PdfExporter.ExportPolygonToPDF(points2D, distances, path, "m");
-    }
     public void ExportAllDrawingsToPDF()
     {
         List<List<Vector2>> allPolygons = new List<List<Vector2>>();
@@ -273,7 +225,8 @@ public class CheckpointManager : MonoBehaviour
 
         foreach (var checkpointLoop in allCheckpoints)
         {
-            if (checkpointLoop.Count < 2) continue;
+            if (checkpointLoop == null || checkpointLoop.Count < 2)
+                continue;
 
             List<Vector2> polygon = new List<Vector2>();
             List<float> distances = new List<float>();
@@ -290,18 +243,29 @@ public class CheckpointManager : MonoBehaviour
                 }
             }
 
-            bool shouldClose = Vector3.Distance(checkpointLoop[0].transform.position, checkpointLoop[^1].transform.position) < closeThreshold;
-            if (shouldClose && polygon[0] != polygon[^1])  // tránh double-close
+            // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
+            if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
             {
-                polygon.Add(polygon[0]);
-                distances.Add(Vector3.Distance(checkpointLoop[^1].transform.position, checkpointLoop[0].transform.position));
+                polygon.RemoveAt(polygon.Count - 1);
+
+                // Nếu distances dư 1 phần tử thì cũng cần xóa
+                if (distances.Count == polygon.Count + 1)
+                    distances.RemoveAt(distances.Count - 1);
             }
 
             allPolygons.Add(polygon);
             allDistances.Add(distances);
         }
 
-        string path = "/storage/emulated/0/Download/ARK/Drawing_All_Test.pdf";
+        string path = Path.Combine(Application.persistentDataPath, "Drawing_All_Test1.pdf");
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+    string directory = Path.GetDirectoryName(path);
+    if (!Directory.Exists(directory))
+        Directory.CreateDirectory(directory);
+#endif
+
         PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+        Debug.Log("PDF exported to: " + path);
     }
 }
