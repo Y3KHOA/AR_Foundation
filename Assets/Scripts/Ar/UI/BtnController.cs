@@ -20,10 +20,11 @@ public class BtnController : MonoBehaviour
     private GameObject previewPoint = null;  // Điểm xem trước
     private GameObject spawnedPoint;
     private static readonly List<ARRaycastHit> hits = new List<ARRaycastHit>();
-    private List<GameObject> basePoints = new List<GameObject>();
-    private List<GameObject> heightPoints = new List<GameObject>();
+    private List<List<GameObject>> allBasePoints = new List<List<GameObject>>();
+    private List<List<GameObject>> allHeightPoints = new List<List<GameObject>>();
+    private List<GameObject> currentBasePoints = new List<GameObject>();
+    private List<GameObject> currentHeightPoints = new List<GameObject>();
     private GameObject referenceHeightPoint = null;
-    private List<MeasurementData> allMeasurements = new List<MeasurementData>();
 
     private bool isPointVisible = false;
     private bool hasPlane = false;
@@ -82,9 +83,9 @@ public class BtnController : MonoBehaviour
             previewPoint.transform.position = hitPose.position;
 
             // Chỉ vẽ preview line nếu có ít nhất 1 điểm cơ sở
-            if (basePoints.Count > 0)
+            if (currentBasePoints.Count > 0)
             {
-                Vector3 lastBasePoint = basePoints[basePoints.Count - 1].transform.position;
+                Vector3 lastBasePoint = currentBasePoints[currentBasePoints.Count - 1].transform.position;
                 Vector3 previewPos = previewPoint.transform.position;
 
                 Debug.Log($"[Update] Draw PreviewLine from {lastBasePoint} to {previewPos}");
@@ -122,45 +123,42 @@ public class BtnController : MonoBehaviour
         }
 
         Pose hitPose = hits[0].pose;
-        GameObject newBasePoint = GetOrCreatePoint(basePoints, hitPose.position);
+        GameObject newBasePoint = GetOrCreatePoint(currentBasePoints, hitPose.position);
         GameObject newHeightPoint = referenceHeightPoint != null
-            ? GetOrCreatePoint(heightPoints, new Vector3(hitPose.position.x, referenceHeightPoint.transform.position.y, hitPose.position.z))
-            : GetOrCreatePoint(heightPoints, hitPose.position + new Vector3(0, heightValue, 0));
+            ? GetOrCreatePoint(currentHeightPoints, new Vector3(hitPose.position.x, referenceHeightPoint.transform.position.y, hitPose.position.z))
+            : GetOrCreatePoint(currentHeightPoints, hitPose.position + new Vector3(0, heightValue, 0));
 
         if (referenceHeightPoint == null)
             referenceHeightPoint = newHeightPoint;
 
-        basePoints.Add(newBasePoint);
-        heightPoints.Add(newHeightPoint);
+        currentBasePoints.Add(newBasePoint);
+        currentHeightPoints.Add(newHeightPoint);
 
-        int count = basePoints.Count;
+        int count = currentBasePoints.Count;
 
         // Tự động nối Pn với Pn-1
         if (count > 1)
         {
-            lineManager.DrawLineAndDistance(basePoints[count - 2].transform.position, newBasePoint.transform.position);
-            lineManager.DrawLineAndDistance(heightPoints[count - 2].transform.position, newHeightPoint.transform.position);
+            lineManager.DrawLineAndDistance(currentBasePoints[count - 2].transform.position, newBasePoint.transform.position);
+            lineManager.DrawLineAndDistance(currentHeightPoints[count - 2].transform.position, newHeightPoint.transform.position);
         }
 
         // Kiểm tra nếu Pn gần P1, tự động khép kín đường
-        if (count > 2 && Vector3.Distance(newBasePoint.transform.position, basePoints[0].transform.position) < closeThreshold)
+        if (count > 2 && Vector3.Distance(newBasePoint.transform.position, currentBasePoints[0].transform.position) < closeThreshold)
         {
-            lineManager.DrawLineAndDistance(newBasePoint.transform.position, basePoints[0].transform.position);
-            lineManager.DrawLineAndDistance(newHeightPoint.transform.position, heightPoints[0].transform.position);
+            lineManager.DrawLineAndDistance(newBasePoint.transform.position, currentBasePoints[0].transform.position);
+            lineManager.DrawLineAndDistance(newHeightPoint.transform.position, currentHeightPoints[0].transform.position);
             flag = 1; // Đánh dấu đã khép kín đường
-            Debug.Log("[unity1] flag=1");
 
             // Tính diện tích giữa các mặt đáy và mặt trên
             float baseArea = AreaCalculator.CalculateArea(GetBasePoints());
             float heightArea = AreaCalculator.CalculateArea(GetHeightPoints());
             Debug.Log("Dien tich = " + baseArea);
             Debug.Log("Dien tich = " + heightArea);
-            Debug.Log("[unity2] flag=1");
 
             // Hiển thị diện tích giữa các mặt
-            Vector3 baseCenter = GetPolygonCenter(basePoints);
-            Vector3 topCenter = GetPolygonCenter(heightPoints);
-            Debug.Log("[unity3] flag=1");
+            Vector3 baseCenter = GetPolygonCenter(currentBasePoints);
+            Vector3 topCenter = GetPolygonCenter(currentHeightPoints);
 
             if (flag == 1)
             {
@@ -173,27 +171,53 @@ public class BtnController : MonoBehaviour
                     roomBuilder1.SetRoomData(basePositions, heightPositions); // Truyền dữ liệu vào RoomModelBuilder
                     roomBuilder1.BuildWalls(); // Gọi vẽ vật liệu
                 }
-            }
-            Debug.Log("[unity4] flag=1");
+                // Tính và hiển thị diện tích của các mặt đứng (nếu cần)
+                for (int i = 0; i < count; i++)
+                {
+                    Vector3 basePoint = currentBasePoints[i].transform.position;
+                    Vector3 heightPoint = currentHeightPoints[i].transform.position;
+                    Vector3 nextBasePoint = currentBasePoints[(i + 1) % count].transform.position;
+                    Vector3 nextHeightPoint = currentHeightPoints[(i + 1) % count].transform.position;
 
-            // Tính và hiển thị diện tích của các mặt đứng (nếu cần)
+                    // Tính diện tích cho mặt đứng giữa các điểm basePoint, heightPoint, nextBasePoint, nextHeightPoint
+                    float sideArea = AreaCalculator.CalculateArea(new List<Vector3> { basePoint, heightPoint, nextBasePoint, nextHeightPoint });
+
+                    // Hiển thị diện tích mặt đứng
+                    Vector3 sideCenter = (basePoint + nextBasePoint) / 2 + (heightPoint + nextHeightPoint) / 2;
+                    AreaCalculator.ShowAreaText(sideCenter, sideArea);
+                }
+            }
+
+            List<GameObject> baseCopy = new List<GameObject>(currentBasePoints);
+            List<GameObject> heightCopy = new List<GameObject>(currentHeightPoints);
+
+            // Tính diện tích mặt đứng **phải làm ở đây**, trước khi clear
             for (int i = 0; i < count; i++)
             {
-                Vector3 basePoint = basePoints[i].transform.position;
-                Vector3 heightPoint = heightPoints[i].transform.position;
-                Vector3 nextBasePoint = basePoints[(i + 1) % count].transform.position;
-                Vector3 nextHeightPoint = heightPoints[(i + 1) % count].transform.position;
+                Vector3 basePoint = baseCopy[i].transform.position;
+                Vector3 heightPoint = heightCopy[i].transform.position;
+                Vector3 nextBasePoint = baseCopy[(i + 1) % count].transform.position;
+                Vector3 nextHeightPoint = heightCopy[(i + 1) % count].transform.position;
 
-                // Tính diện tích cho mặt đứng giữa các điểm basePoint, heightPoint, nextBasePoint, nextHeightPoint
                 float sideArea = AreaCalculator.CalculateArea(new List<Vector3> { basePoint, heightPoint, nextBasePoint, nextHeightPoint });
-
-                // Hiển thị diện tích mặt đứng
                 Vector3 sideCenter = (basePoint + nextBasePoint) / 2 + (heightPoint + nextHeightPoint) / 2;
                 AreaCalculator.ShowAreaText(sideCenter, sideArea);
             }
+
+            // Lưu list vào tổng
+            allBasePoints.Add(baseCopy);
+            allHeightPoints.Add(heightCopy);
+
+            // Clear cho mạch mới
+            currentBasePoints.Clear();
+            currentHeightPoints.Clear();
+            referenceHeightPoint = null;
+
             lineManager.ShowAreaText(baseCenter, baseArea);
             lineManager.ShowAreaText(topCenter, heightArea);
-            Debug.Log("[unity5] flag=1");
+
+            flag = 0;
+            Debug.Log("[Unity] Mạch đã được lưu và sẵn sàng tạo mạch mới");
         }
 
         // Nối Pn với Pn' (điểm chiều cao)
@@ -224,24 +248,18 @@ public class BtnController : MonoBehaviour
     public List<Vector3> GetBasePoints()
     {
         List<Vector3> basePositions = new List<Vector3>();
-        foreach (GameObject point in basePoints)
+        foreach (GameObject point in currentBasePoints)
         {
             basePositions.Add(point.transform.position);
         }
         return basePositions;
     }
 
-    /*************  ✨ Windsurf Command ⭐  *************/
-    /// <summary>
-    /// Retrieves a list of positions for the height points.
-    /// </summary>
-    /// <returns>A list of Vector3 positions representing the height points.</returns>
 
-    /*******  42db1563-e22a-48c9-954e-d1cb3166e95b  *******/
     public List<Vector3> GetHeightPoints()
     {
         List<Vector3> heightPositions = new List<Vector3>();
-        foreach (GameObject point in heightPoints)
+        foreach (GameObject point in currentHeightPoints)
         {
             heightPositions.Add(point.transform.position);
         }
@@ -256,5 +274,14 @@ public class BtnController : MonoBehaviour
             center += point.transform.position;
         }
         return center / points.Count;
+    }
+    public List<List<GameObject>> GetAllBasePoints()
+    {
+        return allBasePoints;
+    }
+
+    public List<List<GameObject>> GetAllHeightPoints()
+    {
+        return allHeightPoints;
     }
 }

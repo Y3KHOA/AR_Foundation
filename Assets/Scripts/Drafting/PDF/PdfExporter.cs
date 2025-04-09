@@ -165,28 +165,6 @@ public class PdfExporter
                 cb.ShowTextAligned(Element.ALIGN_CENTER, label, midX, midY + 5f, 0);
                 cb.EndText();
             }
-            // if (Vector2.Distance(last, first) > 0.01f)
-            // {
-            //     float x1 = (last.x + shift.x) * scale + offsetX;
-            //     float y1 = (last.y + shift.y) * scale + offsetY;
-            //     float x2 = (first.x + shift.x) * scale + offsetX;
-            //     float y2 = (first.y + shift.y) * scale + offsetY;
-
-            //     cb.MoveTo(x1, y1);
-            //     cb.LineTo(x2, y2);
-            //     cb.Stroke();
-
-            //     // Label cạnh cuối nếu có
-            //     if (allDistances != null && polygonIndex < allDistances.Count && allDistances[polygonIndex].Count == polygon.Count)
-            //     {
-            //         float midX = (x1 + x2) / 2;
-            //         float midY = (y1 + y2) / 2;
-            //         string label = $"{allDistances[polygonIndex][^1]:0.00} {unit}";
-            //         cb.BeginText();
-            //         cb.ShowTextAligned(Element.ALIGN_CENTER, label, midX, midY + 5f, 0);
-            //         cb.EndText();
-            //     }
-            // }
         }
 
         document.Close();

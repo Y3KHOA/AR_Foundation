@@ -11,6 +11,7 @@ public class CheckpointManager : MonoBehaviour
     public DrawingTool DrawingTool;
     public PenManager penManager;
     public UndoRedoManager undoRedoManager;
+    public StoragePermissionRequester permissionRequester;
 
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
@@ -188,35 +189,55 @@ public class CheckpointManager : MonoBehaviour
 
     void LoadPointsFromDataTransfer()
     {
-        List<Vector2> points = DataTransfer.Instance.GetPoints();
-        List<float> heights = DataTransfer.Instance.GetHeights();
+        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();
+        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();
 
-        if (points.Count == 0)
+        if (allPoints.Count == 0)
         {
             Debug.Log("Không có dữ liệu điểm để hiển thị.");
             return;
         }
 
-        for (int i = 0; i < points.Count; i++)
+        for (int pathIndex = 0; pathIndex < allPoints.Count; pathIndex++)
         {
-            Vector3 worldPos = new Vector3(points[i].x, 0, points[i].y); // Y=0 vì 2D
-            GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
-            currentCheckpoints.Add(checkpoint);
+            List<Vector2> path = allPoints[pathIndex];
+            List<GameObject> checkpointsForPath = new List<GameObject>();
 
-            // Nếu có ít nhất 2 điểm, vẽ đường nối
-            if (i > 0)
+            for (int i = 0; i < path.Count; i++)
             {
-                DrawingTool.DrawLineAndDistance(currentCheckpoints[i - 1].transform.position, worldPos);
+                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y); // Y = 0 vì hiển thị 2D
+                GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
+                checkpointsForPath.Add(checkpoint);
+
+                // Nếu có ít nhất 2 điểm, vẽ line giữa các điểm
+                if (i > 0)
+                {
+                    DrawingTool.DrawLineAndDistance(checkpointsForPath[i - 1].transform.position, worldPos);
+                }
             }
+
+            // Tự động nối kín nếu đủ điểm và 2 đầu gần nhau
+            if (checkpointsForPath.Count > 2 && Vector3.Distance(checkpointsForPath[0].transform.position, checkpointsForPath[^1].transform.position) < closeThreshold)
+            {
+                DrawingTool.DrawLineAndDistance(checkpointsForPath[^1].transform.position, checkpointsForPath[0].transform.position);
+                isClosedLoop = true;
+            }
+
+            // Lưu vào list tổng
+            allCheckpoints.Add(checkpointsForPath);
         }
 
-        // Tự động nối điểm cuối với điểm đầu nếu mạch đã khép kín
-        if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, currentCheckpoints[^1].transform.position) < closeThreshold)
-        {
-            DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
-            isClosedLoop = true;
-        }
+        Debug.Log($"[LoadPoints] Đã nạp {allPoints.Count} mạch với tổng cộng {CountTotalCheckpoints()} checkpoint.");
     }
+
+    int CountTotalCheckpoints()
+    {
+        int total = 0;
+        foreach (var list in allCheckpoints)
+            total += list.Count;
+        return total;
+    }
+
 
     public void ExportAllDrawingsToPDF()
     {
@@ -260,12 +281,32 @@ public class CheckpointManager : MonoBehaviour
         string path = Path.Combine(Application.persistentDataPath, "Drawing_All_Test1.pdf");
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-    string directory = Path.GetDirectoryName(path);
-    if (!Directory.Exists(directory))
-        Directory.CreateDirectory(directory);
+            string directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
 #endif
+        // #if UNITY_ANDROID && !UNITY_EDITOR
+        //     if (!permissionRequester.IsAllFilesAccessGranted())
+        //     {
+        //         Debug.LogWarning("chua co quyen All Files Access. dang yeu cau...");
+        //         permissionRequester.RequestAllFilesAccessWithPopup();
+        //         return;
+        //     }
+        // #endif
+
+        // #if UNITY_ANDROID && !UNITY_EDITOR
+        //     string folderPath = "/storage/emulated/0/XHeroScan"; // thư mục dễ tìm gần thư mục Download
+        // #else
+        //         string folderPath = Path.Combine(Application.persistentDataPath, "XHeroScan");
+        // #endif
+        //         string pdfFileName = "Drawing_All_Test1.pdf";
+        //         if (!Directory.Exists(folderPath))
+        //             Directory.CreateDirectory(folderPath);
+
+        // string path = Path.Combine(folderPath, pdfFileName);
 
         PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+
         Debug.Log("PDF exported to: " + path);
     }
 }
