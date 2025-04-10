@@ -268,4 +268,20 @@ public class LineManager : MonoBehaviour
         Debug.Log("Đã reset tất cả line và text hiển thị.");
     }
 
+    public void DestroyPreviewObjects()
+    {
+        if (previewLine != null)
+        {
+            Destroy(previewLine.gameObject);
+            previewLine = null;
+        }
+
+        if (previewText != null)
+        {
+            Destroy(previewText.gameObject);
+            previewText = null;
+        }
+
+        Debug.Log("Đã xóa previewLine và previewText hoàn toàn.");
+    }
 }

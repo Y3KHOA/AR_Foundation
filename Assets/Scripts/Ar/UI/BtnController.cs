@@ -203,10 +203,12 @@ public class BtnController : MonoBehaviour
                 {
                     heightValue = previewPoint.transform.position.y - fixedBasePointPosition.y;
                     heightValue = Mathf.Max(0, heightValue); // Đảm bảo không âm
-                    Debug.Log("Chiều cao đã lưu = " + heightValue);
+                    Debug.Log("heightValue = " + heightValue);
 
+                    lineManager.DestroyPreviewObjects();
+                    previewPoint.SetActive(false);
                     Destroy(previewPoint); previewPoint = null;
-                    // Nếu newBasePoint1 là object mới và đang trong list thì xóa luôn khỏi danh sách
+
                     // Xóa tempBasePoint nếu có
                     if (tempBasePoint != null)
                     {
