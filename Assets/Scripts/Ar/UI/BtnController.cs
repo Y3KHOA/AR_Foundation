@@ -32,6 +32,10 @@ public class BtnController : MonoBehaviour
     private float closeThreshold = 0.2f; // Ngưỡng khép kín đường
     private int flag = 0; // Mặc định flag = 0
     public int Flag { get { return flag; } }
+    private bool measure = true;
+    private Vector3 fixedBasePointPosition;
+    private float initialCameraPitch;
+    private GameObject tempBasePoint;
 
     void Start()
     {
@@ -39,6 +43,12 @@ public class BtnController : MonoBehaviour
         string unit = PlayerPrefs.GetString("SelectedUnit", "m");
         float savedHeight = PlayerPrefs.GetFloat("HeightValue", 0f);
         this.heightValue = savedHeight;
+
+        if (btnByCam.IsMeasure)
+        {
+            heightValue = 0f;
+            Debug.Log("btn da vao day heightValue: " + heightValue);
+        }
 
         Debug.Log("[Unity]Chieu cao nhan duoc: " + heightValue);
 
@@ -59,38 +69,81 @@ public class BtnController : MonoBehaviour
 
         Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
 
-        if (raycastManager.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon))
+        if (measure)
         {
-            Pose hitPose = hits[0].pose;
 
-            if (spawnedPoint == null)
+            if (raycastManager.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon))
             {
-                spawnedPoint = Instantiate(pointPrefab, hitPose.position, Quaternion.identity);
-            }
-            else
-            {
-                spawnedPoint.transform.position = hitPose.position;
-            }
+                Pose hitPose = hits[0].pose;
 
-            // Đảm bảo previewPoint tồn tại
+                if (spawnedPoint == null)
+                {
+                    spawnedPoint = Instantiate(pointPrefab, hitPose.position, Quaternion.identity);
+                }
+                else
+                {
+                    spawnedPoint.transform.position = hitPose.position;
+                }
+
+                // Đảm bảo previewPoint tồn tại
+                if (previewPoint == null)
+                {
+                    previewPoint = Instantiate(pointPrefab, hitPose.position, Quaternion.identity);
+                    previewPoint.name = "PreviewPoint";
+                }
+
+                // Cập nhật vị trí preview point
+                previewPoint.transform.position = hitPose.position;
+
+                // Chỉ vẽ preview line nếu có ít nhất 1 điểm cơ sở
+                if (currentBasePoints.Count > 0)
+                {
+                    Vector3 lastBasePoint = currentBasePoints[currentBasePoints.Count - 1].transform.position;
+                    Vector3 previewPos = previewPoint.transform.position;
+
+                    Debug.Log($"[Update] Draw PreviewLine from {lastBasePoint} to {previewPos}");
+                    lineManager.DrawPreviewLine(lastBasePoint, previewPos);
+                }
+            }
+        }
+        else
+        {
+            // Lấy camera
+            Camera cam = Camera.main != null ? Camera.main : Camera.allCameras.Length > 0 ? Camera.allCameras[0] : null;
+            if (cam == null) return;
+
+            float currentPitch = cam.transform.eulerAngles.x;
+
             if (previewPoint == null)
             {
-                previewPoint = Instantiate(pointPrefab, hitPose.position, Quaternion.identity);
-                previewPoint.name = "PreviewPoint";
+                // Đặt previewPoint tại vị trí base theo trục Y
+                previewPoint = Instantiate(pointPrefab, fixedBasePointPosition + Vector3.up * 0.01f, Quaternion.identity);
+                previewPoint.name = "HeightPreview";
+
+                // Gán pitch ban đầu
+                initialCameraPitch = currentPitch;
             }
 
-            // Cập nhật vị trí preview point
-            previewPoint.transform.position = hitPose.position;
+            // Tính độ lệch góc quay
+            float deltaPitch = Mathf.DeltaAngle(initialCameraPitch, currentPitch);
 
-            // Chỉ vẽ preview line nếu có ít nhất 1 điểm cơ sở
-            if (currentBasePoints.Count > 0)
-            {
-                Vector3 lastBasePoint = currentBasePoints[currentBasePoints.Count - 1].transform.position;
-                Vector3 previewPos = previewPoint.transform.position;
+            // Tính khoảng cách từ camera đến điểm base
+            float distanceToBase = Vector3.Distance(cam.transform.position, fixedBasePointPosition);
 
-                Debug.Log($"[Update] Draw PreviewLine from {lastBasePoint} to {previewPos}");
-                lineManager.DrawPreviewLine(lastBasePoint, previewPos);
-            }
+            // Dựa vào khoảng cách để scale (nếu gần thì scale nhỏ, xa thì scale lớn)
+            float pitchToHeightScale = distanceToBase * 0.02f; // Có thể tinh chỉnh hệ số này
+
+            // Tính Y mới và clamp không cho nhỏ hơn base
+            float rawY = fixedBasePointPosition.y - deltaPitch * pitchToHeightScale;
+            float newY = Mathf.Max(fixedBasePointPosition.y, rawY); // không cho thấp hơn điểm base
+
+            // Cập nhật vị trí previewPoint
+            previewPoint.transform.position = new Vector3(fixedBasePointPosition.x, newY, fixedBasePointPosition.z);
+
+            Debug.Log("measure = false btn da vao day heightValue = " + newY);
+
+            // Vẽ line theo trục Y giữa điểm gốc và preview
+            lineManager.DrawPreviewLine(fixedBasePointPosition, previewPoint.transform.position);
         }
     }
 
@@ -116,13 +169,71 @@ public class BtnController : MonoBehaviour
     void HandleButtonClick()
     {
         Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
+
+        Pose hitPose = hits[0].pose;
+
+        if (heightValue == 0)
+        {
+            Debug.Log("1 btn co vao day ko? heightValue = 0");
+            if (measure)
+            {
+                Debug.Log("2 btn co vao day ko? measure = false");
+                measure = false;
+
+                // Tạo base point và lưu lại tạm
+                tempBasePoint = GetOrCreatePoint(currentBasePoints, hitPose.position);
+
+                fixedBasePointPosition = tempBasePoint.transform.position;
+
+                // Reset lại camera pitch để chuẩn bị đo mới
+                Camera cam = Camera.main != null ? Camera.main : Camera.allCameras.Length > 0 ? Camera.allCameras[0] : null;
+                if (cam != null)
+                {
+                    initialCameraPitch = cam.transform.eulerAngles.x;
+                }
+
+                return;
+            }
+            else
+            {
+                // Lần nhấn thứ hai - Kết thúc đo chiều cao
+                Debug.Log("Lần nhấn 2 - Lưu chiều cao");
+
+                if (previewPoint != null)
+                {
+                    heightValue = previewPoint.transform.position.y - fixedBasePointPosition.y;
+                    heightValue = Mathf.Max(0, heightValue); // Đảm bảo không âm
+                    Debug.Log("Chiều cao đã lưu = " + heightValue);
+
+                    Destroy(previewPoint); previewPoint = null;
+                    // Nếu newBasePoint1 là object mới và đang trong list thì xóa luôn khỏi danh sách
+                    // Xóa tempBasePoint nếu có
+                    if (tempBasePoint != null)
+                    {
+                        if (currentBasePoints.Contains(tempBasePoint))
+                        {
+                            currentBasePoints.Remove(tempBasePoint);
+                        }
+                        Destroy(tempBasePoint);
+                        tempBasePoint = null;
+                    }
+                }
+
+                /// Reset lại trạng thái
+                measure = true;
+                fixedBasePointPosition = Vector3.zero;
+                initialCameraPitch = 0f;
+
+                return;
+            }
+        }
+
         if (!raycastManager.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon))
         {
             Debug.Log("Không tìm thấy mặt phẳng để đặt object.");
             return;
         }
 
-        Pose hitPose = hits[0].pose;
         GameObject newBasePoint = GetOrCreatePoint(currentBasePoints, hitPose.position);
         GameObject newHeightPoint = referenceHeightPoint != null
             ? GetOrCreatePoint(currentHeightPoints, new Vector3(hitPose.position.x, referenceHeightPoint.transform.position.y, hitPose.position.z))

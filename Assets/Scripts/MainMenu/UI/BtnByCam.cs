@@ -8,6 +8,8 @@ public class btnByCam : MonoBehaviour
     public Button btnMeasure;
     public GameObject unit;      // GameObject sẽ được bật khi nhấn Enter
     public GameObject buttonBar; // GameObject chứa các button cần ẩn
+    private static bool isMeasure = false;
+    public static bool IsMeasure { get { return isMeasure; } }
 
     void Start()
     {
@@ -49,7 +51,8 @@ public class btnByCam : MonoBehaviour
 
     void OnMeasureClicked()
     {
-        Debug.Log("Nhấn Measure - Chuyển scene ARFoundation");
+        isMeasure = true;
+        Debug.Log("Measure clicked - To scene ARFoundation\nMeasure =true");
         SceneManager.LoadScene("ARFoundation"); // Chuyển scene
     }
 }
