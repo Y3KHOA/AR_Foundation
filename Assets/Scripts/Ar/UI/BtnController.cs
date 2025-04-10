@@ -368,7 +368,6 @@ public class BtnController : MonoBehaviour
         return basePositions;
     }
 
-
     public List<Vector3> GetHeightPoints()
     {
         List<Vector3> heightPositions = new List<Vector3>();
