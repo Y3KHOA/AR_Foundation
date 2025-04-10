@@ -1006,6 +1006,7 @@ GameObject:
   - component: {fileID: 165585590}
   - component: {fileID: 165585591}
   - component: {fileID: 165585592}
+  - component: {fileID: 165585593}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1158,13 +1159,34 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 165585583}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 462c386806cded24b8ab40a052918af9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   btnController: {fileID: 165585589}
   okButton: {fileID: 684494582}
+--- !u!114 &165585593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 165585583}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e369df90fa7e1d7429ef00cda389a870, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toggleButton: {fileID: 85050636}
+  pointPrefab: {fileID: 3778347542880177400, guid: 4c2e34dea12c20f4892d9215b7c4eca5,
+    type: 3}
+  raycastManager: {fileID: 114138101}
+  planeManager: {fileID: 114138097}
+  lineManager: {fileID: 114138103}
+  distanceTextPrefab: {fileID: 8205753649675154513, guid: 42ab14659f79d5442a50f537ea26487a,
+    type: 3}
+  heightValue: 0.5
 --- !u!1 &187238234
 GameObject:
   m_ObjectHideFlags: 0
