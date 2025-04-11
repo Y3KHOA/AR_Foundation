@@ -9,7 +9,21 @@ public class btnByCam : MonoBehaviour
     public GameObject unit;      // GameObject sẽ được bật khi nhấn Enter
     public GameObject buttonBar; // GameObject chứa các button cần ẩn
     private static bool isMeasure = false;
-    public static bool IsMeasure { get { return isMeasure; } }
+    public bool IsMeasure { set { isMeasure = value; } get { return isMeasure; } }
+    public static btnByCam Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     void Start()
     {
