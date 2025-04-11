@@ -3,9 +3,8 @@ using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using System.Collections.Generic;
-using Org.BouncyCastle.Crypto.Modes;
 
-public class TestAxisY : MonoBehaviour
+public class BtnController : MonoBehaviour
 {
     [Header("UI Elements")]
     public Button toggleButton;
@@ -45,10 +44,12 @@ public class TestAxisY : MonoBehaviour
         float savedHeight = PlayerPrefs.GetFloat("HeightValue", 0f);
         this.heightValue = savedHeight;
 
-        if (btnByCam.IsMeasure)
+        if (btnByCam.Instance.IsMeasure)
         {
             heightValue = 0f;
             Debug.Log("btn da vao day heightValue: " + heightValue);
+
+            btnByCam.Instance.IsMeasure = false;
         }
 
         Debug.Log("[Unity]Chieu cao nhan duoc: " + heightValue);
@@ -148,6 +149,28 @@ public class TestAxisY : MonoBehaviour
         }
     }
 
+    void OnPlanesChanged(ARPlanesChangedEventArgs args)
+    {
+        if (planeManager.trackables.count > 0)
+        {
+            hasPlane = true;
+            if (!isPointVisible)
+                isPointVisible = true;
+        }
+    }
+
+    void TogglePointVisibility()
+    {
+        isPointVisible = !isPointVisible;
+        if (!isPointVisible && spawnedPoint != null)
+        {
+            Destroy(spawnedPoint);
+        }
+    }
+
+    /// <summary>
+    /// Hàm xử lý tổng khi nhấn create button 
+    /// </summary>
     void HandleButtonClick()
     {
         Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
@@ -185,10 +208,12 @@ public class TestAxisY : MonoBehaviour
                 {
                     heightValue = previewPoint.transform.position.y - fixedBasePointPosition.y;
                     heightValue = Mathf.Max(0, heightValue); // Đảm bảo không âm
-                    Debug.Log("Chiều cao đã lưu = " + heightValue);
+                    Debug.Log("heightValue = " + heightValue);
 
+                    lineManager.DestroyPreviewObjects();
+                    previewPoint.SetActive(false);
                     Destroy(previewPoint); previewPoint = null;
-                    // Nếu newBasePoint1 là object mới và đang trong list thì xóa luôn khỏi danh sách
+
                     // Xóa tempBasePoint nếu có
                     if (tempBasePoint != null)
                     {
@@ -217,7 +242,6 @@ public class TestAxisY : MonoBehaviour
         }
 
         GameObject newBasePoint = GetOrCreatePoint(currentBasePoints, hitPose.position);
-
         GameObject newHeightPoint = referenceHeightPoint != null
             ? GetOrCreatePoint(currentHeightPoints, new Vector3(hitPose.position.x, referenceHeightPoint.transform.position.y, hitPose.position.z))
             : GetOrCreatePoint(currentHeightPoints, hitPose.position + new Vector3(0, heightValue, 0));
@@ -328,25 +352,6 @@ public class TestAxisY : MonoBehaviour
         }
     }
 
-    void OnPlanesChanged(ARPlanesChangedEventArgs args)
-    {
-        if (planeManager.trackables.count > 0)
-        {
-            hasPlane = true;
-            if (!isPointVisible)
-                isPointVisible = true;
-        }
-    }
-
-    void TogglePointVisibility()
-    {
-        isPointVisible = !isPointVisible;
-        if (!isPointVisible && spawnedPoint != null)
-        {
-            Destroy(spawnedPoint);
-        }
-    }
-
     GameObject GetOrCreatePoint(List<GameObject> points, Vector3 position)
     {
         foreach (GameObject point in points)
@@ -367,7 +372,6 @@ public class TestAxisY : MonoBehaviour
         }
         return basePositions;
     }
-
 
     public List<Vector3> GetHeightPoints()
     {

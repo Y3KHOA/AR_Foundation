@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 public class ButtonOk : MonoBehaviour
 {
@@ -31,5 +33,7 @@ public class ButtonOk : MonoBehaviour
     {
         isOkButtonShown = true;
         Debug.Log("[ButtonOk] OK Button hien thi do flag=1");
+        TransData.Instance.TransferData();
+        SceneManager.LoadScene("FlatExampleScene");
     }
 }

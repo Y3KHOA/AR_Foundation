@@ -7,6 +7,50 @@ public class Model3D : MonoBehaviour
     private List<Vector3> basePoints = new List<Vector3>();
     private List<Vector3> heightPoints = new List<Vector3>();
 
+    void Start()
+    {
+        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();
+        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();
+
+        if (allPoints.Count == 0 || allHeights.Count == 0)
+        {
+            Debug.LogWarning("Không có dữ liệu 3D để dựng mô hình.");
+            return;
+        }
+
+        for (int pathIndex = 0; pathIndex < allPoints.Count; pathIndex++)
+        {
+            List<Vector2> path2D = allPoints[pathIndex];
+            List<float> heights = allHeights[pathIndex];
+
+            if (path2D.Count < 2 || path2D.Count != heights.Count) continue;
+
+            List<Vector3> basePts = new List<Vector3>();
+            List<Vector3> heightPts = new List<Vector3>();
+
+            for (int i = 0; i < path2D.Count; i++)
+            {
+                Vector3 basePos = new Vector3(path2D[i].x, 0f, path2D[i].y);
+                Vector3 heightPos = new Vector3(path2D[i].x, heights[i], path2D[i].y);
+                basePts.Add(basePos);
+                heightPts.Add(heightPos);
+            }
+
+            // Vẽ từng cặp điểm
+            for (int i = 0; i < basePts.Count - 1; i++)
+            {
+                CreateWall(basePts[i], heightPts[i], basePts[i + 1], heightPts[i + 1]);
+            }
+
+            // Khép kín nếu cần
+            if (basePts.Count > 2)
+            {
+                CreateWall(basePts[basePts.Count - 1], heightPts[basePts.Count - 1], basePts[0], heightPts[0]);
+            }
+        }
+    }
+
+
     // Nhận dữ liệu đo từ BtnController
     public void SetRoomData(List<Vector3> basePts, List<Vector3> heightPts)
     {
