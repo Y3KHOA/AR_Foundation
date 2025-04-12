@@ -36,6 +36,14 @@ public class Model3D : MonoBehaviour
                 heightPts.Add(heightPos);
             }
 
+            // Set tất cả điểm về gốc tọa độ (0,0,0)
+            Vector3 offsetToOrigin = basePts[0]; // hoặc tính trung tâm nếu muốn cân giữa
+            for (int i = 0; i < basePts.Count; i++)
+            {
+                basePts[i] -= offsetToOrigin;
+                heightPts[i] -= offsetToOrigin;
+            }
+
             // Vẽ từng cặp điểm
             for (int i = 0; i < basePts.Count - 1; i++)
             {
@@ -48,15 +56,15 @@ public class Model3D : MonoBehaviour
                 CreateWall(basePts[basePts.Count - 1], heightPts[basePts.Count - 1], basePts[0], heightPts[0]);
             }
         }
-        Camera previewCam = GameObject.FindGameObjectWithTag("PreviewCamera")?.GetComponent<Camera>();
-        if (previewCam != null)
-        {
-            CenterModelAndAdjustCamera(previewCam);
-        }
-        else
-        {
-            Debug.LogWarning("Tag 'PreviewCamera' not found.");
-        }
+        // Camera previewCam = GameObject.FindGameObjectWithTag("PreviewCamera")?.GetComponent<Camera>();
+        // if (previewCam != null)
+        // {
+        //     CenterModelAndAdjustCamera(previewCam);
+        // }
+        // else
+        // {
+        //     Debug.LogWarning("Tag 'PreviewCamera' not found.");
+        // }
     }
 
 
