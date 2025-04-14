@@ -56,15 +56,6 @@ public class Model3D : MonoBehaviour
                 CreateWall(basePts[basePts.Count - 1], heightPts[basePts.Count - 1], basePts[0], heightPts[0]);
             }
         }
-        // Camera previewCam = GameObject.FindGameObjectWithTag("PreviewCamera")?.GetComponent<Camera>();
-        // if (previewCam != null)
-        // {
-        //     CenterModelAndAdjustCamera(previewCam);
-        // }
-        // else
-        // {
-        //     Debug.LogWarning("Tag 'PreviewCamera' not found.");
-        // }
     }
 
 
@@ -94,6 +85,10 @@ public class Model3D : MonoBehaviour
     {
         GameObject wall = new GameObject("Wall");
         wall.transform.SetParent(transform);
+
+        // Gán Layer
+        // wall.layer = LayerMask.NameToLayer("PreviewModel");
+        SetLayerRecursively(wall, LayerMask.NameToLayer("PreviewModel"));
 
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
@@ -156,49 +151,12 @@ public class Model3D : MonoBehaviour
             "\nP3: " + p3 +
             "\nP4: " + p4);
     }
-
-    private Bounds CalculateModelBounds()
+    void SetLayerRecursively(GameObject obj, int layer)
     {
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        if (renderers.Length == 0) return new Bounds(transform.position, Vector3.zero);
-
-        Bounds combinedBounds = renderers[0].bounds;
-        for (int i = 1; i < renderers.Length; i++)
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
         {
-            combinedBounds.Encapsulate(renderers[i].bounds);
+            SetLayerRecursively(child.gameObject, layer);
         }
-        return combinedBounds;
     }
-
-    public void CenterModelAndAdjustCamera(Camera targetCamera)
-    {
-        Bounds modelBounds = CalculateModelBounds();
-
-        // Căn giữa mô hình tại gốc tọa độ
-        Vector3 centerOffset = modelBounds.center;
-        transform.position -= centerOffset;
-
-        // Tính lại bounds sau khi đã dịch
-        modelBounds = CalculateModelBounds();
-
-        // Tính toán kích thước lớn nhất trong các chiều (x, y, z)
-        float maxSize = Mathf.Max(modelBounds.size.x, modelBounds.size.z, modelBounds.size.y);
-
-        // Tính khoảng cách từ camera tới mô hình dựa trên kích thước mô hình và góc nhìn của camera
-        float distance = maxSize / (2f * Mathf.Tan(0.5f * targetCamera.fieldOfView * Mathf.Deg2Rad));
-
-        // Tính toán hướng của camera để nhìn vào mô hình
-        Vector3 direction = targetCamera.transform.forward;
-
-        // Vị trí mới của camera sẽ là một điểm nằm trên hướng của camera, cách mô hình một khoảng đủ xa
-        Vector3 newCamPos = modelBounds.center - direction * distance;
-
-        // Đảm bảo camera không quá gần mô hình
-        newCamPos = Vector3.Lerp(newCamPos, modelBounds.center - direction * (maxSize * 1.5f), 0.5f);
-
-        // Cập nhật vị trí camera
-        targetCamera.transform.position = newCamPos;
-        targetCamera.transform.LookAt(modelBounds.center);
-    }
-
 }
