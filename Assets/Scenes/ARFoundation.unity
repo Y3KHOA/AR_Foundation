@@ -914,6 +914,7 @@ MonoBehaviour:
   lineManager: {fileID: 114138103}
   distanceTextPrefab: {fileID: 8205753649675154513, guid: 42ab14659f79d5442a50f537ea26487a,
     type: 3}
+  modelView: {fileID: 2126378731}
   heightValue: 0.5
 --- !u!114 &165585590
 MonoBehaviour:
@@ -1751,7 +1752,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &779833894
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2124,7 +2125,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!81 &940534500
 AudioListener:
   m_ObjectHideFlags: 0
@@ -2961,6 +2962,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cube
       objectReference: {fileID: 0}
+    - target: {fileID: 2685104519116521866, guid: e0c694d0977893e4fbf313730850539a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3767261967113966449, guid: e0c694d0977893e4fbf313730850539a,
         type: 3}
       propertyPath: m_LocalScale.x
@@ -3267,7 +3273,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1562069059
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4456,10 +4462,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad1add00fe209d447aae300fae06542b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomMaterial: {fileID: 2100000, guid: e2fefd99798be2d428a022c822154633, type: 2}
-  targetCamera: {fileID: 940534501}
-  minScale: 0.2
-  maxScale: 2
+  roomMaterial: {fileID: 2100000, guid: ee58aa14bd1e26d478b6984db884058d, type: 2}
+  btnController: {fileID: 165585589}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

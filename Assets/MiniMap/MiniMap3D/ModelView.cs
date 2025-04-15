@@ -4,86 +4,49 @@ using System.Collections.Generic;
 public class ModelView : MonoBehaviour
 {
     public Material roomMaterial;
-    public Camera targetCamera; // Gán camera từ ngoài vào
-    public float minScale = 0.2f;
-    public float maxScale = 2.0f;
-
+    public BtnController btnController;
     private List<Vector3> basePoints = new List<Vector3>();
     private List<Vector3> heightPoints = new List<Vector3>();
+    private GameObject previewWall; // Tường tạm thời
 
-    void Start()
+    public void AddLatestWall()
     {
-        AutoScaleModel();
+        // Lấy mạch checkpoint cuối cùng
+        var allBase = btnController.AllBasePoints;
+        var allHeight = btnController.AllHeightPoints;
 
-        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();
-        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();
+        if (allBase.Count == 0 || allHeight.Count == 0) return;
 
-        if (allPoints.Count == 0 || allHeights.Count == 0)
+        List<GameObject> latestBase = allBase[allBase.Count - 1];
+        List<GameObject> latestHeight = allHeight[allHeight.Count - 1];
+
+        if (latestBase.Count < 2 || latestBase.Count != latestHeight.Count) return;
+
+        // Clear dữ liệu cũ
+        basePoints.Clear();
+        heightPoints.Clear();
+
+        for (int i = 0; i < latestBase.Count; i++)
         {
-            Debug.LogWarning("Không có dữ liệu 3D để dựng mô hình.");
-            return;
+            basePoints.Add(latestBase[i].transform.position);
+            heightPoints.Add(latestHeight[i].transform.position);
         }
 
-        for (int pathIndex = 0; pathIndex < allPoints.Count; pathIndex++)
-        {
-            List<Vector2> path2D = allPoints[pathIndex];
-            List<float> heights = allHeights[pathIndex];
-
-            if (path2D.Count < 2 || path2D.Count != heights.Count) continue;
-
-            List<Vector3> basePts = new List<Vector3>();
-            List<Vector3> heightPts = new List<Vector3>();
-
-            for (int i = 0; i < path2D.Count; i++)
-            {
-                Vector3 basePos = new Vector3(path2D[i].x, 0f, path2D[i].y);
-                Vector3 heightPos = new Vector3(path2D[i].x, heights[i], path2D[i].y);
-                basePts.Add(basePos);
-                heightPts.Add(heightPos);
-            }
-
-            // Set tất cả điểm về gốc tọa độ (0,0,0)
-            Vector3 offsetToOrigin = basePts[0]; // hoặc tính trung tâm nếu muốn cân giữa
-            for (int i = 0; i < basePts.Count; i++)
-            {
-                basePts[i] -= offsetToOrigin;
-                heightPts[i] -= offsetToOrigin;
-            }
-
-            // Vẽ từng cặp điểm
-            for (int i = 0; i < basePts.Count - 1; i++)
-            {
-                CreateWall(basePts[i], heightPts[i], basePts[i + 1], heightPts[i + 1]);
-            }
-
-            // Khép kín nếu cần
-            if (basePts.Count > 2)
-            {
-                CreateWall(basePts[basePts.Count - 1], heightPts[basePts.Count - 1], basePts[0], heightPts[0]);
-            }
-        }
+        BuildLastWallSegment(); // Vẽ đoạn tường mới
     }
 
-
-    // Nhận dữ liệu đo từ BtnController
-    public void SetRoomData(List<Vector3> basePts, List<Vector3> heightPts)
-    {
-        basePoints = basePts;
-        heightPoints = heightPts;
-    }
-
-    public void BuildWalls()
+    private void BuildLastWallSegment()
     {
         int count = basePoints.Count;
         if (count < 2) return;
 
-        // Chỉ vẽ tường giữa điểm mới nhất và điểm trước đó
-        Vector3 base1 = basePoints[count - 2];
-        Vector3 top1 = heightPoints[count - 2];
-        Vector3 base2 = basePoints[count - 1];
-        Vector3 top2 = heightPoints[count - 1];
+        // Đảm bảo đúng hướng
+        Vector3 p1 = basePoints[count - 2];
+        Vector3 p2 = basePoints[count - 1];
+        Vector3 p3 = heightPoints[count - 1]; // Trên p2
+        Vector3 p4 = heightPoints[count - 2]; // Trên p1
 
-        CreateWall(base1, top1, base2, top2);
+        CreateWall(p1, p2, p3, p4);
     }
 
     // Vẽ từng tường với vật liệu tương ứng
@@ -134,7 +97,13 @@ public class ModelView : MonoBehaviour
         4, 6, 2, 4, 2, 0
     };
 
-        Vector2[] uv = new Vector2[8]; // có thể chỉnh UV chi tiết nếu cần, nhưng giữ đơn giản
+        // Vector2[] uv = new Vector2[8]; // có thể chỉnh UV chi tiết nếu cần, nhưng giữ đơn giản
+        Vector2[] uv = {
+            new Vector2(0,0), new Vector2(1,0), new Vector2(0,1), new Vector2(1,1),
+            new Vector2(0,0), new Vector2(1,0), new Vector2(0,1), new Vector2(1,1)
+        };
+        mesh.uv = uv;
+
 
         mesh.vertices = vertices;
         mesh.triangles = triangles;
@@ -166,48 +135,99 @@ public class ModelView : MonoBehaviour
         }
     }
 
-    private void AutoScaleModel()
+    public void DrawPreviewWall(Vector3 base1, Vector3 top1, Vector3 base2, Vector3 top2)
     {
-        if (targetCamera == null)
+        if (previewWall == null)
         {
-            Debug.LogWarning("Camera chưa được gán cho Model3D.");
-            return;
+            previewWall = CreatePreviewWall(base1, top1, base2, top2);
         }
-
-        // Tính kích thước bounds của toàn bộ mô hình
-        Bounds bounds = new Bounds(transform.position, Vector3.zero);
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (var r in renderers)
+        else
         {
-            bounds.Encapsulate(r.bounds);
+            UpdatePreviewWall(previewWall, base1, top1, base2, top2);
         }
-
-        float modelSize = Mathf.Max(bounds.size.x, bounds.size.z); // xét theo chiều rộng và chiều sâu
-
-        // Tính khoảng cách cần để mô hình nằm vừa trong camera
-        float fov = targetCamera.fieldOfView;
-        float aspect = targetCamera.aspect;
-
-        // Chiều cao tối đa có thể nhìn thấy trong khung hình (từ góc nhìn 0,0,0)
-        float maxVisibleHeight = 2f * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) * Mathf.Abs(bounds.center.z);
-        float maxVisibleWidth = maxVisibleHeight * aspect;
-
-        float visibleSize = Mathf.Min(maxVisibleWidth, maxVisibleHeight);
-
-        if (visibleSize <= 0.01f)
-        {
-            Debug.LogWarning("Camera quá gần hoặc góc nhìn không hợp lệ để scale.");
-            return;
-        }
-
-        // Tính hệ số scale cần thiết
-        float scaleFactor = visibleSize / modelSize;
-
-        // Clamp hệ số scale để không bị quá nhỏ hoặc quá lớn
-        scaleFactor = Mathf.Clamp(scaleFactor, minScale, maxScale);
-
-        transform.localScale = Vector3.one * scaleFactor;
-
-        Debug.Log("Auto scale mô hình theo camera. Hệ số scale: " + scaleFactor);
     }
+
+    private GameObject CreatePreviewWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
+    {
+        GameObject wall = new GameObject("PreviewWall");
+        wall.transform.SetParent(transform);
+
+        SetLayerRecursively(wall, LayerMask.NameToLayer("PreviewModel"));
+
+        MeshFilter mf = wall.AddComponent<MeshFilter>();
+        MeshRenderer mr = wall.AddComponent<MeshRenderer>();
+        mr.material = roomMaterial; // Có thể đổi sang vật liệu trong suốt nếu muốn
+
+        Mesh mesh = new Mesh();
+
+        Vector3 forward = Vector3.Cross(p2 - p1, p3 - p1).normalized;
+        float thickness = 0.05f;
+        Vector3 offset = forward * thickness;
+
+        Vector3[] vertices = new Vector3[8];
+        vertices[0] = p1;
+        vertices[1] = p2;
+        vertices[2] = p3;
+        vertices[3] = p4;
+        vertices[4] = p1 + offset;
+        vertices[5] = p2 + offset;
+        vertices[6] = p3 + offset;
+        vertices[7] = p4 + offset;
+
+        int[] triangles = {
+            0, 2, 1, 2, 3, 1,
+            6, 4, 5, 6, 5, 7,
+            4, 0, 1, 4, 1, 5,
+            2, 6, 7, 2, 7, 3,
+            1, 3, 7, 1, 7, 5,
+            4, 6, 2, 4, 2, 0
+        };
+
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        mf.mesh = mesh;
+
+        return wall;
+    }
+
+    private void UpdatePreviewWall(GameObject wall, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
+    {
+        MeshFilter mf = wall.GetComponent<MeshFilter>();
+        if (mf == null) return;
+
+        Mesh mesh = new Mesh();
+        Vector3 forward = Vector3.Cross(p2 - p1, p3 - p1).normalized;
+        float thickness = 0.05f;
+        Vector3 offset = forward * thickness;
+
+        Vector3[] vertices = new Vector3[8];
+        vertices[0] = p1;
+        vertices[1] = p2;
+        vertices[2] = p3;
+        vertices[3] = p4;
+        vertices[4] = p1 + offset;
+        vertices[5] = p2 + offset;
+        vertices[6] = p3 + offset;
+        vertices[7] = p4 + offset;
+
+        int[] triangles = {
+        0, 2, 1, 2, 3, 1,
+        6, 4, 5, 6, 5, 7,
+        4, 0, 1, 4, 1, 5,
+        2, 6, 7, 2, 7, 3,
+        1, 3, 7, 1, 7, 5,
+        4, 6, 2, 4, 2, 0
+    };
+
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        mf.mesh = mesh;
+    }
+
 }

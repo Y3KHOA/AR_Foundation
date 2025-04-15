@@ -15,6 +15,7 @@ public class BtnController : MonoBehaviour
     public ARPlaneManager planeManager;
     public LineManager lineManager;
     public GameObject distanceTextPrefab;
+    public ModelView modelView;
     public float heightValue = 0.5f;
 
     private GameObject previewPoint = null;  // Điểm xem trước
@@ -22,6 +23,10 @@ public class BtnController : MonoBehaviour
     private static readonly List<ARRaycastHit> hits = new List<ARRaycastHit>();
     private List<List<GameObject>> allBasePoints = new List<List<GameObject>>();
     private List<List<GameObject>> allHeightPoints = new List<List<GameObject>>();
+
+    public List<List<GameObject>> AllBasePoints { get { return allBasePoints; } }
+    public List<List<GameObject>> AllHeightPoints { get { return allHeightPoints; } }
+
     private List<GameObject> currentBasePoints = new List<GameObject>();
     private List<GameObject> currentHeightPoints = new List<GameObject>();
     private GameObject referenceHeightPoint = null;
@@ -36,6 +41,7 @@ public class BtnController : MonoBehaviour
     private Vector3 fixedBasePointPosition;
     private float initialCameraPitch;
     private GameObject tempBasePoint;
+
 
     void Start()
     {
@@ -105,6 +111,15 @@ public class BtnController : MonoBehaviour
 
                     Debug.Log($"[Update] Draw PreviewLine from {lastBasePoint} to {previewPos}");
                     lineManager.DrawPreviewLine(lastBasePoint, previewPos);
+
+                    // Gọi hàm vẽ tường preview (được gọi trong khi đo đạc)
+                    Vector3 base1 = currentBasePoints[currentBasePoints.Count - 1].transform.position;
+                    Vector3 top1 = currentHeightPoints.Count > 0 ? currentHeightPoints[currentHeightPoints.Count - 1].transform.position : base1 + Vector3.up * 0.5f;
+
+                    Vector3 base2 = previewPoint.transform.position;
+                    Vector3 top2 = previewPoint.transform.position;
+
+                    modelView.DrawPreviewWall(base1, top1, base2, top2);
                 }
             }
         }
@@ -259,6 +274,9 @@ public class BtnController : MonoBehaviour
         {
             lineManager.DrawLineAndDistance(currentBasePoints[count - 2].transform.position, newBasePoint.transform.position);
             lineManager.DrawLineAndDistance(currentHeightPoints[count - 2].transform.position, newHeightPoint.transform.position);
+
+
+            modelView.AddLatestWall();
         }
 
         // Kiểm tra nếu Pn gần P1, tự động khép kín đường
@@ -266,6 +284,9 @@ public class BtnController : MonoBehaviour
         {
             lineManager.DrawLineAndDistance(newBasePoint.transform.position, currentBasePoints[0].transform.position);
             lineManager.DrawLineAndDistance(newHeightPoint.transform.position, currentHeightPoints[0].transform.position);
+
+            modelView.AddLatestWall();
+
             flag = 1; // Đánh dấu đã khép kín đường
 
             // Tính diện tích giữa các mặt đáy và mặt trên
@@ -340,6 +361,8 @@ public class BtnController : MonoBehaviour
 
         // Nối Pn với Pn' (điểm chiều cao)
         lineManager.DrawLineAndDistance(newBasePoint.transform.position, newHeightPoint.transform.position);
+
+        modelView.AddLatestWall();
 
         RoomModelBuilder roomBuilder = FindObjectOfType<RoomModelBuilder>();
         if (roomBuilder != null)
