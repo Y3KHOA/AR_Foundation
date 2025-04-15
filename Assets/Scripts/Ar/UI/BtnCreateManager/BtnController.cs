@@ -117,7 +117,7 @@ public class BtnController : MonoBehaviour
                     Vector3 top1 = currentHeightPoints.Count > 0 ? currentHeightPoints[currentHeightPoints.Count - 1].transform.position : base1 + Vector3.up * 0.5f;
 
                     Vector3 base2 = previewPoint.transform.position;
-                    Vector3 top2 = previewPoint.transform.position;
+                    Vector3 top2 = currentHeightPoints.Count > 0 ? currentHeightPoints[currentHeightPoints.Count - 1].transform.position : base1 + Vector3.up * 0.5f;
 
                     modelView.DrawPreviewWall(base1, top1, base2, top2);
                 }
@@ -274,9 +274,6 @@ public class BtnController : MonoBehaviour
         {
             lineManager.DrawLineAndDistance(currentBasePoints[count - 2].transform.position, newBasePoint.transform.position);
             lineManager.DrawLineAndDistance(currentHeightPoints[count - 2].transform.position, newHeightPoint.transform.position);
-
-
-            modelView.AddLatestWall();
         }
 
         // Kiểm tra nếu Pn gần P1, tự động khép kín đường
@@ -284,8 +281,6 @@ public class BtnController : MonoBehaviour
         {
             lineManager.DrawLineAndDistance(newBasePoint.transform.position, currentBasePoints[0].transform.position);
             lineManager.DrawLineAndDistance(newHeightPoint.transform.position, currentHeightPoints[0].transform.position);
-
-            modelView.AddLatestWall();
 
             flag = 1; // Đánh dấu đã khép kín đường
 
@@ -361,8 +356,6 @@ public class BtnController : MonoBehaviour
 
         // Nối Pn với Pn' (điểm chiều cao)
         lineManager.DrawLineAndDistance(newBasePoint.transform.position, newHeightPoint.transform.position);
-
-        modelView.AddLatestWall();
 
         RoomModelBuilder roomBuilder = FindObjectOfType<RoomModelBuilder>();
         if (roomBuilder != null)
