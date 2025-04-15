@@ -9,48 +9,8 @@ public class ModelView : MonoBehaviour
     private List<Vector3> heightPoints = new List<Vector3>();
     private GameObject previewWall; // Tường tạm thời
 
-    public void AddLatestWall()
-    {
-        // Lấy mạch checkpoint cuối cùng
-        var allBase = btnController.AllBasePoints;
-        var allHeight = btnController.AllHeightPoints;
-
-        if (allBase.Count == 0 || allHeight.Count == 0) return;
-
-        List<GameObject> latestBase = allBase[allBase.Count - 1];
-        List<GameObject> latestHeight = allHeight[allHeight.Count - 1];
-
-        if (latestBase.Count < 2 || latestBase.Count != latestHeight.Count) return;
-
-        // Clear dữ liệu cũ
-        basePoints.Clear();
-        heightPoints.Clear();
-
-        for (int i = 0; i < latestBase.Count; i++)
-        {
-            basePoints.Add(latestBase[i].transform.position);
-            heightPoints.Add(latestHeight[i].transform.position);
-        }
-
-        BuildLastWallSegment(); // Vẽ đoạn tường mới
-    }
-
-    private void BuildLastWallSegment()
-    {
-        int count = basePoints.Count;
-        if (count < 2) return;
-
-        // Đảm bảo đúng hướng
-        Vector3 p1 = basePoints[count - 2];
-        Vector3 p2 = basePoints[count - 1];
-        Vector3 p3 = heightPoints[count - 1]; // Trên p2
-        Vector3 p4 = heightPoints[count - 2]; // Trên p1
-
-        CreateWall(p1, p2, p3, p4);
-    }
-
     // Vẽ từng tường với vật liệu tương ứng
-    private void CreateWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
+    public void CreateWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
     {
         GameObject wall = new GameObject("Wall");
         wall.transform.SetParent(transform);
@@ -115,16 +75,6 @@ public class ModelView : MonoBehaviour
 
         MeshCollider meshCollider = wall.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = mesh;
-
-        // Log thông tin về việc tạo tường
-        Debug.Log("Created wall between points: " + p1 + " and " + p2 + " (Base) / " + p3 + " and " + p4 + " (Height)");
-
-        // Log thông tin về các đỉnh của tường
-        Debug.Log("Wall vertices: " +
-            "\nP1: " + p1 +
-            "\nP2: " + p2 +
-            "\nP3: " + p3 +
-            "\nP4: " + p4);
     }
     void SetLayerRecursively(GameObject obj, int layer)
     {
@@ -229,5 +179,4 @@ public class ModelView : MonoBehaviour
 
         mf.mesh = mesh;
     }
-
 }

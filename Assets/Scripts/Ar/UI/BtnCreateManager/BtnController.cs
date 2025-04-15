@@ -117,7 +117,7 @@ public class BtnController : MonoBehaviour
                     Vector3 top1 = currentHeightPoints.Count > 0 ? currentHeightPoints[currentHeightPoints.Count - 1].transform.position : base1 + Vector3.up * 0.5f;
 
                     Vector3 base2 = previewPoint.transform.position;
-                    Vector3 top2 = currentHeightPoints.Count > 0 ? currentHeightPoints[currentHeightPoints.Count - 1].transform.position : base1 + Vector3.up * 0.5f;
+                    Vector3 top2 = hitPose.position + new Vector3(0, heightValue, 0);
 
                     modelView.DrawPreviewWall(base1, top1, base2, top2);
                 }
@@ -274,6 +274,8 @@ public class BtnController : MonoBehaviour
         {
             lineManager.DrawLineAndDistance(currentBasePoints[count - 2].transform.position, newBasePoint.transform.position);
             lineManager.DrawLineAndDistance(currentHeightPoints[count - 2].transform.position, newHeightPoint.transform.position);
+
+            modelView.CreateWall(currentBasePoints[count - 2].transform.position, newBasePoint.transform.position, currentHeightPoints[count - 2].transform.position, newHeightPoint.transform.position);
         }
 
         // Kiểm tra nếu Pn gần P1, tự động khép kín đường
