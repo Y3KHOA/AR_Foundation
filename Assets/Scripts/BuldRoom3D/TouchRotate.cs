@@ -18,7 +18,7 @@ public class TouchRotate : MonoBehaviour
     private float doubleTapThreshold = 0.3f;
     float currentXRotation = 0f;
     const float minXRotation = -90f;
-    const float maxXRotation = 0f;
+    const float maxXRotation = 90f;
 
     void Start()
     {
@@ -87,17 +87,21 @@ public class TouchRotate : MonoBehaviour
                 float rotY = delta.x * rotationSpeed;
                 float rotX = -delta.y * rotationSpeed;
 
-                // Xoay ngang tự do (Y axis)
-                target.RotateAround(modelCenter, Vector3.up, rotY);
-
-                // target.RotateAround(modelCenter, Camera.main.transform.right, rotX);
-                // Xoay dọc giới hạn (X axis)
+                // Cập nhật góc xoay
                 float newXRotation = currentXRotation + rotX;
-                if (newXRotation >= minXRotation && newXRotation <= maxXRotation)
-                {
-                    target.RotateAround(modelCenter, Camera.main.transform.right, rotX);
-                    currentXRotation = newXRotation;
-                }
+                newXRotation = Mathf.Clamp(newXRotation, minXRotation, maxXRotation);
+
+                currentXRotation = newXRotation;
+
+                // Tính quaternion mới (Y xoay ngang, X xoay dọc, Z giữ nguyên)
+                Quaternion newRotation = Quaternion.Euler(currentXRotation, target.eulerAngles.y + rotY, 0f);
+
+                // Cập nhật rotation + giữ đúng vị trí xoay quanh modelCenter
+                Vector3 offset = target.position - modelCenter;
+                offset = newRotation * Quaternion.Inverse(target.rotation) * offset;
+
+                target.rotation = newRotation;
+                target.position = modelCenter + offset;
 
                 UpdateModelCenter();
 
@@ -125,7 +129,7 @@ public class TouchRotate : MonoBehaviour
         // Zoom
         float prevDistance = (touch0.position - touch0.deltaPosition - (touch1.position - touch1.deltaPosition)).magnitude;
         float currentDistance = (touch0.position - touch1.position).magnitude;
-        float zoomDelta = currentDistance - prevDistance;
+        float zoomDelta = prevDistance - currentDistance;
 
         // Zoom theo điểm giữa 2 ngón tay
         Vector2 midPoint = (touch0.position + touch1.position) / 2f;
