@@ -2868,7 +2868,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 62.00009, y: -69.00003}
+  m_AnchoredPosition: {x: 72, y: -71.5}
   m_SizeDelta: {x: 25, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1244594881
@@ -2908,7 +2908,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -50, y: -770.6}
+  m_AnchoredPosition: {x: -19, y: -375}
   m_SizeDelta: {x: 300, y: 255}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1244594883
@@ -3191,8 +3191,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -321.35004, y: -469.8783}
-  m_SizeDelta: {x: 642.7, y: 939.7565}
+  m_AnchoredPosition: {x: -224.99997, y: -279.17905}
+  m_SizeDelta: {x: 450, y: 558.358}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1562069060
 MonoBehaviour:
@@ -3208,7 +3208,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -3637,7 +3637,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -26.189941, y: -770.6}
+  m_AnchoredPosition: {x: -19, y: -375}
   m_SizeDelta: {x: 13.0316, y: 255}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1793089058
@@ -4349,7 +4349,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad1add00fe209d447aae300fae06542b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomMaterial: {fileID: 2100000, guid: e3e86680c5e8f534a9ed29c654313519, type: 2}
+  roomMaterial: {fileID: 2100000, guid: e2fefd99798be2d428a022c822154633, type: 2}
   btnController: {fileID: 165585589}
 --- !u!114 &2126378732
 MonoBehaviour:
@@ -4363,10 +4363,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 669800969b464d54cba0f2edab7af24b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainCamera: {fileID: 295111688}
-  secondaryCamera: {fileID: 940534501}
-  offset: {x: 0, y: 0, z: 0}
-  followSpeed: 5
+  mainCamera: {fileID: 295111692}
+  miniMapCamera: {fileID: 940534501}
+  height: 10
+  smoothTime: 0.2
+  iconRotationSmooth: 0.2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
