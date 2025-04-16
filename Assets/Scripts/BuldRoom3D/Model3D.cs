@@ -4,15 +4,13 @@ using System.Collections.Generic;
 public class Model3D : MonoBehaviour
 {
     public Material roomMaterial;
-    private List<Vector3> basePoints = new List<Vector3>();
-    private List<Vector3> heightPoints = new List<Vector3>();
 
     void Start()
     {
-        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();
-        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();
+        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();     // Danh sách các mạch 2D
+        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();     // Chiều cao tương ứng từng điểm trong từng mạch
 
-        if (allPoints.Count == 0 || allHeights.Count == 0)
+        if (allPoints == null || allHeights == null || allPoints.Count == 0 || allHeights.Count == 0)
         {
             Debug.LogWarning("Không có dữ liệu 3D để dựng mô hình.");
             return;
@@ -23,7 +21,9 @@ public class Model3D : MonoBehaviour
             List<Vector2> path2D = allPoints[pathIndex];
             List<float> heights = allHeights[pathIndex];
 
-            if (path2D.Count < 2 || path2D.Count != heights.Count) continue;
+            // Bỏ qua nếu dữ liệu không khớp
+            if (path2D == null || heights == null || path2D.Count < 2 || path2D.Count != heights.Count)
+                continue;
 
             List<Vector3> basePts = new List<Vector3>();
             List<Vector3> heightPts = new List<Vector3>();
@@ -36,48 +36,19 @@ public class Model3D : MonoBehaviour
                 heightPts.Add(heightPos);
             }
 
-            // Set tất cả điểm về gốc tọa độ (0,0,0)
-            Vector3 offsetToOrigin = basePts[0]; // hoặc tính trung tâm nếu muốn cân giữa
-            for (int i = 0; i < basePts.Count; i++)
-            {
-                basePts[i] -= offsetToOrigin;
-                heightPts[i] -= offsetToOrigin;
-            }
-
-            // Vẽ từng cặp điểm
+            // Vẽ từng cạnh giữa 2 điểm liên tiếp
             for (int i = 0; i < basePts.Count - 1; i++)
             {
-                CreateWall(basePts[i], heightPts[i], basePts[i + 1], heightPts[i + 1]);
+                // CreateWall(basePts[i], heightPts[i], basePts[i + 1], heightPts[i + 1]);
+                CreateWall(basePts[i], basePts[i + 1], heightPts[i], heightPts[i + 1]);
             }
 
-            // Khép kín nếu cần
-            if (basePts.Count > 2)
+            // Khép kín mạch nếu có ít nhất 3 điểm
+            if (basePts.Count >= 3)
             {
-                CreateWall(basePts[basePts.Count - 1], heightPts[basePts.Count - 1], basePts[0], heightPts[0]);
+                CreateWall(basePts[^1], heightPts[^1], basePts[0], heightPts[0]);
             }
         }
-    }
-
-
-    // Nhận dữ liệu đo từ BtnController
-    public void SetRoomData(List<Vector3> basePts, List<Vector3> heightPts)
-    {
-        basePoints = basePts;
-        heightPoints = heightPts;
-    }
-
-    public void BuildWalls()
-    {
-        int count = basePoints.Count;
-        if (count < 2) return;
-
-        // Chỉ vẽ tường giữa điểm mới nhất và điểm trước đó
-        Vector3 base1 = basePoints[count - 2];
-        Vector3 top1 = heightPoints[count - 2];
-        Vector3 base2 = basePoints[count - 1];
-        Vector3 top2 = heightPoints[count - 1];
-
-        CreateWall(base1, top1, base2, top2);
     }
 
     // Vẽ từng tường với vật liệu tương ứng
@@ -140,17 +111,8 @@ public class Model3D : MonoBehaviour
 
         MeshCollider meshCollider = wall.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = mesh;
-
-        // Log thông tin về việc tạo tường
-        Debug.Log("Created wall between points: " + p1 + " and " + p2 + " (Base) / " + p3 + " and " + p4 + " (Height)");
-
-        // Log thông tin về các đỉnh của tường
-        Debug.Log("Wall vertices: " +
-            "\nP1: " + p1 +
-            "\nP2: " + p2 +
-            "\nP3: " + p3 +
-            "\nP4: " + p4);
     }
+
     void SetLayerRecursively(GameObject obj, int layer)
     {
         obj.layer = layer;

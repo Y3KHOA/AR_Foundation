@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class TouchRotate : MonoBehaviour
 {
@@ -35,8 +36,20 @@ public class TouchRotate : MonoBehaviour
     void Update()
     {
         if (target == null) return;
-
         int touchCount = Input.touchCount;
+
+        if (touchCount == 0) return;
+
+        // Kiểm tra từng touch có đang ở trên UI không
+        for (int i = 0; i < touchCount; i++)
+        {
+            Touch touch = Input.GetTouch(i);
+            if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+            {
+                // Nếu bất kỳ ngón nào chạm vào UI, thì bỏ qua xử lý touch
+                return;
+            }
+        }
 
         if (touchCount == 1)
         {
@@ -48,6 +61,8 @@ public class TouchRotate : MonoBehaviour
             Touch touch1 = Input.GetTouch(1);
             HandleTwoFingers(touch0, touch1);
         }
+
+        UpdateModelCenter();
     }
 
     void HandleOneFinger(Touch touch)
