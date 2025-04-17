@@ -819,6 +819,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   roomMaterial: {fileID: 2100000, guid: e2fefd99798be2d428a022c822154633, type: 2}
+  bottomMaterial: {fileID: 2100000, guid: cdcf57ebe5641d64dada599a078c79f7, type: 2}
 --- !u!114 &273325514
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2379,7 +2380,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1272908590
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3097,6 +3098,7 @@ MonoBehaviour:
   panel3D: {fileID: 1398984922}
   panelInfo: {fileID: 1332278075}
   previewTexture: {fileID: 1783189539}
+  Draw2D: {fileID: 1620621391}
 --- !u!1 &1405147043
 GameObject:
   m_ObjectHideFlags: 0
@@ -3308,6 +3310,78 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1490285469}
   m_CullTransparentMesh: 1
+--- !u!1 &1620621391
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1620621392}
+  - component: {fileID: 1620621394}
+  - component: {fileID: 1620621393}
+  m_Layer: 5
+  m_Name: Drawing2D
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1620621392
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620621391}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 90}
+  m_LocalScale: {x: 0.060140654, y: 0.060140654, z: 0.060140654}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0.536438, y: 140.7882}
+  m_SizeDelta: {x: 1055.1602, y: 1332.6475}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1620621393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620621391}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0bd4eb99d60dd438de0851241d0c1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  checkpointPrefab: {fileID: 3778347542880177400, guid: 4c2e34dea12c20f4892d9215b7c4eca5,
+    type: 3}
+  Drawing2D: {fileID: 1620621394}
+--- !u!114 &1620621394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1620621391}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac3174b1fda8be54c8cccc2cc5018664, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linePrefab: {fileID: 6270486157550466451, guid: e5714c44a40cb0041b4e46102aebced5,
+    type: 3}
+  distanceTextPrefab: {fileID: 8205753649675154513, guid: 42ab14659f79d5442a50f537ea26487a,
+    type: 3}
+  auxiliaryLinePrefab: {fileID: 2527141741316378535, guid: 245745e3732727f4fa09131f8a927fd2,
+    type: 3}
+  lines: []
+  distanceTexts: []
 --- !u!1 &1640806976
 GameObject:
   m_ObjectHideFlags: 0
@@ -3480,6 +3554,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1783806881}
   - component: {fileID: 1783806882}
+  - component: {fileID: 1783806884}
+  - component: {fileID: 1783806883}
   m_Layer: 5
   m_Name: PanelFloor
   m_TagString: Untagged
@@ -3515,6 +3591,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1783806880}
   m_CullTransparentMesh: 1
+--- !u!114 &1783806883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783806880}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca0bd4eb99d60dd438de0851241d0c1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  checkpointPrefab: {fileID: 3778347542880177400, guid: 4c2e34dea12c20f4892d9215b7c4eca5,
+    type: 3}
+  Drawing2D: {fileID: 1783806884}
+--- !u!114 &1783806884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783806880}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac3174b1fda8be54c8cccc2cc5018664, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linePrefab: {fileID: 6270486157550466451, guid: e5714c44a40cb0041b4e46102aebced5,
+    type: 3}
+  distanceTextPrefab: {fileID: 8205753649675154513, guid: 42ab14659f79d5442a50f537ea26487a,
+    type: 3}
+  auxiliaryLinePrefab: {fileID: 2527141741316378535, guid: 245745e3732727f4fa09131f8a927fd2,
+    type: 3}
+  lines: []
+  distanceTexts: []
 --- !u!1 &2016536449
 GameObject:
   m_ObjectHideFlags: 0
@@ -3549,7 +3660,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0.0000076293945, y: -53.945984}
+  m_AnchoredPosition: {x: 0, y: -53.945984}
   m_SizeDelta: {x: 421.683, y: 107.892}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2016536451
@@ -3659,5 +3770,6 @@ SceneRoots:
   - {fileID: 421232779}
   - {fileID: 1398984926}
   - {fileID: 519155119}
+  - {fileID: 1620621392}
   - {fileID: 402001922}
   - {fileID: 1640806979}
