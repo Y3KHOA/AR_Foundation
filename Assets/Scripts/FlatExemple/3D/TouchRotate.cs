@@ -20,9 +20,11 @@ public class TouchRotate : MonoBehaviour
     float currentXRotation = 0f;
     const float minXRotation = -90f;
     const float maxXRotation = 90f;
+    private Vector3 initialTwistAxis;
 
     void Start()
     {
+        initialTwistAxis = target.transform.forward;
         if (target != null)
         {
             Renderer rend = target.GetComponentInChildren<Renderer>();

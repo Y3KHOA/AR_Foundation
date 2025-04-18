@@ -76,7 +76,7 @@ public class Model3D : MonoBehaviour
         UnityEngine.Mesh mesh = new UnityEngine.Mesh();
 
         // Hướng vuông góc với mặt tường để tạo độ dày
-        Vector3 forward = Vector3.Cross(p2 - p1, p3 - p1).normalized;
+        Vector3 forward = Vector3.Cross(p2 - p1, p4 - p1).normalized;
         float thickness = 0.05f;
         Vector3 offset = forward * thickness;
 
@@ -93,19 +93,19 @@ public class Model3D : MonoBehaviour
         vertices[7] = p4 + offset;
 
         int[] triangles = {
-        // Mặt trước
-        0, 2, 1, 2, 3, 1,
-        // Mặt sau
-        6, 4, 5, 6, 5, 7,
-        // Trái
-        4, 0, 1, 4, 1, 5,
-        // Phải
-        2, 6, 7, 2, 7, 3,
-        // Trên
-        1, 3, 7, 1, 7, 5,
-        // Dưới
-        4, 6, 2, 4, 2, 0
-    };
+            // Mặt trước
+            0, 2, 1, 2, 3, 1,
+            // Mặt sau
+            6, 4, 5, 6, 5, 7,
+            // Trái
+            4, 0, 1, 4, 1, 5,
+            // Phải
+            2, 6, 7, 2, 7, 3,
+            // Trên
+            1, 3, 7, 1, 7, 5,
+            // Dưới
+            4, 6, 2, 4, 2, 0
+        };
 
         // Vector2[] uv = new Vector2[8]; // có thể chỉnh UV chi tiết nếu cần, nhưng giữ đơn giản
         Vector2[] uv = new Vector2[8];
