@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class TouchRotate : MonoBehaviour
 {
@@ -19,9 +20,11 @@ public class TouchRotate : MonoBehaviour
     float currentXRotation = 0f;
     const float minXRotation = -90f;
     const float maxXRotation = 90f;
+    private Vector3 initialTwistAxis;
 
     void Start()
     {
+        initialTwistAxis = target.transform.forward;
         if (target != null)
         {
             Renderer rend = target.GetComponentInChildren<Renderer>();
@@ -35,8 +38,20 @@ public class TouchRotate : MonoBehaviour
     void Update()
     {
         if (target == null) return;
-
         int touchCount = Input.touchCount;
+
+        if (touchCount == 0) return;
+
+        // Kiểm tra từng touch có đang ở trên UI không
+        for (int i = 0; i < touchCount; i++)
+        {
+            Touch touch = Input.GetTouch(i);
+            if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+            {
+                // Nếu bất kỳ ngón nào chạm vào UI, thì bỏ qua xử lý touch
+                return;
+            }
+        }
 
         if (touchCount == 1)
         {
@@ -48,6 +63,8 @@ public class TouchRotate : MonoBehaviour
             Touch touch1 = Input.GetTouch(1);
             HandleTwoFingers(touch0, touch1);
         }
+
+        UpdateModelCenterAccurate();
     }
 
     void HandleOneFinger(Touch touch)
@@ -87,6 +104,10 @@ public class TouchRotate : MonoBehaviour
                 float rotY = delta.x * rotationSpeed;
                 float rotX = -delta.y * rotationSpeed;
 
+                Debug.Log("target.rotation.x= " + target.rotation.x);
+                Debug.Log("target.rotation.y= " + target.rotation.y);
+                Debug.Log("target.rotation.z= " + target.rotation.z);
+
                 // Cập nhật góc xoay
                 float newXRotation = currentXRotation + rotX;
                 newXRotation = Mathf.Clamp(newXRotation, minXRotation, maxXRotation);
@@ -103,7 +124,7 @@ public class TouchRotate : MonoBehaviour
                 target.rotation = newRotation;
                 target.position = modelCenter + offset;
 
-                UpdateModelCenter();
+                UpdateModelCenterAccurate();
 
                 lastTouchPos = touch.position;
             }
@@ -124,7 +145,7 @@ public class TouchRotate : MonoBehaviour
         target.RotateAround(modelCenter, Vector3.up, orbitY);
         target.RotateAround(modelCenter, target.right, orbitX);
 
-        UpdateModelCenter();
+        UpdateModelCenterAccurate();
 
         // Zoom
         float prevDistance = (touch0.position - touch0.deltaPosition - (touch1.position - touch1.deltaPosition)).magnitude;
@@ -152,10 +173,35 @@ public class TouchRotate : MonoBehaviour
         target.position += zoomDirection * zoomDelta * zoomSpeed;
     }
 
-    void UpdateModelCenter()
+    void UpdateModelCenterAccurate()
     {
-        Renderer rend = target.GetComponentInChildren<Renderer>();
-        if (rend != null)
-            modelCenter = rend.bounds.center;
+        MeshFilter[] meshFilters = target.GetComponentsInChildren<MeshFilter>();
+        if (meshFilters.Length == 0)
+        {
+            Debug.LogWarning("Khong co mesh de tinh trong tam.");
+            return;
+        }
+
+        Vector3 total = Vector3.zero;
+        int count = 0;
+
+        foreach (MeshFilter mf in meshFilters)
+        {
+            Mesh mesh = mf.sharedMesh;
+            if (mesh == null) continue;
+
+            Vector3[] verts = mesh.vertices;
+            foreach (Vector3 vert in verts)
+            {
+                // Chuyển đỉnh từ local space sang world space
+                total += mf.transform.TransformPoint(vert);
+                count++;
+            }
+        }
+
+        if (count > 0)
+        {
+            modelCenter = total / count;
+        }
     }
 }

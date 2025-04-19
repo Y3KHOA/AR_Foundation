@@ -19,13 +19,13 @@ public class ButtonActivator : MonoBehaviour
         if (btnController.Flag == 1 && !targetButton.gameObject.activeSelf)
         {
             targetButton.gameObject.SetActive(true);
-            Debug.Log("Button đã được bật!");
+            Debug.Log("Button enabled");
         }
     }
 
     void OnTargetButtonClicked()
     {
-        Debug.Log("Button được nhấn - Chuyển dữ liệu và sang DraftingScene");
+        Debug.Log("Button clicked - To DraftingScene");
         TransData.Instance.TransferData();
         SceneManager.LoadScene("DraftingScene");
     }
