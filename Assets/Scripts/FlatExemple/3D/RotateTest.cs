@@ -1,14 +1,14 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class TouchRotate : MonoBehaviour
+public class RotateTest : MonoBehaviour
 {
     public Transform target;               // Đối tượng 3D cần xoay
-    public float rotationSpeed = 0.2f;     // Tốc độ xoay X/Y
-    public float zRotationSpeed = 0.4f;    // Tốc độ xoay Z
-    public float orbitSpeed = 0.1f;         // Tốc độ xoay bằng 2 ngón
-    public float panSpeed = 0.005f;         // Tốc độ di chuyển bằng 3 ngón
-    public float zoomSpeed = 0.01f;
+    float rotationSpeed = 0.05f;     // Tốc độ xoay X/Y
+    float zRotationSpeed = 0.4f;    // Tốc độ xoay Z
+    float orbitSpeed = 0.1f;         // Tốc độ xoay bằng 2 ngón
+    float panSpeed = 0.005f;         // Tốc độ di chuyển bằng 3 ngón
+    float zoomSpeed = 0.01f;
 
     private Vector2 lastTouchPos;
     private bool isDragging = false;
@@ -18,6 +18,8 @@ public class TouchRotate : MonoBehaviour
     private float lastTapTime = 0f;
     private float doubleTapThreshold = 0.3f;
     float currentXRotation = 0f;
+    float currentZRotation = 0f;
+    float currentYRotation = 0f;
     const float minXRotation = -90f;
     const float maxXRotation = 90f;
     private Vector3 initialTwistAxis;
@@ -101,29 +103,43 @@ public class TouchRotate : MonoBehaviour
             else if (touch.phase == TouchPhase.Moved && isDragging)
             {
                 Vector2 delta = touch.position - lastTouchPos;
-                float rotY = delta.x * rotationSpeed;
-                float rotX = -delta.y * rotationSpeed;
+                float rotZ = rotationSpeed * delta.x;
+                float rotX = rotationSpeed * delta.y;
 
-                Debug.Log("target.rotation.x= " + target.rotation.x);
-                Debug.Log("target.rotation.y= " + target.rotation.y);
-                Debug.Log("target.rotation.z= " + target.rotation.z);
+                // Lưu lại Y gốc của center (ví dụ y = 0)
+                float originalY = modelCenter.y;
 
-                // Cập nhật góc xoay
+                // Cập nhật X rotation (nghiêng lên/xuống)
                 float newXRotation = currentXRotation + rotX;
                 newXRotation = Mathf.Clamp(newXRotation, minXRotation, maxXRotation);
-
+                float deltaX = newXRotation - currentXRotation;
                 currentXRotation = newXRotation;
 
-                // Tính quaternion mới (Y xoay ngang, X xoay dọc, Z giữ nguyên)
-                Quaternion newRotation = Quaternion.Euler(currentXRotation, target.eulerAngles.y + rotY, 0f);
+                // Xoay X
+                target.RotateAround(modelCenter, target.transform.right, deltaX);
 
-                // Cập nhật rotation + giữ đúng vị trí xoay quanh modelCenter
-                Vector3 offset = target.position - modelCenter;
-                offset = newRotation * Quaternion.Inverse(target.rotation) * offset;
+                float threshold = 80f;
 
-                target.rotation = newRotation;
-                target.position = modelCenter + offset;
+                // Xoay Z
+                if (Mathf.Abs(currentXRotation) >= threshold)
+                {
+                    target.RotateAround(modelCenter, initialTwistAxis, rotZ);
+                }
+                // else
+                // {
+                //     target.RotateAround(modelCenter, target.transform.forward, rotZ);
+                // }
 
+                // Cập nhật lại vị trí center chính xác
+                UpdateModelCenterAccurate();
+
+                // Tính hiệu Y bị lệch
+                float deltaY = modelCenter.y - originalY;
+
+                // Dịch toàn bộ target để bù lại
+                target.transform.position -= new Vector3(0, deltaY, 0);
+
+                // Cập nhật lại modelCenter sau khi dịch
                 UpdateModelCenterAccurate();
 
                 lastTouchPos = touch.position;

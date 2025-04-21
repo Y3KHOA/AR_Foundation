@@ -278,33 +278,13 @@ public class CheckpointManager : MonoBehaviour
             allDistances.Add(distances);
         }
 
-        string path = Path.Combine(Application.persistentDataPath, "Drawing_All_Test1.pdf");
+        string path = Path.Combine(Application.persistentDataPath, "PDF/Drawing_All_Test1.pdf");
 
 #if UNITY_ANDROID && !UNITY_EDITOR
             string directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 #endif
-        // #if UNITY_ANDROID && !UNITY_EDITOR
-        //     if (!permissionRequester.IsAllFilesAccessGranted())
-        //     {
-        //         Debug.LogWarning("chua co quyen All Files Access. dang yeu cau...");
-        //         permissionRequester.RequestAllFilesAccessWithPopup();
-        //         return;
-        //     }
-        // #endif
-
-        // #if UNITY_ANDROID && !UNITY_EDITOR
-        //     string folderPath = "/storage/emulated/0/XHeroScan"; // thư mục dễ tìm gần thư mục Download
-        // #else
-        //         string folderPath = Path.Combine(Application.persistentDataPath, "XHeroScan");
-        // #endif
-        //         string pdfFileName = "Drawing_All_Test1.pdf";
-        //         if (!Directory.Exists(folderPath))
-        //             Directory.CreateDirectory(folderPath);
-
-        // string path = Path.Combine(folderPath, pdfFileName);
-
         PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
 
         Debug.Log("PDF exported to: " + path);

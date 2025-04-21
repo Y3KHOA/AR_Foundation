@@ -4,14 +4,17 @@ using UnityEngine;
 
 public static class SaveLoadManager
 {
-    private static string savePath = Application.persistentDataPath + "/savedData.json";
+    private static string savePath = Path.Combine(Application.persistentDataPath, "Data/savedData.json");
 
     public static void Save()
     {
         List<List<Vector2>> points = DataTransfer.Instance.GetAllPoints();
         List<List<float>> heights = DataTransfer.Instance.GetAllHeights();
 
-        SaveData saveData = new SaveData();
+        SaveData saveData = new SaveData
+        {
+            timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+        };
 
         for (int i = 0; i < points.Count; i++)
         {
@@ -29,9 +32,15 @@ public static class SaveLoadManager
         }
 
         string json = JsonUtility.ToJson(saveData, true);
+
+        string directory = Path.GetDirectoryName(savePath);
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+
         File.WriteAllText(savePath, json);
         Debug.Log("[Save] Đã lưu dữ liệu vào: " + savePath);
     }
+
 
     public static void Load()
     {

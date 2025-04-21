@@ -5,6 +5,7 @@ using UnityEngine;
 [Serializable]
 public class SaveData
 {
+    public string timestamp;
     public List<SavedPath> paths = new List<SavedPath>();
 }
 
