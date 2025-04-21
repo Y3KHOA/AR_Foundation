@@ -13,6 +13,7 @@ public class ButtonManager : MonoBehaviour
 
     [Header("Buttons Child")]
     public Button btnEdit;
+    public Button btnSave;
 
     [Header("Panels")]
     public GameObject panelFloor;
@@ -53,6 +54,7 @@ public class ButtonManager : MonoBehaviour
         panel3D.SetActive(false);
         panelInfo.SetActive(false);
         btnEdit.gameObject.SetActive(true);
+        btnSave.gameObject.SetActive(false);
         Draw2D.gameObject.SetActive(true);
     }
     private void OnButton3D(GameObject selectedPanel)
@@ -62,6 +64,7 @@ public class ButtonManager : MonoBehaviour
         panel3D.SetActive(true);
         panelInfo.SetActive(false);
         btnEdit.gameObject.SetActive(false);
+        btnSave.gameObject.SetActive(false);
         Draw2D.gameObject.SetActive(false);
     }
     private void OnButtonInfo(GameObject selectedPanel)
@@ -71,6 +74,7 @@ public class ButtonManager : MonoBehaviour
         panel3D.SetActive(false);
         panelInfo.SetActive(true);
         btnEdit.gameObject.SetActive(false);
+        btnSave.gameObject.SetActive(true);
         Draw2D.gameObject.SetActive(false);
     }
 

@@ -1,57 +1,80 @@
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using iTextSharp.text;
-using iTextSharp.text.pdf;
+using UnityEngine.UI;
 
 public class PrintingManager : MonoBehaviour
 {
-    string path = null;
+    public Button btnExportPDF; // Nút xuất PDF
+    public CheckpointManager checkpointManager; // Quản lý các checkpoint
+    public GameObject SuccessPanel; // Panel thông báo xuất thành công
+    public GameObject ErrorPanel; // Panel thông báo lỗi xuất PDF
 
     void Start()
     {
-        // Ghi file vào thư mục Download/ARK (trên Android)
-#if UNITY_ANDROID && !UNITY_EDITOR
-        string folderPath = "/storage/emulated/0/Download/ARK";
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-        path = Path.Combine(folderPath, "Ticket.pdf");
-#else
-        // Với PC/Editor thì dùng đường dẫn tạm
-        path = Application.persistentDataPath + "/Ticket.pdf";
-#endif
-
-        Debug.Log("PDF sẽ được lưu tại: " + path);
+        btnExportPDF.onClick.AddListener(ExportAllDrawingsToPDF);
     }
 
-    public void GenerateFile()
+    public void ExportAllDrawingsToPDF()
     {
-        if (File.Exists(path))
-            File.Delete(path);
+        List<List<Vector2>> allPolygons = new List<List<Vector2>>();
+        List<List<float>> allDistances = new List<List<float>>();
 
-        using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write))
+        foreach (var checkpointLoop in checkpointManager.AllCheckpoints)
         {
-            var document = new Document(PageSize.A4, 10f, 10f, 10f, 0f);
-            var writer = PdfWriter.GetInstance(document, fileStream);
+            if (checkpointLoop == null || checkpointLoop.Count < 2)
+                continue;
 
-            document.Open();
-            document.NewPage();
+            List<Vector2> polygon = new List<Vector2>();
+            List<float> distances = new List<float>();
 
-            var baseFont = BaseFont.CreateFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-            Paragraph p = new Paragraph("Ticket Id : 12345");
-            p.Alignment = Element.ALIGN_CENTER;
-            document.Add(p);
+            for (int i = 0; i < checkpointLoop.Count; i++)
+            {
+                Vector3 pos = checkpointLoop[i].transform.position;
+                polygon.Add(new Vector2(pos.x, pos.z));
 
-            p = new Paragraph("Bet Number : 1     BetAmount : 100");
-            p.Alignment = Element.ALIGN_CENTER;
-            document.Add(p);
+                if (i > 0)
+                {
+                    Vector3 prev = checkpointLoop[i - 1].transform.position;
+                    distances.Add(Vector3.Distance(prev, pos));
+                }
+            }
 
-            document.Close();
-            writer.Close();
+            // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
+            if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
+            {
+                polygon.RemoveAt(polygon.Count - 1);
+
+                // Nếu distances dư 1 phần tử thì cũng cần xóa
+                if (distances.Count == polygon.Count + 1)
+                    distances.RemoveAt(distances.Count - 1);
+            }
+
+            allPolygons.Add(polygon);
+            allDistances.Add(distances);
         }
 
-        Debug.Log("PDF đã được tạo tại: " + path);
+        string path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_All_Test1.pdf");
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            string directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+#endif
+        try
+        {
+            PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+            Debug.Log("PDF exported to: " + path);
+
+            if (SuccessPanel != null)
+                SuccessPanel.SetActive(true);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Export PDF failed: " + ex.Message);
+
+            if (ErrorPanel != null)
+                ErrorPanel.SetActive(true);
+        }
     }
 }
