@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public static class SaveLoadManager
 {
-    private static string savePath = Path.Combine(Application.persistentDataPath, "Data/savedData.json");
+    // private static string savePath = Path.Combine(Application.persistentDataPath, "Data/savedData.json");
+    private static string savePath = Path.Combine("/storage/emulated/0/Download", "XHeroScan/Data/Drawing_All_Test1.json");
 
     public static void Save()
     {
@@ -69,6 +71,8 @@ public static class SaveLoadManager
 
         DataTransfer.Instance.SetAllPoints(loadedPoints);
         DataTransfer.Instance.SetAllHeights(loadedHeights);
-        Debug.Log("[Load] Đã load dữ liệu với " + loadedPoints.Count + " mạch.");
+        Debug.Log("[Load] with data " + loadedPoints.Count + " points.");
+
+        SceneManager.LoadScene("FlatExampleScene");
     }
 }

@@ -23,6 +23,8 @@ public class CheckpointManager : MonoBehaviour
     private bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa
     private GameObject previewCheckpoint = null;
 
+    public List<List<GameObject>> AllCheckpoints => allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+
     void Start()
     {
         LoadPointsFromDataTransfer();
@@ -239,54 +241,57 @@ public class CheckpointManager : MonoBehaviour
     }
 
 
-    public void ExportAllDrawingsToPDF()
-    {
-        List<List<Vector2>> allPolygons = new List<List<Vector2>>();
-        List<List<float>> allDistances = new List<List<float>>();
+    //     public void ExportAllDrawingsToPDF()
+    //     {
+    //         List<List<Vector2>> allPolygons = new List<List<Vector2>>();
+    //         List<List<float>> allDistances = new List<List<float>>();
 
-        foreach (var checkpointLoop in allCheckpoints)
-        {
-            if (checkpointLoop == null || checkpointLoop.Count < 2)
-                continue;
+    //         foreach (var checkpointLoop in allCheckpoints)
+    //         {
+    //             if (checkpointLoop == null || checkpointLoop.Count < 2)
+    //                 continue;
 
-            List<Vector2> polygon = new List<Vector2>();
-            List<float> distances = new List<float>();
+    //             List<Vector2> polygon = new List<Vector2>();
+    //             List<float> distances = new List<float>();
 
-            for (int i = 0; i < checkpointLoop.Count; i++)
-            {
-                Vector3 pos = checkpointLoop[i].transform.position;
-                polygon.Add(new Vector2(pos.x, pos.z));
+    //             for (int i = 0; i < checkpointLoop.Count; i++)
+    //             {
+    //                 Vector3 pos = checkpointLoop[i].transform.position;
+    //                 polygon.Add(new Vector2(pos.x, pos.z));
 
-                if (i > 0)
-                {
-                    Vector3 prev = checkpointLoop[i - 1].transform.position;
-                    distances.Add(Vector3.Distance(prev, pos));
-                }
-            }
+    //                 if (i > 0)
+    //                 {
+    //                     Vector3 prev = checkpointLoop[i - 1].transform.position;
+    //                     distances.Add(Vector3.Distance(prev, pos));
+    //                 }
+    //             }
 
-            // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
-            if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
-            {
-                polygon.RemoveAt(polygon.Count - 1);
+    //             // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
+    //             if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
+    //             {
+    //                 polygon.RemoveAt(polygon.Count - 1);
 
-                // Nếu distances dư 1 phần tử thì cũng cần xóa
-                if (distances.Count == polygon.Count + 1)
-                    distances.RemoveAt(distances.Count - 1);
-            }
+    //                 // Nếu distances dư 1 phần tử thì cũng cần xóa
+    //                 if (distances.Count == polygon.Count + 1)
+    //                     distances.RemoveAt(distances.Count - 1);
+    //             }
 
-            allPolygons.Add(polygon);
-            allDistances.Add(distances);
-        }
+    //             allPolygons.Add(polygon);
+    //             allDistances.Add(distances);
+    //         }
 
-        string path = Path.Combine(Application.persistentDataPath, "PDF/Drawing_All_Test1.pdf");
+    //         // string path = Path.Combine(Application.persistentDataPath, "Drawing_All_Test1.pdf");
+    //         string path = Path.Combine("/storage/emulated/0/Download", "PDF/Drawing_All_Test1.pdf");
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-            string directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-#endif
-        PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+    //         // string path = Path.Combine(Application.persistentDataPath, "PDF/Drawing_All_Test1.pdf");
 
-        Debug.Log("PDF exported to: " + path);
-    }
+    // #if UNITY_ANDROID && !UNITY_EDITOR
+    //             string directory = Path.GetDirectoryName(path);
+    //             if (!Directory.Exists(directory))
+    //                 Directory.CreateDirectory(directory);
+    // #endif
+    //         PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+
+    //         Debug.Log("PDF exported to: " + path);
+    //     }
 }

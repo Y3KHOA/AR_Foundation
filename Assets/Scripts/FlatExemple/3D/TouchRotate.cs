@@ -101,8 +101,8 @@ public class TouchRotate : MonoBehaviour
             else if (touch.phase == TouchPhase.Moved && isDragging)
             {
                 Vector2 delta = touch.position - lastTouchPos;
-                float rotY = delta.x * rotationSpeed;
-                float rotX = -delta.y * rotationSpeed;
+                float rotY = -rotationSpeed * delta.x;
+                float rotX = rotationSpeed * delta.y;
 
                 Debug.Log("target.rotation.x= " + target.rotation.x);
                 Debug.Log("target.rotation.y= " + target.rotation.y);

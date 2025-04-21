@@ -13,19 +13,13 @@ public class BtnChoose : MonoBehaviour
         // Gán sự kiện khi nhấn nút
         if (btnDraw != null)
             btnDraw.onClick.AddListener(OnDrawClicked);
-        else
-            Debug.LogError("btnDraw chưa được gán!");
 
         if (btnByCam != null)
             btnByCam.onClick.AddListener(OnByCamClicked);
-        else
-            Debug.LogError("btnByCam chưa được gán!");
 
         // Ẩn ObjectByCam lúc đầu
         if (ObjectByCam != null)
             ObjectByCam.SetActive(false);
-        else
-            Debug.LogError("ObjectByCam chưa được gán!");
     }
 
     void OnDrawClicked()
@@ -42,9 +36,13 @@ public class BtnChoose : MonoBehaviour
             ObjectByCam.SetActive(true); // Hiện ObjectByCam
 
         if (btnDraw != null)
+        {
             btnDraw.gameObject.SetActive(false); // Ẩn nút Draw
+        }
 
         if (btnByCam != null)
+        {
             btnByCam.gameObject.SetActive(false); // Ẩn nút ByCam
+        }
     }
 }

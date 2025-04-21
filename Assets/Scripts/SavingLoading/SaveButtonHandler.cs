@@ -2,16 +2,43 @@ using UnityEngine;
 
 public class SaveButtonHandler : MonoBehaviour
 {
-    public TransData transData;
+
+    public GameObject SuccessPanel; // Panel thông báo xuất thành công
+    public GameObject ErrorPanel; // Panel thông báo lỗi xuất PDF
 
     public void OnSaveButtonClicked()
     {
-        transData.TransferData(); // Lấy dữ liệu từ BtnController và lưu vào DataTransfer
-        SaveLoadManager.Save();   // Gọi Save để lưu ra file
+        // TransData.Instance.TransferData(); // Lấy dữ liệu từ DataTransfer và lưu vào Máy
+        try
+        {
+            SaveLoadManager.Save();   // Gọi Save để lưu ra file
+
+            if (SuccessPanel != null)
+                SuccessPanel.SetActive(true);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Export PDF failed: " + ex.Message);
+
+            if (ErrorPanel != null)
+                ErrorPanel.SetActive(true);
+        }
     }
 
     public void OnLoadButtonClicked()
     {
-        SaveLoadManager.Load(); // Gọi Load để lấy từ file và đổ ngược vào DataTransfer
+        try
+        {
+            SaveLoadManager.Load(); // Gọi Load để lấy từ file và đổ ngược vào DataTransfer
+            if (SuccessPanel != null)
+                SuccessPanel.SetActive(true);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Export PDF failed: " + ex.Message);
+
+            if (ErrorPanel != null)
+                ErrorPanel.SetActive(true);
+        }
     }
 }
