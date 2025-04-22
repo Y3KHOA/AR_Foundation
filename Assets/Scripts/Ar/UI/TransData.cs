@@ -13,6 +13,12 @@ public class TransData : MonoBehaviour
     public List<List<Vector2>> allPoints;
     public List<List<float>> allHeights;
 
+    public float Area;
+    public float Perimeter;
+    public float Ceiling;
+
+
+
     private bool isDataChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu
 
     void Awake()
@@ -74,6 +80,12 @@ public class TransData : MonoBehaviour
         List<List<GameObject>> allBasePoints = btnController.GetAllBasePoints();
         List<List<GameObject>> allHeightPoints = btnController.GetAllHeightPoints();
 
+        // Lấy diện tích, chu vi và diện tích mặt trần từ BtnController
+        Area = btnController.AreaValue;
+        Debug.Log("Dien tich transData: " + Area);
+        Perimeter = btnController.PerimeterValue;
+        Ceiling = btnController.CeilingValue;
+
         List<List<Vector2>> allProjectedPoints = new List<List<Vector2>>();
         List<List<float>> allHeightsList = new List<List<float>>();
 
@@ -92,12 +104,15 @@ public class TransData : MonoBehaviour
             }
 
             allProjectedPoints.Add(path2D);
-            allHeights.Add(heightList);
+            allHeightsList.Add(heightList);
         }
 
         // Lưu vào DataTransfer
         DataTransfer.Instance.SetAllPoints(allProjectedPoints);
         DataTransfer.Instance.SetAllHeights(allHeights);
+        DataTransfer.Instance.AreaValue = Area;
+        DataTransfer.Instance.PerimeterValue = Perimeter;
+        DataTransfer.Instance.CeilingValue = Ceiling;
 
         // Lưu vào TransData
         this.allPoints = allProjectedPoints;
@@ -118,6 +133,10 @@ public class TransData : MonoBehaviour
 
 public class DataTransfer
 {
+    public float AreaValue { get; set; }
+    public float PerimeterValue { get; set; }
+    public float CeilingValue { get; set; }
+
     private static DataTransfer instance;
     private List<List<Vector2>> allPoints;
     private List<List<float>> allHeights;

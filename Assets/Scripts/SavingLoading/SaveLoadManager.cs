@@ -13,9 +13,16 @@ public static class SaveLoadManager
         List<List<Vector2>> points = DataTransfer.Instance.GetAllPoints();
         List<List<float>> heights = DataTransfer.Instance.GetAllHeights();
 
+        float Area = DataTransfer.Instance.AreaValue;
+        float Perimeter = DataTransfer.Instance.PerimeterValue;
+        float Ceiling = DataTransfer.Instance.CeilingValue;
+
         SaveData saveData = new SaveData
         {
-            timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            area = Area,
+            perimeter = Perimeter,
+            ceiling = Ceiling
         };
 
         for (int i = 0; i < points.Count; i++)
@@ -54,6 +61,10 @@ public static class SaveLoadManager
 
         string json = File.ReadAllText(savePath);
         SaveData saveData = JsonUtility.FromJson<SaveData>(json);
+
+        DataTransfer.Instance.AreaValue = saveData.area;
+        DataTransfer.Instance.PerimeterValue = saveData.perimeter;
+        DataTransfer.Instance.CeilingValue = saveData.ceiling;
 
         List<List<Vector2>> loadedPoints = new List<List<Vector2>>();
         List<List<float>> loadedHeights = new List<List<float>>();

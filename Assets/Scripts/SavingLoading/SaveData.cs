@@ -6,6 +6,9 @@ using UnityEngine;
 public class SaveData
 {
     public string timestamp;
+    public float area;
+    public float perimeter;
+    public float ceiling;
     public List<SavedPath> paths = new List<SavedPath>();
 }
 
@@ -14,6 +17,10 @@ public class SavedPath
 {
     public List<Vector2Serializable> points;
     public List<float> heights;
+
+    public float area;       // diện tích mặt đáy
+    public float perimeter;  // chu vi (tổng chiều dài các cạnh)
+    public float ceiling;  // diện tích mặt trần
 }
 
 [Serializable]
