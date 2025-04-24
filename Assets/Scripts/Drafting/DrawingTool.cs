@@ -59,10 +59,17 @@ public class DrawingTool : MonoBehaviour
         // Hiển thị text giữa hai line phụ
         TextMeshPro textMesh = GetOrCreateText();
         textMesh.text = $"{distanceInCm:F1} cm";
-        textMesh.transform.position = (aux1End + aux2End) / 2 + Vector3.up * 0.05f; // Đặt text phía trên line chính
 
-        // Xoay text để luôn hướng camera
-        textMesh.transform.rotation = Quaternion.Euler(90, 0, 0);
+        // textMesh.transform.position = (aux1End + aux2End) / 2 + Vector3.up * 0.05f; // Đặt text phía trên line chính
+        // textMesh.transform.position = (aux1End + aux2End) / 2;
+        Vector3 textPosition = (aux1End + aux2End) / 2;
+        textMesh.transform.position = textPosition;
+
+        // Xoay text để luôn song song line
+        float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg; // Tính góc từ trục X
+
+        // Xoay text theo hướng line
+        textMesh.transform.rotation = Quaternion.Euler(90, 0, angle); 
     }
 
     public void UpdateLinesAndDistances(List<GameObject> checkpoints)

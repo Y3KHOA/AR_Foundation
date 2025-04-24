@@ -15,14 +15,13 @@ public class CheckpointManager : MonoBehaviour
 
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
-    private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển
+    private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển    
     private float closeThreshold = 0.5f; // Khoảng cách tối đa để chọn điểm
     private bool isDragging = false; // Kiểm tra xem có đang kéo điểm không
     private Vector3 previewPosition; // Vị trí preview
     private bool isPreviewing = false; // Trạng thái preview
     private bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa
     private GameObject previewCheckpoint = null;
-
     public List<List<GameObject>> AllCheckpoints => allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
 
     void Start()
@@ -90,9 +89,18 @@ public class CheckpointManager : MonoBehaviour
                 Destroy(previewCheckpoint);
             }
 
-            if (!isDragging) // Nếu không phải kéo điểm, đặt checkpoint mới
+            Vector3 clickPosition = GetWorldPositionFromScreen(Input.mousePosition);
+            // if (!isDragging) // Nếu không phải kéo điểm, đặt checkpoint mới
+            // {
+            //     HandleCheckpointPlacement(previewPosition);
+            // }
+            if (isClosedLoop)
             {
-                HandleCheckpointPlacement(previewPosition);
+                InsertCheckpointIntoExistingLoop(clickPosition);
+            }
+            else
+            {
+                HandleCheckpointPlacement(clickPosition); // Vẽ bình thường
             }
 
             DeselectCheckpoint();
@@ -238,5 +246,56 @@ public class CheckpointManager : MonoBehaviour
         foreach (var list in allCheckpoints)
             total += list.Count;
         return total;
+    }
+
+    public bool TryFindClosestSegment(Vector3 position, out int loopIndex, out int segmentIndex, float maxDistance = 0.1f)
+    {
+        loopIndex = -1;
+        segmentIndex = -1;
+        float closestDist = maxDistance;
+
+        for (int i = 0; i < allCheckpoints.Count; i++)
+        {
+            var loop = allCheckpoints[i];
+            for (int j = 0; j < loop.Count; j++)
+            {
+                int next = (j + 1) % loop.Count;
+                Vector3 a = loop[j].transform.position;
+                Vector3 b = loop[next].transform.position;
+
+                float dist = DistanceFromPointToSegment(position, a, b);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    loopIndex = i;
+                    segmentIndex = j;
+                }
+            }
+        }
+
+        return loopIndex != -1;
+    }
+    public float DistanceFromPointToSegment(Vector3 p, Vector3 a, Vector3 b)
+    {
+        Vector3 ap = p - a;
+        Vector3 ab = b - a;
+        float magnitudeAB = ab.sqrMagnitude;
+        float abDotAp = Vector3.Dot(ap, ab);
+        float t = Mathf.Clamp01(abDotAp / magnitudeAB);
+        Vector3 projection = a + ab * t;
+        return Vector3.Distance(p, projection);
+    }
+    private void InsertCheckpointIntoExistingLoop(Vector3 position)
+    {
+        if (TryFindClosestSegment(position, out int loopIndex, out int segmentIndex))
+        {
+            GameObject newCheckpoint = Instantiate(checkpointPrefab, position, Quaternion.identity);
+            var loop = allCheckpoints[loopIndex];
+
+            loop.Insert(segmentIndex + 1, newCheckpoint);// Chèn vào sau segmentIndex
+            DrawingTool.UpdateLinesAndDistances(loop); // Vẽ lại vòng đó
+
+            Debug.Log($"Chèn checkpoint vào vòng {loopIndex} sau đoạn {segmentIndex}");
+        }
     }
 }
