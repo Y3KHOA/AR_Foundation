@@ -9,16 +9,21 @@ public class PrintingManager : MonoBehaviour
     public CheckpointManager checkpointManager; // Quản lý các checkpoint
     public GameObject SuccessPanel; // Panel thông báo xuất thành công
     public GameObject ErrorPanel; // Panel thông báo lỗi xuất PDF
+    public string unit = "m";
 
     void Start()
     {
         btnExportPDF.onClick.AddListener(ExportAllDrawingsToPDF);
+        btnExportPDF.onClick.AddListener(ExportScene);
+        btnExportPDF.onClick.AddListener(ExPDFx);
+        btnExportPDF.onClick.AddListener(ExDxf);
     }
 
     public void ExportAllDrawingsToPDF()
     {
         List<List<Vector2>> allPolygons = new List<List<Vector2>>();
         List<List<float>> allDistances = new List<List<float>>();
+
 
         foreach (var checkpointLoop in checkpointManager.AllCheckpoints)
         {
@@ -64,6 +69,7 @@ public class PrintingManager : MonoBehaviour
         try
         {
             PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+
             Debug.Log("PDF exported to: " + path);
 
             if (SuccessPanel != null)
@@ -76,5 +82,18 @@ public class PrintingManager : MonoBehaviour
             if (ErrorPanel != null)
                 ErrorPanel.SetActive(true);
         }
+    }
+    void ExportScene()
+    {
+        string outputPath = "/storage/emulated/0/Download/XHeroScan/PDF/Drawing_All_Test2.pdf";
+        ImageExporter.CaptureAndExport(Camera.main, 1024, 768, "scene.png", outputPath, true);
+    }
+    void ExPDFx()
+    {
+        PdfHouseExporter.ExportHousePDF();
+    }
+    void ExDxf()
+    {
+        HouseDXFExporter.ExportHouse();
     }
 }
