@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class PdfExporter
 {
-    public static void ExportMultiplePolygonsToPDF(List<List<Vector2>> allPolygons, List<List<float>> allDistances, string path, string unit, float wallThickness = 10f)
+    public static void ExportMultiplePolygonsToPDF(List<List<Vector2>> allPolygons, List<List<float>> allDistances, string path, string unit)
     {
         if (allPolygons == null || allPolygons.Count == 0) return;
 
@@ -17,7 +17,8 @@ public class PdfExporter
         PdfContentByte cb = writer.DirectContent;
         BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
         cb.SetFontAndSize(baseFont, 10);
-        cb.SetLineWidth(0.5f);
+        // cb.SetLineWidth(0.5f);
+        cb.SetLineWidth(2f);
         cb.SetRGBColorStroke(0, 0, 0);
 
         // === Tính bounding box toàn bộ ===
@@ -53,26 +54,19 @@ public class PdfExporter
                 polygon.RemoveAt(polygon.Count - 1);
             }
 
-            // === Vẽ đường chính và đường phụ ===
             for (int i = 0; i < polygon.Count - 1; i++)
             {
                 Vector2 p1 = polygon[i];
                 Vector2 p2 = polygon[i + 1];
 
-                // Tính toán tọa độ trên PDF
                 float x1 = (p1.x + shift.x) * scale + offsetX;
                 float y1 = (p1.y + shift.y) * scale + offsetY;
                 float x2 = (p2.x + shift.x) * scale + offsetX;
                 float y2 = (p2.y + shift.y) * scale + offsetY;
 
-                // Vẽ đường chính
                 cb.MoveTo(x1, y1);
                 cb.LineTo(x2, y2);
                 cb.Stroke();
-
-                // Vẽ đường phụ (bao quanh đường chính)
-                // DrawParallelWalls(cb, p1, p2, shift, scale, offsetX, offsetY, wallThickness);
-                DrawHatchingLines(cb, p1, p2, shift, scale, offsetX, offsetY, 5f);
 
                 // Label chiều dài cạnh
                 if (allDistances != null && polygonIndex < allDistances.Count && i < allDistances[polygonIndex].Count)
@@ -111,29 +105,4 @@ public class PdfExporter
 
         document.Close();
     }
-
-    // Giả sử bạn muốn tạo các line song song
-    static void DrawHatchingLines(PdfContentByte cb, Vector2 p1, Vector2 p2, Vector2 shift, float scale, float offsetX, float offsetY, float distance = 5f)
-    {
-        // Dịch chuyển giữa các line theo khoảng cách distance
-        Vector2 dir = (p2 - p1).normalized;
-        Vector2 perp = new Vector2(-dir.y, dir.x); // Vector vuông góc với đường chính
-
-        for (float d = 0f; d < (p2 - p1).magnitude; d += distance)
-        {
-            Vector2 start = p1 + dir * d;
-            Vector2 end = p2 + dir * d;
-
-            // Vẽ các line song song
-            float x1 = (start.x + shift.x) * scale + offsetX;
-            float y1 = (start.y + shift.y) * scale + offsetY;
-            float x2 = (end.x + shift.x) * scale + offsetX;
-            float y2 = (end.y + shift.y) * scale + offsetY;
-
-            cb.MoveTo(x1, y1);
-            cb.LineTo(x2, y2);
-            cb.Stroke();
-        }
-    }
-
 }

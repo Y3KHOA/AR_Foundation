@@ -90,18 +90,19 @@ public class CheckpointManager : MonoBehaviour
             }
 
             Vector3 clickPosition = GetWorldPositionFromScreen(Input.mousePosition);
-            // if (!isDragging) // Nếu không phải kéo điểm, đặt checkpoint mới
+            if (!isDragging) // Nếu không phải kéo điểm, đặt checkpoint mới
+            {
+                HandleCheckpointPlacement(previewPosition);
+            }
+            //tìm line để thêm checkpoint vào line đã có 
+            // if (isClosedLoop)
             // {
-            //     HandleCheckpointPlacement(previewPosition);
+            //     InsertCheckpointIntoExistingLoop(clickPosition);
             // }
-            if (isClosedLoop)
-            {
-                InsertCheckpointIntoExistingLoop(clickPosition);
-            }
-            else
-            {
-                HandleCheckpointPlacement(clickPosition); // Vẽ bình thường
-            }
+            // else
+            // {
+            //     HandleCheckpointPlacement(clickPosition); // Vẽ bình thường
+            // }
 
             DeselectCheckpoint();
             isDragging = false;

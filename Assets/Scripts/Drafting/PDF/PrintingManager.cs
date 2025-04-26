@@ -94,6 +94,6 @@ public class PrintingManager : MonoBehaviour
     }
     void ExDxf()
     {
-        HouseDXFExporter.ExportHouse();
+        // HouseDXFExporter.ExportHouse();
     }
 }
