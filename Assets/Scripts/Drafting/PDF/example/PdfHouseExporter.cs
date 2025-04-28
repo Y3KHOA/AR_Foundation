@@ -24,7 +24,15 @@ public class PdfHouseExporter : MonoBehaviour
             new Vector2(0, 0)
         };
         
-        string path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_Tester_House.pdf");
+        string path;
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        // Trên PC
+        string downloadsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile) + "/Downloads";
+        path = Path.Combine(downloadsPath, "XHeroScan/PDF/Example_House.pdf");
+#else
+    // Trên Android
+    path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Example_House.pdf");
+#endif
         ExportPDF(outer, path, wallThickness);
         Debug.Log($"PDF exported to: {path}");
     }

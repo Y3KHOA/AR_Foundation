@@ -10,6 +10,7 @@ public class PrintingManager : MonoBehaviour
     public GameObject SuccessPanel; // Panel thông báo xuất thành công
     public GameObject ErrorPanel; // Panel thông báo lỗi xuất PDF
     public string unit = "m";
+    string path;
 
     void Start()
     {
@@ -59,7 +60,15 @@ public class PrintingManager : MonoBehaviour
             allDistances.Add(distances);
         }
 
-        string path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_All_Test1.pdf");
+        // string path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_All_Test1.pdf");
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        // Trên PC
+        string downloadsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile) + "/Downloads";
+        path = Path.Combine(downloadsPath, "XHeroScan/PDF/Drawing_Tester_House.pdf");
+#else
+    // Trên Android
+    path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_Tester_House.pdf");
+#endif
 
 #if UNITY_ANDROID && !UNITY_EDITOR
             string directory = Path.GetDirectoryName(path);
@@ -68,7 +77,7 @@ public class PrintingManager : MonoBehaviour
 #endif
         try
         {
-            PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
+            PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, path, 0.1f);
 
             Debug.Log("PDF exported to: " + path);
 
