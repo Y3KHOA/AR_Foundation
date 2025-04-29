@@ -59,9 +59,7 @@ public class DrawingTool : MonoBehaviour
         // Hiển thị text giữa hai line phụ
         TextMeshPro textMesh = GetOrCreateText();
         textMesh.text = $"{distanceInCm:F1} cm";
-
-        // textMesh.transform.position = (aux1End + aux2End) / 2 + Vector3.up * 0.05f; // Đặt text phía trên line chính
-        // textMesh.transform.position = (aux1End + aux2End) / 2;
+        
         Vector3 textPosition = (aux1End + aux2End) / 2;
         textMesh.transform.position = textPosition;
 
@@ -172,16 +170,17 @@ public class DrawingTool : MonoBehaviour
         // Hiển thị text
         previewText.gameObject.SetActive(true);
         previewText.text = $"{distanceInCm:F1} cm";
-
-        // Đặt text lên trên điểm preview (end)
-        // previewText.transform.position = end + new Vector3(0, 0.1f, 0);
+        
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
         previewText.transform.position = textPos;
 
         // Xoay text luôn hướng về camera
         if (Camera.main != null)
         {
-            previewText.transform.rotation = Quaternion.LookRotation(previewText.transform.position - Camera.main.transform.position);
+            Vector3 dir = (end - start).normalized;
+            // Xoay text để luôn song song line
+            float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg; // Tính góc từ trục X
+            previewText.transform.rotation = Quaternion.Euler(90, 0, angle);
         }
     }
 

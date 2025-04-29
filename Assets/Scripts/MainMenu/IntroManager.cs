@@ -19,34 +19,23 @@ public class IntroManager : MonoBehaviour
             if (videoPlayer != null)
             {
                 string videoPath = System.IO.Path.Combine(Application.streamingAssetsPath, "myintro.mp4");
+                string videoUrl = "file://" + videoPath;
 
-                // Kiểm tra và chỉnh sửa đường dẫn cho Android
-                string videoUrl = "file://" + videoPath; // Dùng file:// để Android có thể truy cập
+                Debug.Log("videoUrl: " + videoUrl);
 
-                Debug.Log("videoUrl mobile: " + videoUrl);
-
-                // Kiểm tra môi trường, nếu trên Android thì sử dụng UnityWebRequest
-                if (Application.platform == RuntimePlatform.Android)
+                if (System.IO.File.Exists(videoPath) || Application.platform == RuntimePlatform.Android)
                 {
-                    StartCoroutine(PlayVideoFromStreamingAssets(videoUrl)); // Chạy Coroutine ngoài try-catch
+                    videoPlayer.url = videoUrl;
+                    videoPlayer.loopPointReached += OnVideoEnd;
+                    videoPlayer.Play();
+                    videoStarted = true;
                 }
                 else
                 {
-                    if (System.IO.File.Exists(videoPath))
-                    {
-                        videoPlayer.url = videoUrl;
-                        videoPlayer.loopPointReached += OnVideoEnd;
-                        videoPlayer.Play();
-                        videoStarted = true; // Đánh dấu video đã bắt đầu
-                    }
-                    else
-                    {
-                        Debug.LogError("Video file not found at path: " + videoPath);
-                        SceneManager.LoadScene(nextSceneName);
-                    }
+                    Debug.LogError("Video file not found at path: " + videoPath);
+                    SceneManager.LoadScene(nextSceneName);
                 }
 
-                // Bắt đầu đếm thời gian chờ
                 StartCoroutine(VideoStartTimeout());
             }
             else
@@ -57,29 +46,7 @@ public class IntroManager : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-            // Catch any exceptions that occur inside the try block
             Debug.LogError("Exception caught: " + ex.Message);
-            SceneManager.LoadScene(nextSceneName); // Nếu có lỗi, chuyển sang scene tiếp theo
-        }
-    }
-
-    // Tải video từ StreamingAssets trên Android
-    IEnumerator PlayVideoFromStreamingAssets(string videoUrl)
-    {
-        UnityWebRequest www = UnityWebRequest.Get(videoUrl); // Sử dụng videoUrl với file://
-        yield return www.SendWebRequest();  // Đây là lệnh không đồng bộ, không thể trong try-catch
-
-        if (www.result == UnityWebRequest.Result.Success)
-        {
-            Debug.Log("Video loaded successfully from: " + videoUrl);
-            videoPlayer.url = videoUrl;
-            videoPlayer.loopPointReached += OnVideoEnd;
-            videoPlayer.Play();
-            videoStarted = true; // Đánh dấu video đã bắt đầu
-        }
-        else
-        {
-            Debug.LogError("Failed to load video: " + www.error);
             SceneManager.LoadScene(nextSceneName);
         }
     }
