@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6265402098593112084}
   - component: {fileID: 2537071323837183285}
+  - component: {fileID: 7310656507114081387}
   m_Layer: 0
   m_Name: door
   m_TagString: Untagged
@@ -139,3 +140,20 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &7310656507114081387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6270486157550466451}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c44a5182bb887924b8bad200541a6716, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  start: {x: 0, y: 0, z: 0}
+  end: {x: 5, y: 0, z: 0}
+  dashedMaterial: {fileID: 2100000, guid: cebd1b21c0dd0a84bb3ee2d024a16c55, type: 2}
+  lineWidth: 0.05
+  dashRepeat: 1

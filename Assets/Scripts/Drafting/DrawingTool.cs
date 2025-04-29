@@ -7,11 +7,16 @@ public class DrawingTool : MonoBehaviour
     [Header("Prefabs")]
     public GameObject linePrefab;
     public GameObject distanceTextPrefab;
-    public GameObject auxiliaryLinePrefab; // Line phụ
+
+    [Header("Materials")]
+    public Material dashedMaterial;
+    public Material solidMaterial;
+
 
     private List<LineRenderer> linePool = new List<LineRenderer>(); // Object Pooling
     private List<TextMeshPro> textPool = new List<TextMeshPro>();
-    private List<LineRenderer> auxiliaryLinesPool = new List<LineRenderer>(); // Pool line phụ
+
+    public List<WallLine> wallLines = new List<WallLine>();
 
     public List<LineRenderer> lines = new List<LineRenderer>(); // Thêm danh sách này
     public List<TextMeshPro> distanceTexts = new List<TextMeshPro>(); // Thêm danh sách này
@@ -21,13 +26,30 @@ public class DrawingTool : MonoBehaviour
 
     private float auxiliaryLineLength = 0.1f; // Độ dài line phụ (10cm)
 
-    public void DrawLineAndDistance(Vector3 start, Vector3 end)
+    public void DrawLineAndDistance(Vector3 start, Vector3 end, LineType type)
     {
-        if (linePrefab == null || distanceTextPrefab == null || auxiliaryLinePrefab == null)
+        bool isDashed = type == LineType.Door || type == LineType.Window;
+
+        GameObject go = Instantiate(linePrefab);
+        LineRenderer lr = go.GetComponent<LineRenderer>();
+
+        lr.material = isDashed ? dashedMaterial : solidMaterial;
+        lr.textureMode = LineTextureMode.Tile;
+        lr.widthMultiplier = 0.05f;
+
+        // Ghi đè vật liệu nếu cần nét đứt
+        if (isDashed && dashedMaterial != null)
         {
-            Debug.LogError("Thiếu prefab line, text hoặc line phụ!");
-            return;
+            lr.material = dashedMaterial;
+            lr.textureMode = LineTextureMode.Tile;
+
+            float len = Vector3.Distance(start, end);
+            lr.material.mainTextureScale = new Vector2(len * 2f, 1f);
         }
+
+        lr.positionCount = 2;
+        lr.SetPosition(0, start);
+        lr.SetPosition(1, end);
 
         // Vẽ line chính
         LineRenderer line = GetOrCreateLine();
@@ -41,25 +63,12 @@ public class DrawingTool : MonoBehaviour
         Vector3 dir = (end - start).normalized;
         Vector3 perpendicular = Vector3.Cross(dir, Vector3.up).normalized; // Vuông góc với line chính
 
-        Vector3 aux1Start = start - perpendicular * auxiliaryLineLength / 2;
         Vector3 aux1End = start + perpendicular * auxiliaryLineLength / 2;
-        Vector3 aux2Start = end - perpendicular * auxiliaryLineLength / 2;
         Vector3 aux2End = end + perpendicular * auxiliaryLineLength / 2;
 
-        LineRenderer auxLine1 = GetOrCreateAuxiliaryLine();
-        auxLine1.gameObject.SetActive(true); // Bật lên
-        auxLine1.SetPosition(0, aux1Start);
-        auxLine1.SetPosition(1, aux1End);
-
-        LineRenderer auxLine2 = GetOrCreateAuxiliaryLine();
-        auxLine2.gameObject.SetActive(true); // Bật lên
-        auxLine2.SetPosition(0, aux2Start);
-        auxLine2.SetPosition(1, aux2End);
-
-        // Hiển thị text giữa hai line phụ
         TextMeshPro textMesh = GetOrCreateText();
         textMesh.text = $"{distanceInCm:F1} cm";
-        
+
         Vector3 textPosition = (aux1End + aux2End) / 2;
         textMesh.transform.position = textPosition;
 
@@ -67,7 +76,9 @@ public class DrawingTool : MonoBehaviour
         float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg; // Tính góc từ trục X
 
         // Xoay text theo hướng line
-        textMesh.transform.rotation = Quaternion.Euler(90, 0, angle); 
+        textMesh.transform.rotation = Quaternion.Euler(90, 0, angle);
+
+        wallLines.Add(new WallLine(start, end, type));  
     }
 
     public void UpdateLinesAndDistances(List<GameObject> checkpoints)
@@ -209,24 +220,6 @@ public class DrawingTool : MonoBehaviour
         LineRenderer newLine = lineObj.GetComponent<LineRenderer>();
         linePool.Add(newLine);
         return newLine;
-    }
-    private LineRenderer GetOrCreateAuxiliaryLine()
-    {
-        foreach (var auxLine in auxiliaryLinesPool)
-        {
-            if (!auxLine.gameObject.activeSelf)
-            {
-                auxLine.gameObject.SetActive(true);
-                return auxLine;
-            }
-        }
-        GameObject auxObj = Instantiate(auxiliaryLinePrefab);
-        LineRenderer newAuxLine = auxObj.GetComponent<LineRenderer>();
-
-        newAuxLine.gameObject.SetActive(true); // Đảm bảo nó được hiển thị
-        auxiliaryLinesPool.Add(newAuxLine);
-
-        return newAuxLine;
     }
     private TextMeshPro GetOrCreateText()
     {

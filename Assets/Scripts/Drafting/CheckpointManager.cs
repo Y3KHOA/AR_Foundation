@@ -13,6 +13,8 @@ public class CheckpointManager : MonoBehaviour
     public UndoRedoManager undoRedoManager;
     public StoragePermissionRequester permissionRequester;
 
+    public LineType currentLineType = LineType.Door;
+
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
     private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển    
@@ -23,6 +25,7 @@ public class CheckpointManager : MonoBehaviour
     private bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa
     private GameObject previewCheckpoint = null;
     public List<List<GameObject>> AllCheckpoints => allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+    public bool flagDoor = false; // Bật để vẽ nét đứt (dành cho cửa)
 
     void Start()
     {
@@ -122,7 +125,7 @@ public class CheckpointManager : MonoBehaviour
         // Kiểm tra nếu điểm mới gần p1, chỉ nối lại các điểm
         if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, position) < closeThreshold)
         {
-            DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
+            DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position, currentLineType);
             isClosedLoop = true;
 
             allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
@@ -139,7 +142,7 @@ public class CheckpointManager : MonoBehaviour
         {
             Vector3 start = currentCheckpoints[^2].transform.position;
             Vector3 end = checkpoint.transform.position;
-            DrawingTool.DrawLineAndDistance(start, end);
+            DrawingTool.DrawLineAndDistance(start, end, currentLineType);
         }
     }
 
@@ -223,14 +226,14 @@ public class CheckpointManager : MonoBehaviour
                 // Nếu có ít nhất 2 điểm, vẽ line giữa các điểm
                 if (i > 0)
                 {
-                    DrawingTool.DrawLineAndDistance(checkpointsForPath[i - 1].transform.position, worldPos);
+                    DrawingTool.DrawLineAndDistance(checkpointsForPath[i - 1].transform.position, worldPos, currentLineType);
                 }
             }
 
             // Tự động nối kín nếu đủ điểm và 2 đầu gần nhau
             if (checkpointsForPath.Count > 2 && Vector3.Distance(checkpointsForPath[0].transform.position, checkpointsForPath[^1].transform.position) < closeThreshold)
             {
-                DrawingTool.DrawLineAndDistance(checkpointsForPath[^1].transform.position, checkpointsForPath[0].transform.position);
+                DrawingTool.DrawLineAndDistance(checkpointsForPath[^1].transform.position, checkpointsForPath[0].transform.position, currentLineType);
                 isClosedLoop = true;
             }
 
