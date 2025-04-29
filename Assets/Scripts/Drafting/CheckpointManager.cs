@@ -15,14 +15,13 @@ public class CheckpointManager : MonoBehaviour
 
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
-    private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển
+    private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển    
     private float closeThreshold = 0.5f; // Khoảng cách tối đa để chọn điểm
     private bool isDragging = false; // Kiểm tra xem có đang kéo điểm không
     private Vector3 previewPosition; // Vị trí preview
     private bool isPreviewing = false; // Trạng thái preview
     private bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa
     private GameObject previewCheckpoint = null;
-
     public List<List<GameObject>> AllCheckpoints => allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
 
     void Start()
@@ -90,10 +89,20 @@ public class CheckpointManager : MonoBehaviour
                 Destroy(previewCheckpoint);
             }
 
+            Vector3 clickPosition = GetWorldPositionFromScreen(Input.mousePosition);
             if (!isDragging) // Nếu không phải kéo điểm, đặt checkpoint mới
             {
                 HandleCheckpointPlacement(previewPosition);
             }
+            //tìm line để thêm checkpoint vào line đã có 
+            // if (isClosedLoop)
+            // {
+            //     InsertCheckpointIntoExistingLoop(clickPosition);
+            // }
+            // else
+            // {
+            //     HandleCheckpointPlacement(clickPosition); // Vẽ bình thường
+            // }
 
             DeselectCheckpoint();
             isDragging = false;
@@ -240,58 +249,54 @@ public class CheckpointManager : MonoBehaviour
         return total;
     }
 
+    public bool TryFindClosestSegment(Vector3 position, out int loopIndex, out int segmentIndex, float maxDistance = 0.1f)
+    {
+        loopIndex = -1;
+        segmentIndex = -1;
+        float closestDist = maxDistance;
 
-    //     public void ExportAllDrawingsToPDF()
-    //     {
-    //         List<List<Vector2>> allPolygons = new List<List<Vector2>>();
-    //         List<List<float>> allDistances = new List<List<float>>();
+        for (int i = 0; i < allCheckpoints.Count; i++)
+        {
+            var loop = allCheckpoints[i];
+            for (int j = 0; j < loop.Count; j++)
+            {
+                int next = (j + 1) % loop.Count;
+                Vector3 a = loop[j].transform.position;
+                Vector3 b = loop[next].transform.position;
 
-    //         foreach (var checkpointLoop in allCheckpoints)
-    //         {
-    //             if (checkpointLoop == null || checkpointLoop.Count < 2)
-    //                 continue;
+                float dist = DistanceFromPointToSegment(position, a, b);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    loopIndex = i;
+                    segmentIndex = j;
+                }
+            }
+        }
 
-    //             List<Vector2> polygon = new List<Vector2>();
-    //             List<float> distances = new List<float>();
+        return loopIndex != -1;
+    }
+    public float DistanceFromPointToSegment(Vector3 p, Vector3 a, Vector3 b)
+    {
+        Vector3 ap = p - a;
+        Vector3 ab = b - a;
+        float magnitudeAB = ab.sqrMagnitude;
+        float abDotAp = Vector3.Dot(ap, ab);
+        float t = Mathf.Clamp01(abDotAp / magnitudeAB);
+        Vector3 projection = a + ab * t;
+        return Vector3.Distance(p, projection);
+    }
+    private void InsertCheckpointIntoExistingLoop(Vector3 position)
+    {
+        if (TryFindClosestSegment(position, out int loopIndex, out int segmentIndex))
+        {
+            GameObject newCheckpoint = Instantiate(checkpointPrefab, position, Quaternion.identity);
+            var loop = allCheckpoints[loopIndex];
 
-    //             for (int i = 0; i < checkpointLoop.Count; i++)
-    //             {
-    //                 Vector3 pos = checkpointLoop[i].transform.position;
-    //                 polygon.Add(new Vector2(pos.x, pos.z));
+            loop.Insert(segmentIndex + 1, newCheckpoint);// Chèn vào sau segmentIndex
+            DrawingTool.UpdateLinesAndDistances(loop); // Vẽ lại vòng đó
 
-    //                 if (i > 0)
-    //                 {
-    //                     Vector3 prev = checkpointLoop[i - 1].transform.position;
-    //                     distances.Add(Vector3.Distance(prev, pos));
-    //                 }
-    //             }
-
-    //             // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
-    //             if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
-    //             {
-    //                 polygon.RemoveAt(polygon.Count - 1);
-
-    //                 // Nếu distances dư 1 phần tử thì cũng cần xóa
-    //                 if (distances.Count == polygon.Count + 1)
-    //                     distances.RemoveAt(distances.Count - 1);
-    //             }
-
-    //             allPolygons.Add(polygon);
-    //             allDistances.Add(distances);
-    //         }
-
-    //         // string path = Path.Combine(Application.persistentDataPath, "Drawing_All_Test1.pdf");
-    //         string path = Path.Combine("/storage/emulated/0/Download", "PDF/Drawing_All_Test1.pdf");
-
-    //         // string path = Path.Combine(Application.persistentDataPath, "PDF/Drawing_All_Test1.pdf");
-
-    // #if UNITY_ANDROID && !UNITY_EDITOR
-    //             string directory = Path.GetDirectoryName(path);
-    //             if (!Directory.Exists(directory))
-    //                 Directory.CreateDirectory(directory);
-    // #endif
-    //         PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allDistances, path, "m");
-
-    //         Debug.Log("PDF exported to: " + path);
-    //     }
+            Debug.Log($"Chèn checkpoint vào vòng {loopIndex} sau đoạn {segmentIndex}");
+        }
+    }
 }

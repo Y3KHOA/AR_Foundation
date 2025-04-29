@@ -1,77 +1,13 @@
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using UnityEngine;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 
 public class PdfExporter
 {
-    public static void ExportPolygonToPDF(List<Vector2> points2D, List<float> distances, string filePath, string unit = "m")
-    {
-        float minX = float.MaxValue, minY = float.MaxValue;
-        float maxX = float.MinValue, maxY = float.MinValue;
-
-        foreach (var pt in points2D)
-        {
-            if (pt.x < minX) minX = pt.x;
-            if (pt.y < minY) minY = pt.y;
-            if (pt.x > maxX) maxX = pt.x;
-            if (pt.y > maxY) maxY = pt.y;
-        }
-
-        float drawingWidth = maxX - minX;
-        float drawingHeight = maxY - minY;
-
-        float pageWidth = 595f;
-        float pageHeight = 842f;
-        float scale = Mathf.Min((pageWidth - 100) / drawingWidth, (pageHeight - 100) / drawingHeight);
-        float offsetX = (pageWidth - drawingWidth * scale) / 2f;
-        float offsetY = (pageHeight - drawingHeight * scale) / 2f;
-
-        using (FileStream stream = new FileStream(filePath, FileMode.Create))
-        {
-            Document doc = new Document(new Rectangle(pageWidth, pageHeight));
-            PdfWriter writer = PdfWriter.GetInstance(doc, stream);
-            doc.Open();
-
-            PdfContentByte cb = writer.DirectContent;
-            cb.SetLineWidth(1f);
-            BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
-            cb.SetFontAndSize(bf, 10);
-
-            for (int i = 0; i < points2D.Count; i++)
-            {
-                Vector2 p1 = points2D[i];
-                Vector2 p2 = points2D[(i + 1) % points2D.Count];
-
-                float x1 = offsetX + (p1.x - minX) * scale;
-                float y1 = offsetY + (p1.y - minY) * scale;
-                float x2 = offsetX + (p2.x - minX) * scale;
-                float y2 = offsetY + (p2.y - minY) * scale;
-
-                cb.SetRGBColorFill(200, 200, 255); // Nhạt xanh
-                cb.MoveTo(x1, y1);
-                cb.LineTo(x2, y2);
-
-                if (i < distances.Count)
-                {
-                    string distanceText = $"{distances[i]:F2} {unit}";
-                    float midX = (x1 + x2) / 2f;
-                    float midY = (y1 + y2) / 2f;
-                    cb.BeginText();
-                    cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, distanceText, midX, midY + 5f, 0);
-                    cb.EndText();
-                }
-            }
-
-            cb.Stroke();
-            doc.Close();
-        }
-
-        Debug.Log("PDF bản vẽ đã được tạo tại: " + filePath);
-    }
-
-    public static void ExportMultiplePolygonsToPDF(List<List<Vector2>> allPolygons, List<List<float>> allDistances, string path, string unit)
+    
+    public static void ExportMultiplePolygonsToPDF(List<List<Vector2>> allPolygons, string path, float wallThickness)
     {
         if (allPolygons == null || allPolygons.Count == 0) return;
 
@@ -82,7 +18,7 @@ public class PdfExporter
         PdfContentByte cb = writer.DirectContent;
         BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
         cb.SetFontAndSize(baseFont, 10);
-        cb.SetLineWidth(0.5f);
+        cb.SetLineWidth(2f);
         cb.SetRGBColorStroke(0, 0, 0);
 
         // === Tính bounding box toàn bộ ===
@@ -118,55 +54,105 @@ public class PdfExporter
                 polygon.RemoveAt(polygon.Count - 1);
             }
 
-            for (int i = 0; i < polygon.Count - 1; i++)
+            for (int i = 0; i < polygon.Count; i++)
             {
                 Vector2 p1 = polygon[i];
-                Vector2 p2 = polygon[i + 1];
+                Vector2 p2 = polygon[(i + 1) % polygon.Count];
 
-                float x1 = (p1.x + shift.x) * scale + offsetX;
-                float y1 = (p1.y + shift.y) * scale + offsetY;
-                float x2 = (p2.x + shift.x) * scale + offsetX;
-                float y2 = (p2.y + shift.y) * scale + offsetY;
+                // Tính vector unit hướng p1 -> p2
+                Vector2 d = (p2 - p1).normalized;
 
-                cb.MoveTo(x1, y1);
-                cb.LineTo(x2, y2);
+                // Vector vuông góc với đường thẳng (trái tay)
+                Vector2 perp = new Vector2(-d.y, d.x);
+
+                // 2 vector offset sang trái/phải
+                Vector2 offset = perp * wallThickness * 0.5f;
+
+                Vector2 a = p1 + offset;
+                Vector2 b = p2 + offset;
+                Vector2 c = p2 - offset;
+                Vector2 d2 = p1 - offset;
+
+                Vector2 Convert(Vector2 pt) => new Vector2((pt.x + shift.x) * scale + offsetX, (pt.y + shift.y) * scale + offsetY);
+
+                Vector2 pa = Convert(a);
+                Vector2 pb = Convert(b);
+                Vector2 pc = Convert(c);
+                Vector2 pd = Convert(d2);
+
+                cb.MoveTo(pa.x, pa.y);
+                cb.LineTo(pb.x, pb.y);
+                cb.LineTo(pc.x, pc.y);
+                cb.LineTo(pd.x, pd.y);
+                cb.ClosePath(); // tự động nối kín 4 đỉnh
                 cb.Stroke();
 
-                // Label chiều dài cạnh
-                if (allDistances != null && polygonIndex < allDistances.Count && i < allDistances[polygonIndex].Count)
-                {
-                    float midX = (x1 + x2) / 2;
-                    float midY = (y1 + y2) / 2;
-                    string label = $"{allDistances[polygonIndex][i]:0.00} {unit}";
-                    cb.BeginText();
-                    cb.ShowTextAligned(Element.ALIGN_CENTER, label, midX, midY + 5f, 0);
-                    cb.EndText();
-                }
-            }
+                Vector2 p1Converted = Convert(p1);
+                Vector2 p2Converted = Convert(p2);
+                DrawDimensionLine(cb, p1Converted, p2Converted, -30f, $"{Vector2.Distance(p1, p2):0.00} m");
 
-            // Đóng đoạn cuối (khép kín)
-            Vector2 last = polygon[^1];
-            Vector2 first = polygon[0];
-            float x11 = (last.x + shift.x) * scale + offsetX;
-            float y11 = (last.y + shift.y) * scale + offsetY;
-            float x22 = (first.x + shift.x) * scale + offsetX;
-            float y22 = (first.y + shift.y) * scale + offsetY;
-
-            cb.MoveTo(x11, y11);
-            cb.LineTo(x22, y22);
-            cb.Stroke();
-            // Hiển thị label chiều dài cạnh cuối
-            if (allDistances != null && polygonIndex < allDistances.Count && allDistances[polygonIndex].Count > 0)
-            {
-                float midX = (x11 + x22) / 2;
-                float midY = (y11 + y22) / 2;
-                string label = $"{allDistances[polygonIndex][^1]:0.00} {unit}";
-                cb.BeginText();
-                cb.ShowTextAligned(Element.ALIGN_CENTER, label, midX, midY + 5f, 0);
-                cb.EndText();
             }
         }
-
         document.Close();
+    }
+
+    static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label)
+    {
+        // Tính toán hướng chính và vuông góc
+        Vector2 dir = (p2 - p1).normalized;
+        Vector2 perp = new Vector2(-dir.y, dir.x); // vuông góc 90 độ
+
+        // Offset điểm ra ngoài theo hướng vuông góc
+        Vector2 p1Offset = p1 + perp * offsetDistance;
+        Vector2 p2Offset = p2 + perp * offsetDistance;
+
+        // Vẽ đường kích thước
+        cb.SetLineWidth(0.5f);
+        cb.MoveTo(p1Offset.x, p1Offset.y);
+        cb.LineTo(p2Offset.x, p2Offset.y);
+        cb.Stroke();
+
+        // Vẽ đường gióng từ điểm thực ra điểm offset
+        cb.MoveTo(p1.x, p1.y);
+        cb.LineTo(p1Offset.x, p1Offset.y);
+        cb.MoveTo(p2.x, p2.y);
+        cb.LineTo(p2Offset.x, p2Offset.y);
+        cb.Stroke();
+
+        // Vẽ mũi tên 2 đầu
+        float arrowSize = 10f;
+
+        void DrawArrow(Vector2 pos, Vector2 direction)
+        {
+            Vector2 left = pos - direction * arrowSize + new Vector2(-direction.y, direction.x) * (arrowSize * 0.5f);
+            Vector2 right = pos - direction * arrowSize - new Vector2(-direction.y, direction.x) * (arrowSize * 0.5f);
+
+            cb.MoveTo(left.x, left.y);
+            cb.LineTo(pos.x, pos.y);
+            cb.LineTo(right.x, right.y);
+            cb.Stroke();
+        }   
+
+        DrawArrow(p1Offset, dir);
+        DrawArrow(p2Offset, -dir);
+
+        // Vẽ text
+        Vector2 midPoint = (p1Offset + p2Offset) / 2f;
+
+        BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
+        cb.BeginText();
+        cb.SetFontAndSize(bf, 14);
+
+        // Tính góc xoay text
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        // Để text đứng thẳng dễ đọc, chỉnh lại góc nếu cần
+        if (angle > 90f || angle < -90f)
+        {
+            angle += 180f;
+        }
+
+        cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, midPoint.x, midPoint.y, angle);
+        cb.EndText();
     }
 }
