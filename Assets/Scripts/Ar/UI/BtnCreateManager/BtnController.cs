@@ -17,6 +17,9 @@ public class BtnController : MonoBehaviour
     public GameObject distanceTextPrefab;
     public ModelView modelView;
     public float heightValue = 0.5f;
+    public float AreaValue = 0f; // Diện tích mặt đáy
+    public float PerimeterValue = 0f; // Chu vi (tổng chiều dài các cạnh)
+    public float CeilingValue = 0f; // Diện tích mặt trần
 
     private GameObject previewPoint = null;  // Điểm xem trước
     private GameObject spawnedPoint;
@@ -289,8 +292,11 @@ public class BtnController : MonoBehaviour
             // Tính diện tích giữa các mặt đáy và mặt trên
             float baseArea = AreaCalculator.CalculateArea(GetBasePoints());
             float heightArea = AreaCalculator.CalculateArea(GetHeightPoints());
-            Debug.Log("Dien tich = " + baseArea);
-            Debug.Log("Dien tich = " + heightArea);
+            Debug.Log("Dien tich base = " + baseArea); // Diện tích đáy
+            Debug.Log("Dien tich height = " + heightArea); // Diện tích mặt trên
+            AreaValue = baseArea;
+            CeilingValue = heightArea;
+            // PerimeterValue = AreaCalculator.CalculateArea(currentBasePoints); // Tính chu vi (tổng chiều dài các cạnh)
 
             // Hiển thị diện tích giữa các mặt
             Vector3 baseCenter = GetPolygonCenter(currentBasePoints);

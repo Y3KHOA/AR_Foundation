@@ -7,63 +7,108 @@ public class DrawingTool : MonoBehaviour
     [Header("Prefabs")]
     public GameObject linePrefab;
     public GameObject distanceTextPrefab;
-    public GameObject auxiliaryLinePrefab; // Line phụ
+
+    [Header("Materials")]
+    public Material dashedMaterial;
+    public Material solidMaterial;
+    public Material doorMaterial;
+    public Material windowMaterial;
+
 
     private List<LineRenderer> linePool = new List<LineRenderer>(); // Object Pooling
     private List<TextMeshPro> textPool = new List<TextMeshPro>();
-    private List<LineRenderer> auxiliaryLinesPool = new List<LineRenderer>(); // Pool line phụ
 
-    public List<LineRenderer> lines = new List<LineRenderer>(); // Thêm danh sách này
-    public List<TextMeshPro> distanceTexts = new List<TextMeshPro>(); // Thêm danh sách này
+    public List<WallLine> wallLines = new List<WallLine>();
+    public LineType currentLineType = LineType.Wall;
+
+    public List<LineRenderer> lines = new List<LineRenderer>();
+    public List<TextMeshPro> distanceTexts = new List<TextMeshPro>();
 
     private LineRenderer previewLine = null; // Dùng cho đường preview
     private TextMeshPro previewText = null; // Dùng cho khoảng cách preview
 
     private float auxiliaryLineLength = 0.1f; // Độ dài line phụ (10cm)
 
+    Material GetMaterialForType(LineType type)
+    {
+        switch (type)
+        {
+            case LineType.Wall:
+                return solidMaterial;
+            case LineType.Door:
+                return doorMaterial;
+            case LineType.Window:
+                return windowMaterial;
+            default:
+                return solidMaterial;
+        }
+    }
+
+
     public void DrawLineAndDistance(Vector3 start, Vector3 end)
     {
-        if (linePrefab == null || distanceTextPrefab == null || auxiliaryLinePrefab == null)
+        GameObject go = Instantiate(linePrefab);
+        LineRenderer lr = go.GetComponent<LineRenderer>();
+
+        // Đảm bảo LineRenderer setup chuẩn để tile texture hoạt động tốt
+        lr.textureMode = LineTextureMode.Tile;
+        lr.alignment = LineAlignment.View; // Quan trọng: để line luôn xoay đúng góc nhìn
+        lr.numCapVertices = 0;
+        lr.widthMultiplier = 0.1f;
+        lr.positionCount = 2;
+        lr.SetPosition(0, start);
+        lr.SetPosition(1, end);
+
+        // Lấy chiều dài đoạn
+        float len = Vector3.Distance(start, end);
+
+        // Clone vật liệu để tránh sharedMaterial bug
+        Material matInstance;
+        if (currentLineType == LineType.Door || currentLineType == LineType.Window)
         {
-            Debug.LogError("Thiếu prefab line, text hoặc line phụ!");
-            return;
+            matInstance = new Material(GetMaterialForType(currentLineType)); // dashedMaterial phải là Unlit và có WrapMode = Repeat
+        }
+        else
+        {
+            matInstance = new Material(GetMaterialForType(currentLineType)); // solid, wall, v.v.
         }
 
-        // Vẽ line chính
-        LineRenderer line = GetOrCreateLine();
-        line.SetPosition(0, start);
-        line.SetPosition(1, end);
-        lines.Add(line);
+        // Scale texture tile theo chiều dài
+        if (matInstance.HasProperty("_MainTex"))
+        {
+            matInstance.mainTextureScale = new Vector2(len * 2f, 1f); // nhân đôi để tile dày hơn
+        }
 
-        float distanceInCm = Vector3.Distance(start, end) * 100f;
+        // Gán vật liệu
+        lr.material = matInstance;
 
-        // Tạo line phụ
+        // Lưu line đã vẽ
+        lines.Add(lr);
+
+        // Khoảng cách và text
+        float distanceInCm = len * 100f;
+
+        // Tạo line phụ để đặt text (vuông góc line chính)
         Vector3 dir = (end - start).normalized;
-        Vector3 perpendicular = Vector3.Cross(dir, Vector3.up).normalized; // Vuông góc với line chính
+        Vector3 perpendicular = Vector3.Cross(dir, Vector3.up).normalized;
 
-        Vector3 aux1Start = start - perpendicular * auxiliaryLineLength / 2;
         Vector3 aux1End = start + perpendicular * auxiliaryLineLength / 2;
-        Vector3 aux2Start = end - perpendicular * auxiliaryLineLength / 2;
         Vector3 aux2End = end + perpendicular * auxiliaryLineLength / 2;
 
-        LineRenderer auxLine1 = GetOrCreateAuxiliaryLine();
-        auxLine1.gameObject.SetActive(true); // Bật lên
-        auxLine1.SetPosition(0, aux1Start);
-        auxLine1.SetPosition(1, aux1End);
-
-        LineRenderer auxLine2 = GetOrCreateAuxiliaryLine();
-        auxLine2.gameObject.SetActive(true); // Bật lên
-        auxLine2.SetPosition(0, aux2Start);
-        auxLine2.SetPosition(1, aux2End);
-
-        // Hiển thị text giữa hai line phụ
+        // Hiển thị text khoảng cách
         TextMeshPro textMesh = GetOrCreateText();
         textMesh.text = $"{distanceInCm:F1} cm";
-        textMesh.transform.position = (aux1End + aux2End) / 2 + Vector3.up * 0.05f; // Đặt text phía trên line chính
 
-        // Xoay text để luôn hướng camera
-        textMesh.transform.rotation = Quaternion.Euler(90, 0, 0);
+        Vector3 textPosition = (aux1End + aux2End) / 2;
+        textMesh.transform.position = textPosition;
+
+        float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
+        textMesh.transform.rotation = Quaternion.Euler(90, 0, angle);
+
+        // Lưu dữ liệu tường
+        wallLines.Add(new WallLine(start, end, currentLineType));
     }
+
 
     public void UpdateLinesAndDistances(List<GameObject> checkpoints)
     {
@@ -166,15 +211,16 @@ public class DrawingTool : MonoBehaviour
         previewText.gameObject.SetActive(true);
         previewText.text = $"{distanceInCm:F1} cm";
 
-        // Đặt text lên trên điểm preview (end)
-        // previewText.transform.position = end + new Vector3(0, 0.1f, 0);
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
         previewText.transform.position = textPos;
 
         // Xoay text luôn hướng về camera
         if (Camera.main != null)
         {
-            previewText.transform.rotation = Quaternion.LookRotation(previewText.transform.position - Camera.main.transform.position);
+            Vector3 dir = (end - start).normalized;
+            // Xoay text để luôn song song line
+            float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg; // Tính góc từ trục X
+            previewText.transform.rotation = Quaternion.Euler(90, 0, angle);
         }
     }
 
@@ -203,24 +249,6 @@ public class DrawingTool : MonoBehaviour
         LineRenderer newLine = lineObj.GetComponent<LineRenderer>();
         linePool.Add(newLine);
         return newLine;
-    }
-    private LineRenderer GetOrCreateAuxiliaryLine()
-    {
-        foreach (var auxLine in auxiliaryLinesPool)
-        {
-            if (!auxLine.gameObject.activeSelf)
-            {
-                auxLine.gameObject.SetActive(true);
-                return auxLine;
-            }
-        }
-        GameObject auxObj = Instantiate(auxiliaryLinePrefab);
-        LineRenderer newAuxLine = auxObj.GetComponent<LineRenderer>();
-
-        newAuxLine.gameObject.SetActive(true); // Đảm bảo nó được hiển thị
-        auxiliaryLinesPool.Add(newAuxLine);
-
-        return newAuxLine;
     }
     private TextMeshPro GetOrCreateText()
     {
