@@ -23,7 +23,7 @@ public class PdfHouseExporter : MonoBehaviour
             new Vector2(0, houseHeight),
             new Vector2(0, 0)
         };
-        
+
         string path;
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN
         // Trên PC
@@ -150,8 +150,8 @@ public class PdfHouseExporter : MonoBehaviour
 
         document.Close();
     }
-    
-//hàm vẽ cửa và cửa sổ
+
+    //hàm vẽ cửa và cửa sổ
     static void DrawSymbol(PdfContentByte cb, Vector2 center, float angleDeg, float width, float scale, Vector2 shift, float offsetX, float offsetY, string type)
     {
         float half = width / 2f;
