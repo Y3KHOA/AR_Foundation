@@ -43,7 +43,8 @@ public class GridGenerator : MonoBehaviour
                 {
                     Vector3 start = new Vector3(x * cellSize, 0, z * cellSize);
                     Vector3 end = new Vector3((x + 1) * cellSize, 0, z * cellSize);
-                    GameObject line = CreateLine(start, end);
+                    bool isBold = (z % 4 == 0);
+                    GameObject line = CreateLine(start, end, isBold);
                     gridLines[key] = line;
                 }
             }
@@ -60,7 +61,8 @@ public class GridGenerator : MonoBehaviour
                 {
                     Vector3 start = new Vector3(x * cellSize, 0, z * cellSize);
                     Vector3 end = new Vector3(x * cellSize, 0, (z + 1) * cellSize);
-                    GameObject line = CreateLine(start, end);
+                    bool isBold = (x % 4 == 0); // Đậm nếu x chia hết cho 4
+                    GameObject line = CreateLine(start, end, isBold);
                     gridLines[key] = line;
                 }
             }
@@ -78,16 +80,27 @@ public class GridGenerator : MonoBehaviour
         }
     }
 
-    GameObject CreateLine(Vector3 start, Vector3 end)
+    GameObject CreateLine(Vector3 start, Vector3 end, bool isBold)
     {
         GameObject line = new GameObject("GridLine");
         LineRenderer lr = line.AddComponent<LineRenderer>();
-        lr.startWidth = lr.endWidth = 0.02f;
         lr.positionCount = 2;
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
         lr.material = new Material(Shader.Find("Sprites/Default"));
-        lr.startColor = lr.endColor = new Color(0.95f, 0.95f, 0.95f, 1f);
+
+        if (isBold)
+        {
+            lr.startWidth = lr.endWidth = 0.04f;
+            lr.startColor = lr.endColor = new Color(0.2f, 0.2f, 0.2f, 1f); // đậm hơn
+        }
+        else
+        {
+            lr.startWidth = lr.endWidth = 0.02f;
+            lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f); // nhạt
+        }
+
         return line;
     }
+
 }

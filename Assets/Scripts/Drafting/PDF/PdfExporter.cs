@@ -6,9 +6,9 @@ using System.IO;
 
 public class PdfExporter
 {
-    public static byte[] GeneratePdfAsBytes(List<List<Vector2>> allPolygons, List<WallLine> wallLines, float wallThickness)
+    public static byte[] GeneratePdfAsBytes(List<Room> rooms, float wallThickness)
     {
-        if (allPolygons == null || allPolygons.Count == 0) return null;
+        if (rooms == null || rooms.Count == 0) return null;
 
         using (MemoryStream memoryStream = new MemoryStream())
         {
@@ -22,275 +22,110 @@ public class PdfExporter
             cb.SetLineWidth(2f);
             cb.SetRGBColorStroke(0, 0, 0);
 
-            // === Tính bounding box toàn bộ ===
-            Vector2 globalMin = allPolygons[0][0];
-            Vector2 globalMax = allPolygons[0][0];
-            foreach (var polygon in allPolygons)
+            // === Tính global bounding box ===
+            Vector2 globalMin = new Vector2(float.MaxValue, float.MaxValue);
+            Vector2 globalMax = new Vector2(float.MinValue, float.MinValue);
+
+            foreach (var room in rooms)
             {
-                foreach (var pt in polygon)
+                foreach (var pt in room.checkpoints)
                 {
-                    globalMin = Vector2.Min(globalMin, pt);
-                    globalMax = Vector2.Max(globalMax, pt);
+                    Vector2 v2 = new Vector2(pt.x, pt.z); // Dùng x,z để biểu diễn mặt phẳng
+                    // Vector2 v2 = new Vector2(pt.x, pt.y); // Dùng x,z để biểu diễn mặt phẳng
+                    globalMin = Vector2.Min(globalMin, v2);
+                    globalMax = Vector2.Max(globalMax, v2);
                 }
             }
-            Vector2 globalSize = globalMax - globalMin;
 
-            // === Scale & canh giữa trang A4 ===
-            float maxWidth = 500f;
-            float maxHeight = 700f;
+            Vector2 globalSize = globalMax - globalMin;
+            float maxWidth = 500f, maxHeight = 700f;
             float scale = Mathf.Min(maxWidth / globalSize.x, maxHeight / globalSize.y);
             float offsetX = (PageSize.A4.Width - globalSize.x * scale) / 2f;
             float offsetY = (PageSize.A4.Height - globalSize.y * scale) / 2f;
             Vector2 shift = -globalMin;
 
-            // === Vẽ từng polygon ===
-            for (int polygonIndex = 0; polygonIndex < allPolygons.Count; polygonIndex++)
-            {
-                var polygon = new List<Vector2>(allPolygons[polygonIndex]); // tạo bản sao để xử lý
-                if (polygon.Count < 2) continue;
+            // === Convert helper ===
+            Vector2 Convert(Vector3 pt) => new Vector2((pt.x + shift.x) * scale + offsetX, (pt.z + shift.y) * scale + offsetY);
 
-                // Loại bỏ điểm trùng đầu-cuối nếu có
-                if (Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
-                {
-                    polygon.RemoveAt(polygon.Count - 1);
-                }
+            // === Vẽ từng Room ===
+            foreach (var room in rooms)
+            {
+                var polygon = room.checkpoints;
+                if (polygon.Count < 2) continue;
 
                 for (int i = 0; i < polygon.Count; i++)
                 {
-                    Vector2 p1 = polygon[i];
-                    Vector2 p2 = polygon[(i + 1) % polygon.Count];
+                    Vector3 p1 = polygon[i];
+                    Vector3 p2 = polygon[(i + 1) % polygon.Count];
 
-                    // Tính vector unit hướng p1 -> p2
-                    Vector2 d = (p2 - p1).normalized;
+                    Vector2 v1 = new Vector2(p1.x, p1.z);
+                    Vector2 v2 = new Vector2(p2.x, p2.z);
 
-                    // Vector vuông góc với đường thẳng (trái tay)
-                    Vector2 perp = new Vector2(-d.y, d.x);
-
-                    // 2 vector offset sang trái/phải
+                    Vector2 dir = (v2 - v1).normalized;
+                    Vector2 perp = new Vector2(-dir.y, dir.x);
                     Vector2 offset = perp * wallThickness * 0.5f;
 
-                    Vector2 a = p1 + offset;
-                    Vector2 b = p2 + offset;
-                    Vector2 c = p2 - offset;
-                    Vector2 d2 = p1 - offset;
-
-                    Vector2 Convert(Vector2 pt) => new Vector2((pt.x + shift.x) * scale + offsetX, (pt.y + shift.y) * scale + offsetY);
-
-                    Vector2 pa = Convert(a);
-                    Vector2 pb = Convert(b);
-                    Vector2 pc = Convert(c);
-                    Vector2 pd = Convert(d2);
+                    Vector2 pa = Convert(new Vector3(v1.x + offset.x, 0, v1.y + offset.y));
+                    Vector2 pb = Convert(new Vector3(v2.x + offset.x, 0, v2.y + offset.y));
+                    Vector2 pc = Convert(new Vector3(v2.x - offset.x, 0, v2.y - offset.y));
+                    Vector2 pd = Convert(new Vector3(v1.x - offset.x, 0, v1.y - offset.y));
 
                     cb.MoveTo(pa.x, pa.y);
                     cb.LineTo(pb.x, pb.y);
                     cb.LineTo(pc.x, pc.y);
                     cb.LineTo(pd.x, pd.y);
-                    cb.ClosePath(); // tự động nối kín 4 đỉnh
+                    cb.ClosePath();
                     cb.Stroke();
 
                     Vector2 p1Converted = Convert(p1);
                     Vector2 p2Converted = Convert(p2);
-                    DrawDimensionLine(cb, p1Converted, p2Converted, -30f, $"{Vector2.Distance(p1, p2):0.00}");
-
+                    DrawDimensionLine(cb, p1Converted, p2Converted, -30f, $"{Vector2.Distance(v1, v2):0.00}");
                 }
-            }
-            // === Vẽ ký hiệu cửa và cửa sổ ===
-            if (wallLines != null)
-            {
-                foreach (var wall in wallLines)
-                {
-                    // Hàm chuyển đổi sang hệ tọa độ PDF
-                    // Vector2 Convert(Vector2 pt) => new Vector2((pt.x + shift.x) * scale + offsetX, (pt.y + shift.y) * scale + offsetY);
-                    // Không flip Y, giống như phần vẽ polygon
-                    Vector2 Convert(Vector2 pt)
-                    {
-                        float x = (pt.x + shift.x) * scale + offsetX;
-                        float y = (pt.y + shift.y) * scale + offsetY; // <-- KHÔNG pageHeight -
-                        return new Vector2(x, y);
-                    }
 
-                    // Tính toán trong không gian gốc Unity (XZ)
+                // Vẽ cửa và cửa sổ từ wallLines
+                foreach (var wall in room.wallLines)
+                {
+                    if (wall.type != LineType.Door && wall.type != LineType.Window) continue;
+
                     Vector2 start = new Vector2(wall.start.x, wall.start.z);
                     Vector2 end = new Vector2(wall.end.x, wall.end.z);
                     Vector2 center = (start + end) * 0.5f;
-                    Vector2 dir = (end - start).normalized;
-                    float width = Vector2.Distance(start, end);
 
-                    Vector2 p1 = center - dir * (width * 0.5f);
-                    Vector2 p2 = center + dir * (width * 0.5f);
+                    Vector2 startConverted = Convert(wall.start);
+                    Vector2 endConverted = Convert(wall.end);
 
-                    // Chuyển sang PDF space sau cùng
-                    Vector2 startConverted = Convert(start);
-                    Vector2 endConverted = Convert(end);
-                    Vector2 centerConverted = Convert(center);
-                    Vector2 p1Converted = Convert(p1);
-                    Vector2 p2Converted = Convert(p2);
-
-                    if (wall.type == LineType.Door || wall.type == LineType.Window)
-                    {
-                        DrawSymbol(cb, centerConverted, p1Converted, p2Converted, wall.type.ToString().ToLower());
-                    }
-                    else if (wall.type == LineType.Wall)
-                    {
-                        cb.SetLineWidth(2f);
-                        cb.SetRGBColorStroke(0, 0, 0);
-                        cb.MoveTo(startConverted.x, startConverted.y);
-                        cb.LineTo(endConverted.x, endConverted.y);
-                        cb.Stroke();
-                    }
+                    DrawSymbol(cb, startConverted, endConverted, wall.type.ToString().ToLower());
                 }
             }
-
 
             document.Close();
-            return memoryStream.ToArray(); // <-- Đây là kết quả bạn cần để ghi qua SAF
+            return memoryStream.ToArray();
         }
     }
-
-    public static void ExportMultiplePolygonsToPDF(List<List<Vector2>> allPolygons, List<WallLine> wallLines, string path, float wallThickness)
-    {
-        if (allPolygons == null || allPolygons.Count == 0) return;
-
-        Document document = new Document(PageSize.A4);
-        PdfWriter writer = PdfWriter.GetInstance(document, new FileStream(path, FileMode.Create));
-        document.Open();
-
-        PdfContentByte cb = writer.DirectContent;
-        BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
-        cb.SetFontAndSize(baseFont, 10);
-        cb.SetLineWidth(2f);
-        cb.SetRGBColorStroke(0, 0, 0);
-
-        // === Tính bounding box toàn bộ ===
-        Vector2 globalMin = allPolygons[0][0];
-        Vector2 globalMax = allPolygons[0][0];
-        foreach (var polygon in allPolygons)
-        {
-            foreach (var pt in polygon)
-            {
-                globalMin = Vector2.Min(globalMin, pt);
-                globalMax = Vector2.Max(globalMax, pt);
-            }
-        }
-        Vector2 globalSize = globalMax - globalMin;
-
-        // === Scale & canh giữa trang A4 ===
-        float maxWidth = 500f;
-        float maxHeight = 700f;
-        float scale = Mathf.Min(maxWidth / globalSize.x, maxHeight / globalSize.y);
-        float offsetX = (PageSize.A4.Width - globalSize.x * scale) / 2f;
-        float offsetY = (PageSize.A4.Height - globalSize.y * scale) / 2f;
-        Vector2 shift = -globalMin;
-
-        // === Vẽ từng polygon ===
-        for (int polygonIndex = 0; polygonIndex < allPolygons.Count; polygonIndex++)
-        {
-            var polygon = new List<Vector2>(allPolygons[polygonIndex]); // tạo bản sao để xử lý
-            if (polygon.Count < 2) continue;
-
-            // Loại bỏ điểm trùng đầu-cuối nếu có
-            if (Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
-            {
-                polygon.RemoveAt(polygon.Count - 1);
-            }
-
-            for (int i = 0; i < polygon.Count; i++)
-            {
-                Vector2 p1 = polygon[i];
-                Vector2 p2 = polygon[(i + 1) % polygon.Count];
-
-                // Tính vector unit hướng p1 -> p2
-                Vector2 d = (p2 - p1).normalized;
-
-                // Vector vuông góc với đường thẳng (trái tay)
-                Vector2 perp = new Vector2(-d.y, d.x);
-
-                // 2 vector offset sang trái/phải
-                Vector2 offset = perp * wallThickness * 0.5f;
-
-                Vector2 a = p1 + offset;
-                Vector2 b = p2 + offset;
-                Vector2 c = p2 - offset;
-                Vector2 d2 = p1 - offset;
-
-                Vector2 Convert(Vector2 pt) => new Vector2((pt.x + shift.x) * scale + offsetX, (pt.y + shift.y) * scale + offsetY);
-
-                Vector2 pa = Convert(a);
-                Vector2 pb = Convert(b);
-                Vector2 pc = Convert(c);
-                Vector2 pd = Convert(d2);
-
-                cb.MoveTo(pa.x, pa.y);
-                cb.LineTo(pb.x, pb.y);
-                cb.LineTo(pc.x, pc.y);
-                cb.LineTo(pd.x, pd.y);
-                cb.ClosePath(); // tự động nối kín 4 đỉnh
-                cb.Stroke();
-
-                Vector2 p1Converted = Convert(p1);
-                Vector2 p2Converted = Convert(p2);
-                DrawDimensionLine(cb, p1Converted, p2Converted, -30f, $"{Vector2.Distance(p1, p2):0.00} m");
-
-            }
-        }
-        // === Vẽ ký hiệu cửa và cửa sổ ===
-        if (wallLines != null)
-        {
-            foreach (var wall in wallLines)
-            {
-                Vector2 Convert(Vector2 pt) => new Vector2((pt.x + shift.x) * scale + offsetX, (pt.y + shift.y) * scale + offsetY);
-
-                Vector2 start = new Vector2(wall.start.x, wall.start.z);
-                Vector2 end = new Vector2(wall.end.x, wall.end.z);
-                Vector2 center = (start + end) * 0.5f;
-                Vector2 dir = (end - start).normalized;
-                float angleDeg = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-                float width = Vector2.Distance(start, end);
-
-                Vector2 p1 = center - dir * (width * 0.5f);
-                Vector2 p2 = center + dir * (width * 0.5f);
-
-                Vector2 centerConverted = Convert(center);
-                Vector2 p1Converted = Convert(p1);
-                Vector2 p2Converted = Convert(p2);
-
-                if (wall.type == LineType.Door || wall.type == LineType.Window)
-                {
-                    DrawSymbol(cb, centerConverted, p1Converted, p2Converted, wall.type.ToString().ToLower());
-                }
-                else if (wall.type == LineType.Wall)
-                {
-                    cb.SetLineWidth(2f);
-                    cb.SetRGBColorStroke(0, 0, 0);
-                    cb.MoveTo(p1Converted.x, p1Converted.y);
-                    cb.LineTo(p2Converted.x, p2Converted.y);
-                    cb.Stroke();
-                }
-            }
-        }
-
-        document.Close();
-    }
+    
     //hàm vẽ cửa và cửa sổ
-    static void DrawSymbol(PdfContentByte cb, Vector2 center, Vector2 p1, Vector2 p2, string type)
+    static void DrawSymbol(PdfContentByte cb, Vector2 p1, Vector2 p2, string type)
     {
+        Vector2 center = (p1 + p2) * 0.5f;
         if (type == "door")
         {
             cb.SetLineWidth(1f);
             cb.SetRGBColorStroke(0, 0, 255); // Blue
 
-            // Vẽ cánh cửa đóng (line)
-            cb.MoveTo(center.x, center.y);
+            // Dùng p1 là bản lề, p2 là đầu cánh cửa
+            cb.MoveTo(p1.x, p1.y);
             cb.LineTo(p2.x, p2.y);
             cb.Stroke();
 
-            // Vẽ cung 90 độ (cung mở)
-            float radius = (p2 - center).magnitude;
-            float angleDeg = Mathf.Atan2(p2.y - center.y, p2.x - center.x) * Mathf.Rad2Deg;
-            cb.Arc(center.x - radius, center.y - radius, center.x + radius, center.y + radius,
-                -angleDeg, -90);
+            // Vẽ cung từ p2 quay về 90 độ từ p1
+            float radius = Vector2.Distance(p1, p2);
+            float angleStart = Mathf.Atan2(p2.y - p1.y, p2.x - p1.x) * Mathf.Rad2Deg;
+
+            cb.Arc(p1.x - radius, p1.y - radius, p1.x + radius, p1.y + radius,
+                   -angleStart, -90);
             cb.Stroke();
         }
+
         else if (type == "window")
         {
             cb.SetLineWidth(0.5f);

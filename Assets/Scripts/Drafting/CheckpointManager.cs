@@ -16,6 +16,8 @@ public class CheckpointManager : MonoBehaviour
 
     public LineType currentLineType = LineType.Wall;
     public List<WallLine> wallLines = new List<WallLine>();
+    public List<Room> rooms = new List<Room>();
+
 
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
@@ -135,7 +137,29 @@ public class CheckpointManager : MonoBehaviour
                 ));
             isClosedLoop = true;
 
-            allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
+            // allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
+            // Lưu lại Room mới
+            Room newRoom = new Room();
+
+            // Lưu checkpoint (Vector3) từ currentCheckpoints
+            foreach (GameObject cp in currentCheckpoints)
+            {
+                newRoom.checkpoints.Add(cp.transform.position);
+            }
+
+            // Lưu wallLines tương ứng với đoạn vừa khép kín
+            int segmentCount = currentCheckpoints.Count;
+            for (int i = wallLines.Count - segmentCount; i < wallLines.Count; i++)
+            {
+                newRoom.wallLines.Add(wallLines[i]);
+            }
+
+            rooms.Add(newRoom);
+
+            // Vẫn giữ lại dữ liệu gốc nếu cần
+            allCheckpoints.Add(new List<GameObject>(currentCheckpoints));
+
+
             currentCheckpoints.Clear(); // Tạo mạch mới
             return;
         }

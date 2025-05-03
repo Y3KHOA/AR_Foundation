@@ -24,115 +24,15 @@ public class PrintingManager : MonoBehaviour
         // });
         btnExportPDF.onClick.AddListener(() =>
         {
-        ExportAllDrawingsAndSaveToDownloads(); // Gọi hàm mới
+            ExportAllDrawingsAndSaveToDownloads(); // Gọi hàm mới
         });
-    }
 
-    public void ExportAllDrawingsToPDF(string exportPath)
-    {
-        List<List<Vector2>> allPolygons = new List<List<Vector2>>();
-        List<List<float>> allDistances = new List<List<float>>();
-
-
-        foreach (var checkpointLoop in checkpointManager.AllCheckpoints)
-        {
-            if (checkpointLoop == null || checkpointLoop.Count < 2)
-                continue;
-
-            List<Vector2> polygon = new List<Vector2>();
-            List<float> distances = new List<float>();
-
-            for (int i = 0; i < checkpointLoop.Count; i++)
-            {
-                Vector3 pos = checkpointLoop[i].transform.position;
-                polygon.Add(new Vector2(pos.x, pos.z));
-
-                if (i > 0)
-                {
-                    Vector3 prev = checkpointLoop[i - 1].transform.position;
-                    distances.Add(Vector3.Distance(prev, pos));
-                }
-            }
-
-            // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
-            if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
-            {
-                polygon.RemoveAt(polygon.Count - 1);
-
-                // Nếu distances dư 1 phần tử thì cũng cần xóa
-                if (distances.Count == polygon.Count + 1)
-                    distances.RemoveAt(distances.Count - 1);
-            }
-
-            allPolygons.Add(polygon);
-            allDistances.Add(distances);
-        }
-
-        Debug.Log("Export PDF to: " + exportPath);
-        path = exportPath;
-        Debug.Log("Path PDF: " + path);
-
-        try
-        {
-            List<WallLine> allWallLines = new List<WallLine>();
-            foreach (var wall in checkpointManager.wallLines)
-            {
-                Vector2 start = new Vector2(wall.start.x, wall.start.z);
-                Vector2 end = new Vector2(wall.end.x, wall.end.z);
-                allWallLines.Add(new WallLine(start, end, wall.type));
-                Debug.Log("Add WallLine type for list -> PDF: " + wall.type);
-            }
-
-            // PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, allWallLines, path, 0.1f);
-            byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
-            FileBrowserHelpers.WriteBytesToFile(path, pdfBytes);
-
-            Debug.Log("PDF exported to: " + path);
-
-            if (SuccessPanel != null)
-                SuccessPanel.SetActive(true);
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError("Export PDF failed: " + ex.Message);
-
-            if (ErrorPanel != null)
-                ErrorPanel.SetActive(true);
-        }
-    }
-
-    IEnumerator RequestPermissionAndExport()
-    {
-        FileBrowser.SetFilters(true, new FileBrowser.Filter("PDF Files", ".pdf"));
-        FileBrowser.SetDefaultFilter(".pdf");
-
-        Debug.Log("Opening FileBrowser.WaitForSaveDialog...");
-        yield return FileBrowser.WaitForSaveDialog(
-            pickMode: FileBrowser.PickMode.Files,
-            allowMultiSelection: false,
-            initialPath: null,
-            initialFilename: "Drawing_Tester_House.pdf",
-            title: "Save PDF File");
-
-        Debug.Log("FileBrowser.Success = " + FileBrowser.Success);
-        Debug.Log("FileBrowser.Result.Length = " + FileBrowser.Result.Length);
-
-        if (FileBrowser.Success && FileBrowser.Result.Length > 0)
-        {
-            string selectedFilePath = FileBrowser.Result[0];
-            Debug.Log("File selected: " + selectedFilePath);
-            ExportAllDrawingsToPDF(selectedFilePath);
-        }
-        else
-        {
-            Debug.LogError("No file selected.");
-            if (ErrorPanel != null)
-                ErrorPanel.SetActive(true);
-        }
+        // btnExportPDF.onClick.AddListener(ExPDFx);
     }
 
     public void ExportAllDrawingsAndSaveToDownloads()
     {
+        List<Room> allRooms = new List<Room>();
         List<List<Vector2>> allPolygons = new List<List<Vector2>>();
         List<WallLine> allWallLines = new List<WallLine>();
 
@@ -141,7 +41,7 @@ public class PrintingManager : MonoBehaviour
             if (checkpointLoop == null || checkpointLoop.Count < 2)
                 continue;
 
-            List<Vector2> polygon = new List<Vector2>();
+            List<Vector3> polygon = new List<Vector3>();
             for (int i = 0; i < checkpointLoop.Count; i++)
             {
                 Vector3 pos = checkpointLoop[i].transform.position;
@@ -152,17 +52,29 @@ public class PrintingManager : MonoBehaviour
             if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
                 polygon.RemoveAt(polygon.Count - 1);
 
-            allPolygons.Add(polygon);
+            // allPolygons.Add(polygon);
+            Room room = new Room
+            {
+                checkpoints = polygon,
+                wallLines = new List<WallLine>() // WallLines sẽ được thêm sau
+            };
+
+            allRooms.Add(room);
         }
 
         foreach (var wall in checkpointManager.wallLines)
         {
-            Vector2 start = new Vector2(wall.start.x, wall.start.z);
-            Vector2 end = new Vector2(wall.end.x, wall.end.z);
-            allWallLines.Add(new WallLine(start, end, wall.type));
+            WallLine wallLine = new WallLine(new Vector2(wall.start.x, wall.start.z), new Vector2(wall.end.x, wall.end.z), wall.type);
+
+            // Tìm room chứa wallLine và thêm vào
+            foreach (var room in allRooms)
+            {
+                room.wallLines.Add(wallLine);
+            }
         }
 
-        byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
+        // byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
+        byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allRooms, 0.1f);
         SavePdfToDownloads(pdfBytes, "Drawing_Tester_House.pdf");
     }
 
@@ -230,5 +142,10 @@ public class PrintingManager : MonoBehaviour
         File.WriteAllBytes(fallbackPath, pdfData);
         Debug.Log("Saved locally (Editor): " + fallbackPath);
 #endif
+    }
+
+    void ExPDFx()
+    {
+        PdfHouseExporter.ExportHousePDF();
     }
 }
