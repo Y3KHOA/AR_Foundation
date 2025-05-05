@@ -25,7 +25,7 @@ public class WallLine
 [System.Serializable]
 public class Room
 {
-    public List<Vector3> checkpoints = new List<Vector3>();
+    public List<Vector2> checkpoints = new List<Vector2>();
     public List<WallLine> wallLines = new List<WallLine>();
 
     /// <summary>

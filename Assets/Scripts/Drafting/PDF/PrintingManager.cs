@@ -41,7 +41,7 @@ public class PrintingManager : MonoBehaviour
             if (checkpointLoop == null || checkpointLoop.Count < 2)
                 continue;
 
-            List<Vector3> polygon = new List<Vector3>();
+            List<Vector2> polygon = new List<Vector2>();
             for (int i = 0; i < checkpointLoop.Count; i++)
             {
                 Vector3 pos = checkpointLoop[i].transform.position;
