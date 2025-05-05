@@ -30,6 +30,10 @@ public class BtnController : MonoBehaviour
     public List<List<GameObject>> AllBasePoints { get { return allBasePoints; } }
     public List<List<GameObject>> AllHeightPoints { get { return allHeightPoints; } }
 
+    public LineType currentLineType = LineType.Wall;
+    public List<WallLine> wallLines = new List<WallLine>();
+    public List<Room> rooms = new List<Room>();
+    
     private List<GameObject> currentBasePoints = new List<GameObject>();
     private List<GameObject> currentHeightPoints = new List<GameObject>();
     private GameObject referenceHeightPoint = null;
@@ -39,11 +43,12 @@ public class BtnController : MonoBehaviour
     private float mergeThreshold = 0.1f; // Ngưỡng hợp nhất điểm
     private float closeThreshold = 0.2f; // Ngưỡng khép kín đường
     private int flag = 0; // Mặc định flag = 0
-    public int Flag { get { return flag; } }
+    public int Flag { get { return flag; } set { flag = value; } }
     private bool measure = true;
     private Vector3 fixedBasePointPosition;
     private float initialCameraPitch;
     private GameObject tempBasePoint;
+    private Room room = new Room();
 
 
     void Start()
@@ -259,6 +264,7 @@ public class BtnController : MonoBehaviour
             return;
         }
 
+
         GameObject newBasePoint = GetOrCreatePoint(currentBasePoints, hitPose.position);
         GameObject newHeightPoint = referenceHeightPoint != null
             ? GetOrCreatePoint(currentHeightPoints, new Vector3(hitPose.position.x, referenceHeightPoint.transform.position.y, hitPose.position.z))
@@ -275,6 +281,18 @@ public class BtnController : MonoBehaviour
         // Tự động nối Pn với Pn-1
         if (count > 1)
         {
+            Vector3 start = currentBasePoints[count - 2].transform.position;
+            Vector3 end = newBasePoint.transform.position;
+            Vector3 topStart = currentHeightPoints[count - 2].transform.position;
+            Vector3 topEnd = newHeightPoint.transform.position;
+            
+            float wallHeight = Vector3.Distance(start, topStart); 
+
+            room.wallLines.Add(new WallLine(start, end, LineType.Wall));
+
+            room.heights.Add(wallHeight);
+            room.checkpoints.Add(new Vector2(start.x, start.z));
+
             lineManager.DrawLineAndDistance(currentBasePoints[count - 2].transform.position, newBasePoint.transform.position);
             lineManager.DrawLineAndDistance(currentHeightPoints[count - 2].transform.position, newHeightPoint.transform.position);
 
@@ -284,6 +302,19 @@ public class BtnController : MonoBehaviour
         // Kiểm tra nếu Pn gần P1, tự động khép kín đường
         if (count > 2 && Vector3.Distance(newBasePoint.transform.position, currentBasePoints[0].transform.position) < closeThreshold)
         {
+
+            Vector3 start = currentBasePoints[count - 1].transform.position;
+            Vector3 end = currentBasePoints[0].transform.position;
+            Vector3 topStart = currentHeightPoints[count - 1].transform.position;
+            Vector3 topEnd = currentHeightPoints[0].transform.position;
+
+            room.wallLines.Add(new WallLine(start, end, LineType.Wall));
+            room.heights.Add(Vector3.Distance(start, topStart));
+            room.checkpoints.Add(new Vector2(start.x, start.z));
+
+            lineManager.DrawLineAndDistance(start, end);
+            lineManager.DrawLineAndDistance(topStart, topEnd);
+
             lineManager.DrawLineAndDistance(newBasePoint.transform.position, currentBasePoints[0].transform.position);
             lineManager.DrawLineAndDistance(newHeightPoint.transform.position, currentHeightPoints[0].transform.position);
 
@@ -333,6 +364,12 @@ public class BtnController : MonoBehaviour
             List<GameObject> baseCopy = new List<GameObject>(currentBasePoints);
             List<GameObject> heightCopy = new List<GameObject>(currentHeightPoints);
 
+            // Lưu toàn bộ room
+            room.allBasePoints = baseCopy;
+            room.allHeightPoints = heightCopy;
+            rooms.Add(room);
+            room = new Room();
+
             // Tính diện tích mặt đứng **phải làm ở đây**, trước khi clear
             for (int i = 0; i < count; i++)
             {
@@ -359,7 +396,7 @@ public class BtnController : MonoBehaviour
             lineManager.ShowAreaText(topCenter, heightArea);
 
             flag = 0;
-            Debug.Log("[Unity] Mạch đã được lưu và sẵn sàng tạo mạch mới");
+            Debug.Log("[Unity] Saved - Ready for new Save");
         }
 
         // Nối Pn với Pn' (điểm chiều cao)

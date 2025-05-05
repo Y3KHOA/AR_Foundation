@@ -12,6 +12,8 @@ public class TransData : MonoBehaviour
 
     public List<List<Vector2>> allPoints;
     public List<List<float>> allHeights;
+    public List<Room> rooms; // Gán từ bên ngoài hoặc thông qua BtnController
+
 
     public float Area;
     public float Perimeter;

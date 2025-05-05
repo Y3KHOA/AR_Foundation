@@ -10,6 +10,7 @@ public class WallLine
     public Vector3 start;
     public Vector3 end;
     public LineType type; // Wall, Door, Window
+    public WallLine() { }
 
     public WallLine(Vector3 start, Vector3 end, LineType type)
     {
@@ -27,6 +28,14 @@ public class Room
 {
     public List<Vector2> checkpoints = new List<Vector2>();
     public List<WallLine> wallLines = new List<WallLine>();
+    public List<float> heights = new List<float>();
+
+    public List<GameObject> allBasePoints = new List<GameObject>();
+    public List<GameObject> allHeightPoints = new List<GameObject>();
+
+    public float area;
+    public float ceilingArea;
+    public float perimeter;
 
     /// <summary>
     /// Sinh các đoạn tường từ polygon
