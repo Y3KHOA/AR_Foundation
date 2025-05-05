@@ -2,6 +2,10 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Android;
+using System.Collections;
+using SimpleFileBrowser;
+using System.Text;
 
 public class PrintingManager : MonoBehaviour
 {
@@ -14,17 +18,23 @@ public class PrintingManager : MonoBehaviour
 
     void Start()
     {
-        btnExportPDF.onClick.AddListener(ExportAllDrawingsToPDF);
-        btnExportPDF.onClick.AddListener(ExportScene);
-        btnExportPDF.onClick.AddListener(ExPDFx);
-        btnExportPDF.onClick.AddListener(ExDxf);
+        // btnExportPDF.onClick.AddListener(() =>
+        // {
+        //  StartCoroutine(RequestPermissionAndExport());
+        // });
+        btnExportPDF.onClick.AddListener(() =>
+        {
+            ExportAllDrawingsAndSaveToDownloads(); // Gọi hàm mới
+        });
+
+        // btnExportPDF.onClick.AddListener(ExPDFx);
     }
 
-    public void ExportAllDrawingsToPDF()
+    public void ExportAllDrawingsAndSaveToDownloads()
     {
+        List<Room> allRooms = new List<Room>();
         List<List<Vector2>> allPolygons = new List<List<Vector2>>();
-        List<List<float>> allDistances = new List<List<float>>();
-
+        List<WallLine> allWallLines = new List<WallLine>();
 
         foreach (var checkpointLoop in checkpointManager.AllCheckpoints)
         {
@@ -32,77 +42,110 @@ public class PrintingManager : MonoBehaviour
                 continue;
 
             List<Vector2> polygon = new List<Vector2>();
-            List<float> distances = new List<float>();
-
             for (int i = 0; i < checkpointLoop.Count; i++)
             {
                 Vector3 pos = checkpointLoop[i].transform.position;
                 polygon.Add(new Vector2(pos.x, pos.z));
-
-                if (i > 0)
-                {
-                    Vector3 prev = checkpointLoop[i - 1].transform.position;
-                    distances.Add(Vector3.Distance(prev, pos));
-                }
             }
 
-            // Xử lý: nếu polygon khép kín và điểm cuối == điểm đầu → loại bỏ điểm cuối
+            // Remove duplicate end-point if loop is closed
             if (polygon.Count > 2 && Vector2.Distance(polygon[0], polygon[^1]) < 0.01f)
-            {
                 polygon.RemoveAt(polygon.Count - 1);
 
-                // Nếu distances dư 1 phần tử thì cũng cần xóa
-                if (distances.Count == polygon.Count + 1)
-                    distances.RemoveAt(distances.Count - 1);
-            }
+            // allPolygons.Add(polygon);
+            Room room = new Room
+            {
+                checkpoints = polygon,
+                wallLines = new List<WallLine>() // WallLines sẽ được thêm sau
+            };
 
-            allPolygons.Add(polygon);
-            allDistances.Add(distances);
+            allRooms.Add(room);
         }
 
-        // string path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_All_Test1.pdf");
-#if UNITY_EDITOR || UNITY_STANDALONE_WIN
-        // Trên PC
-        string downloadsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile) + "/Downloads";
-        path = Path.Combine(downloadsPath, "XHeroScan/PDF/Drawing_Tester_House.pdf");
-#else
-    // Trên Android
-    path = Path.Combine("/storage/emulated/0/Download", "XHeroScan/PDF/Drawing_Tester_House.pdf");
-#endif
-
-#if UNITY_ANDROID && !UNITY_EDITOR
-            string directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-#endif
-        try
+        foreach (var wall in checkpointManager.wallLines)
         {
-            PdfExporter.ExportMultiplePolygonsToPDF(allPolygons, path, 0.1f);
+            WallLine wallLine = new WallLine(new Vector2(wall.start.x, wall.start.z), new Vector2(wall.end.x, wall.end.z), wall.type);
 
-            Debug.Log("PDF exported to: " + path);
+            // Tìm room chứa wallLine và thêm vào
+            foreach (var room in allRooms)
+            {
+                room.wallLines.Add(wallLine);
+            }
+        }
 
+        // byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
+        byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allRooms, 0.1f);
+        SavePdfToDownloads(pdfBytes, "Drawing_Tester_House.pdf");
+    }
+
+    public void SavePdfToDownloads(byte[] pdfData, string fileName)
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+    try
+    {
+        using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaObject contentResolver = activity.Call<AndroidJavaObject>("getContentResolver");
+
+            AndroidJavaClass mediaStore = new AndroidJavaClass("android.provider.MediaStore$Downloads");
+            AndroidJavaObject contentValues = new AndroidJavaObject("android.content.ContentValues");
+
+            contentValues.Call("put", "title", fileName);
+            contentValues.Call("put", "_display_name", fileName);
+            contentValues.Call("put", "mime_type", "application/pdf");
+            contentValues.Call("put", "relative_path", "Download/XHeroScan/PDF");
+
+            long currentTime = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            contentValues.Call("put", "date_added", new AndroidJavaObject("java.lang.Long", currentTime / 1000));
+            contentValues.Call("put", "date_modified", new AndroidJavaObject("java.lang.Long", currentTime / 1000));
+
+
+            AndroidJavaObject externalUri = mediaStore.GetStatic<AndroidJavaObject>("EXTERNAL_CONTENT_URI");
+
+            AndroidJavaObject uri = contentResolver.Call<AndroidJavaObject>("insert", externalUri, contentValues);
+            if (uri == null)
+            {
+                Debug.LogError("MediaStore insert returned null.");
+                if (ErrorPanel != null)
+                    ErrorPanel.SetActive(true);
+                return;
+            }
+
+            // Open output stream
+            AndroidJavaObject outputStream = contentResolver.Call<AndroidJavaObject>("openOutputStream", uri);
+            if (outputStream == null)
+            {
+                Debug.LogError("Cannot open output stream.");
+                return;
+            }
+
+            // Write bytes
+            outputStream.Call("write", pdfData);
+            outputStream.Call("flush");
+            outputStream.Call("close");
+
+            Debug.Log("PDF saved to Downloads using MediaStore.");
             if (SuccessPanel != null)
                 SuccessPanel.SetActive(true);
         }
-        catch (System.Exception ex)
-        {
-            Debug.LogError("Export PDF failed: " + ex.Message);
-
-            if (ErrorPanel != null)
-                ErrorPanel.SetActive(true);
-        }
     }
-    void ExportScene()
+    catch (System.Exception ex)
     {
-        string outputPath = "/storage/emulated/0/Download/XHeroScan/PDF/Drawing_All_Test2.pdf";
-        ImageExporter.CaptureAndExport(Camera.main, 1024, 768, "scene.png", outputPath, true);
+        Debug.LogError("Failed to save PDF using MediaStore: " + ex.Message);
+        if (ErrorPanel != null)
+            ErrorPanel.SetActive(true);
     }
+#else
+        // Editor / non-Android fallback
+        string fallbackPath = Path.Combine(Application.persistentDataPath, fileName);
+        File.WriteAllBytes(fallbackPath, pdfData);
+        Debug.Log("Saved locally (Editor): " + fallbackPath);
+#endif
+    }
+
     void ExPDFx()
     {
         PdfHouseExporter.ExportHousePDF();
-    }
-    void ExDxf()
-    {
-        // HouseDXFExporter.ExportHouse();
     }
 }

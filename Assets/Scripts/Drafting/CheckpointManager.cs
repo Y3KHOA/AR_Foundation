@@ -13,6 +13,12 @@ public class CheckpointManager : MonoBehaviour
     public UndoRedoManager undoRedoManager;
     public StoragePermissionRequester permissionRequester;
 
+
+    public LineType currentLineType = LineType.Wall;
+    public List<WallLine> wallLines = new List<WallLine>();
+    public List<Room> rooms = new List<Room>();
+
+
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     private List<GameObject> currentCheckpoints = new List<GameObject>();
     private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển    
@@ -23,6 +29,7 @@ public class CheckpointManager : MonoBehaviour
     private bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa
     private GameObject previewCheckpoint = null;
     public List<List<GameObject>> AllCheckpoints => allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+    public bool flagDoor = false; // Bật để vẽ nét đứt (dành cho cửa)
 
     void Start()
     {
@@ -123,9 +130,36 @@ public class CheckpointManager : MonoBehaviour
         if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, position) < closeThreshold)
         {
             DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
+            wallLines.Add(new WallLine(
+                currentCheckpoints[^1].transform.position,
+                currentCheckpoints[0].transform.position,
+                currentLineType
+                ));
             isClosedLoop = true;
 
-            allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
+            // allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
+            // Lưu lại Room mới
+            Room newRoom = new Room();
+
+            // Lưu checkpoint (Vector3) từ currentCheckpoints
+            foreach (GameObject cp in currentCheckpoints)
+            {
+                newRoom.checkpoints.Add(cp.transform.position);
+            }
+
+            // Lưu wallLines tương ứng với đoạn vừa khép kín
+            int segmentCount = currentCheckpoints.Count;
+            for (int i = wallLines.Count - segmentCount; i < wallLines.Count; i++)
+            {
+                newRoom.wallLines.Add(wallLines[i]);
+            }
+
+            rooms.Add(newRoom);
+
+            // Vẫn giữ lại dữ liệu gốc nếu cần
+            allCheckpoints.Add(new List<GameObject>(currentCheckpoints));
+
+
             currentCheckpoints.Clear(); // Tạo mạch mới
             return;
         }
@@ -140,6 +174,8 @@ public class CheckpointManager : MonoBehaviour
             Vector3 start = currentCheckpoints[^2].transform.position;
             Vector3 end = checkpoint.transform.position;
             DrawingTool.DrawLineAndDistance(start, end);
+
+            wallLines.Add(new WallLine(start, end, currentLineType));
         }
     }
 
