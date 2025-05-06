@@ -136,6 +136,7 @@ public class CheckpointManager : MonoBehaviour
                 currentLineType
                 ));
             isClosedLoop = true;
+            Debug.Log("Done 1: " + wallLines.Count);
 
             // allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
             // Lưu lại Room mới
@@ -149,9 +150,11 @@ public class CheckpointManager : MonoBehaviour
 
             // Lưu wallLines tương ứng với đoạn vừa khép kín
             int segmentCount = currentCheckpoints.Count;
+            Debug.Log("Done 2: " + segmentCount);
             for (int i = wallLines.Count - segmentCount; i < wallLines.Count; i++)
             {
                 newRoom.wallLines.Add(wallLines[i]);
+                Debug.Log("Done 3:i = " + wallLines[i]);
             }
 
             rooms.Add(newRoom);

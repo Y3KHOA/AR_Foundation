@@ -14,12 +14,9 @@ public class TransData : MonoBehaviour
     public List<List<float>> allHeights;
     public List<Room> rooms; // Gán từ bên ngoài hoặc thông qua BtnController
 
-
     public float Area;
     public float Perimeter;
     public float Ceiling;
-
-
 
     private bool isDataChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu
 
