@@ -25,7 +25,7 @@ public class BtnChoose : MonoBehaviour
     void OnDrawClicked()
     {
         Debug.Log("Nhấn Draw - Chuyển scene DraftingScene");
-        SceneManager.LoadScene("DraftingScene"); // Chuyển scene
+        SceneManager.LoadScene("SampleScene"); // Chuyển scene
     }
 
     void OnByCamClicked()

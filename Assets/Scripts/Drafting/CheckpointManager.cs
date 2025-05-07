@@ -129,41 +129,39 @@ public class CheckpointManager : MonoBehaviour
         // Kiểm tra nếu điểm mới gần p1, chỉ nối lại các điểm
         if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, position) < closeThreshold)
         {
-            DrawingTool.DrawLineAndDistance(currentCheckpoints[^1].transform.position, currentCheckpoints[0].transform.position);
-            wallLines.Add(new WallLine(
-                currentCheckpoints[^1].transform.position,
-                currentCheckpoints[0].transform.position,
-                currentLineType
-                ));
-            isClosedLoop = true;
-            Debug.Log("Done 1: " + wallLines.Count);
+            Vector3 start = currentCheckpoints[^1].transform.position;
+            Vector3 end = currentCheckpoints[0].transform.position;
 
-            // allCheckpoints.Add(new List<GameObject>(currentCheckpoints)); // Lưu mạch cũ
-            // Lưu lại Room mới
+            DrawingTool.DrawLineAndDistance(start, end);
+
+            // Tạo Room mới
             Room newRoom = new Room();
 
-            // Lưu checkpoint (Vector3) từ currentCheckpoints
+            // Lưu checkpoint
             foreach (GameObject cp in currentCheckpoints)
             {
-                newRoom.checkpoints.Add(cp.transform.position);
+                Vector3 pos = cp.transform.position;
+                newRoom.checkpoints.Add(new Vector2(pos.x, pos.z));
             }
 
-            // Lưu wallLines tương ứng với đoạn vừa khép kín
-            int segmentCount = currentCheckpoints.Count;
-            Debug.Log("Done 2: " + segmentCount);
-            for (int i = wallLines.Count - segmentCount; i < wallLines.Count; i++)
+            // Tạo wallLines từ checkpoint
+            for (int i = 0; i < currentCheckpoints.Count; i++)
             {
-                newRoom.wallLines.Add(wallLines[i]);
-                Debug.Log("Done 3:i = " + wallLines[i]);
+                Vector3 p1 = currentCheckpoints[i].transform.position;
+                Vector3 p2 = (i == currentCheckpoints.Count - 1)
+                    ? currentCheckpoints[0].transform.position
+                    : currentCheckpoints[i + 1].transform.position;
+
+                WallLine wall = new WallLine(p1, p2, currentLineType);
+                newRoom.wallLines.Add(wall);
             }
 
-            rooms.Add(newRoom);
+            RoomStorage.rooms.Add(newRoom);
+            Debug.Log("Đã lưu Room với " + newRoom.checkpoints.Count + " điểm và " + newRoom.wallLines.Count + " cạnh.");
 
-            // Vẫn giữ lại dữ liệu gốc nếu cần
             allCheckpoints.Add(new List<GameObject>(currentCheckpoints));
-
-
-            currentCheckpoints.Clear(); // Tạo mạch mới
+            currentCheckpoints.Clear();
+            isClosedLoop = true;
             return;
         }
 
