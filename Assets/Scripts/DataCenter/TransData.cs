@@ -75,48 +75,35 @@ public class TransData : MonoBehaviour
     // Truyền dữ liệu từ BtnController sang DataTransfer và TransData
     public void TransferData()
     {
-        // Lấy nested list từ BtnController
-        List<List<GameObject>> allBasePoints = btnController.GetAllBasePoints();
-        List<List<GameObject>> allHeightPoints = btnController.GetAllHeightPoints();
-
-        // Lấy diện tích, chu vi và diện tích mặt trần từ BtnController
-        Area = btnController.AreaValue;
-        Debug.Log("Dien tich transData: " + Area);
-        Perimeter = btnController.PerimeterValue;
-        Ceiling = btnController.CeilingValue;
-
+        //lấy dữ liệu từ RoomStorage
         List<List<Vector2>> allProjectedPoints = new List<List<Vector2>>();
         List<List<float>> allHeightsList = new List<List<float>>();
 
-        for (int i = 0; i < allBasePoints.Count; i++)
+        foreach (Room room in RoomStorage.rooms)
         {
-            List<Vector2> path2D = new List<Vector2>();
-            List<float> heightList = new List<float>();
-
-            for (int j = 0; j < allBasePoints[i].Count; j++)
-            {
-                Vector3 basePos = allBasePoints[i][j].transform.position;
-                Vector3 heightPos = allHeightPoints[i][j].transform.position;
-
-                path2D.Add(new Vector2(basePos.x, basePos.z));
-                heightList.Add(heightPos.y - basePos.y);
-            }
-
+            // Lưu điểm 2D
+            List<Vector2> path2D = new List<Vector2>(room.checkpoints);
+            Debug.Log("Done Room checkpoint.count: " + room.checkpoints.Count);
+            Debug.Log("Done Room checkpoints.position: " + room.checkpoints[room.checkpoints.Count-1]);
             allProjectedPoints.Add(path2D);
+
+            // Lưu chiều cao
+            List<float> heightList = new List<float>(room.heights);
+            Debug.Log("Done Room heights.count: " + room.heights.Count);
+            Debug.Log("Done Room heights " + room.heights);
             allHeightsList.Add(heightList);
         }
 
         // Lưu vào DataTransfer
         DataTransfer.Instance.SetAllPoints(allProjectedPoints);
-        DataTransfer.Instance.SetAllHeights(allHeights);
+        DataTransfer.Instance.SetAllHeights(allHeightsList);
         DataTransfer.Instance.AreaValue = Area;
         DataTransfer.Instance.PerimeterValue = Perimeter;
         DataTransfer.Instance.CeilingValue = Ceiling;
 
         // Lưu vào TransData
         this.allPoints = allProjectedPoints;
-        this.allHeights = allHeightsList;
-        Debug.Log($"[TransferData] Đã lưu {allProjectedPoints.Count} mạch và tổng cộng {CountTotalPoints(allProjectedPoints)} điểm.");
+        this.allHeights = allHeightsList;        
     }
 
     int CountTotalPoints(List<List<Vector2>> data)

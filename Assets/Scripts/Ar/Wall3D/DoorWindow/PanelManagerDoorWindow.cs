@@ -10,19 +10,44 @@ public class PanelManagerDoorWindow: MonoBehaviour
     public Button BtnDoor;
     public Button BtnWindow;
     public Button BtnAdd;
+
+    public bool IsDoorChanged => isDoorChanged;
+    public bool IsWindowChanged => isWindowChanged;
+
+    public static PanelManagerDoorWindow Instance { get; private set; }
+    private bool isDoorChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Door
+    private bool isWindowChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Window
+
+
+    void Awake()
+    {
+        // Gán Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject); // Nếu đã có một instance khác => hủy
+        }
+        else
+        {
+            Instance = this;
+        }
+        isDoorChanged = false;  // Khởi tạo mặc định là chưa thay đổi
+        isWindowChanged = false;  // Khởi tạo mặc định là chưa thay đổi
+    }
     private void Start()
     {
-        if (BtnDoor != null)
+        BtnDoor.onClick.AddListener(() =>
         {
-            Debug.Log("BtnDoor assigned");
-            BtnDoor.onClick.AddListener(ClosePanel);
-        }
+            isDoorChanged = true;
+            isWindowChanged = false;
+            ClosePanel();
+        });
 
-        if (BtnWindow != null)
+        BtnWindow.onClick.AddListener(() =>
         {
-            Debug.Log("BtnWindow assigned");
-            BtnWindow.onClick.AddListener(ClosePanel);
-        }
+            isDoorChanged = false;
+            isWindowChanged = true;
+            ClosePanel();
+        });
 
         if (BtnAdd != null)
         {

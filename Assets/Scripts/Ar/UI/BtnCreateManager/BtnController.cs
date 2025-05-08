@@ -33,7 +33,8 @@ public class BtnController : MonoBehaviour
     public LineType currentLineType = LineType.Wall;
     public List<WallLine> segmentWallLines = new List<WallLine>();
     public List<Room> rooms = new List<Room>();
-    
+    private Room room = new Room();
+
     private List<GameObject> currentBasePoints = new List<GameObject>();
     private List<GameObject> currentHeightPoints = new List<GameObject>();
     private GameObject referenceHeightPoint = null;
@@ -48,10 +49,15 @@ public class BtnController : MonoBehaviour
     private Vector3 fixedBasePointPosition;
     private float initialCameraPitch;
     private GameObject tempBasePoint;
-    private Room room = new Room();
+    private bool isDoor = false;
+    private bool isWindow = false;
+    private float heightDoor = 1f;
+    private GameObject doorPreviewPoint = null;
+
 
     void Start()
     {
+
         // Lấy đơn vị đo từ bộ nhớ
         string unit = PlayerPrefs.GetString("SelectedUnit", "m");
         float savedHeight = PlayerPrefs.GetFloat("HeightValue", 0f);
@@ -79,6 +85,9 @@ public class BtnController : MonoBehaviour
 
     void Update()
     {
+        isDoor = PanelManagerDoorWindow.Instance.IsDoorChanged;
+        isWindow = PanelManagerDoorWindow.Instance.IsWindowChanged;
+        
         if (!hasPlane || !isPointVisible || pointPrefab == null || raycastManager == null)
             return;
 
@@ -169,6 +178,72 @@ public class BtnController : MonoBehaviour
             // Vẽ line theo trục Y giữa điểm gốc và preview
             lineManager.DrawPreviewLine(fixedBasePointPosition, previewPoint.transform.position);
         }
+
+        if (isDoor)
+        {
+            Vector3 currentPos = previewPoint.transform.position;
+            float minDistance = float.MaxValue;
+            Vector3 closestPoint = currentPos;
+
+            foreach (Room room in RoomStorage.rooms)
+            {
+                foreach (WallLine line in room.wallLines)
+                {
+                    Vector3 projected = ProjectPointOnLineSegment(line.start, line.end, currentPos);
+                    float distance = Vector3.Distance(currentPos, projected);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        closestPoint = projected;
+                    }
+                }
+            }
+
+            previewPoint.transform.position = new Vector3(closestPoint.x, currentPos.y, closestPoint.z);
+        }
+
+        if (isWindow && previewPoint != null && Camera.main != null)
+        {
+            Vector3 currentPos = previewPoint.transform.position;
+            float minDistance = float.MaxValue;
+            WallLine closestWall = null;
+
+            // Tìm đoạn tường gần nhất
+            foreach (Room room in RoomStorage.rooms)
+            {
+                foreach (WallLine line in room.wallLines)
+                {
+                    Vector3 projected = ProjectPointOnLineSegment(line.start, line.end, currentPos);
+                    float distance = Vector3.Distance(currentPos, projected);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        closestWall = line;
+                    }
+                }
+            }
+
+            if (closestWall != null)
+            {
+                // Tính mặt phẳng đứng của tường
+                Vector3 wallDir = (closestWall.end - closestWall.start).normalized;
+                Vector3 wallNormal = Vector3.Cross(wallDir, Vector3.up);
+
+                Plane wallPlane = new Plane(wallNormal, closestWall.start);
+
+                // Ray từ camera để tìm giao điểm trên mặt phẳng tường
+                Ray ray = Camera.main.ScreenPointToRay(new Vector2(Screen.width / 2, Screen.height / 2));
+                if (wallPlane.Raycast(ray, out float enter))
+                {
+                    Vector3 hitPoint = ray.GetPoint(enter);
+
+                    // Giữ nguyên Z của đoạn tường
+                    Vector3 wallZLocked = new Vector3(hitPoint.x, hitPoint.y, closestWall.start.z);
+                    previewPoint.transform.position = wallZLocked;
+                }
+            }
+        }
+
     }
 
     void OnPlanesChanged(ARPlanesChangedEventArgs args)
@@ -352,22 +427,23 @@ public class BtnController : MonoBehaviour
             room.wallLines.AddRange(segmentWallLines);
             Debug.Log("Done 1: " + segmentWallLines.Count);
 
-            // Lưu checkpoint (Vector3) từ currentCheckpoints
-            foreach (GameObject cp in baseCopy)
+            List<Vector2> path2D = new List<Vector2>();
+            List<float> heightList = new List<float>();
+
+            for (int j = 0; j < baseCopy.Count; j++)
             {
-                room.checkpoints.Add(cp.transform.position);
-                Debug.Log(string.Format("Done checkpoint: {0} - {1}", temp++, cp.transform.position));
+                Vector3 basePos = baseCopy[j].transform.position;
+                Vector3 heightPos = heightCopy[j].transform.position;
+
+                path2D.Add(new Vector2(basePos.x, basePos.z));
+                heightList.Add(heightPos.y - basePos.y);
+
             }
-            Debug.Log("Done 2");
-            for (int i = 0; i < baseCopy.Count; i++)
-            {
-                float height = heightCopy[i].transform.position.y - baseCopy[i].transform.position.y;
-                room.heights.Add(height);
-                Debug.Log(string.Format("Done height: {0} - {1}",temp++, height));
-            }
+            room.checkpoints.AddRange(path2D);
+            room.heights.AddRange(heightList);
             Debug.Log("Done 3");
 
-            rooms.Add(room);
+            RoomStorage.rooms.Add(room);
 
             // Tính diện tích mặt đứng **phải làm ở đây**, trước khi clear
             for (int i = 0; i < count; i++)
@@ -458,8 +534,12 @@ public class BtnController : MonoBehaviour
         return allBasePoints;
     }
 
-    public List<List<GameObject>> GetAllHeightPoints()
+    Vector3 ProjectPointOnLineSegment(Vector3 a, Vector3 b, Vector3 point)
     {
-        return allHeightPoints;
+        Vector3 ab = b - a;
+        float t = Vector3.Dot(point - a, ab) / ab.sqrMagnitude;
+        t = Mathf.Clamp01(t); // Giới hạn trong đoạn [0,1]
+        return a + ab * t;
     }
+
 }
