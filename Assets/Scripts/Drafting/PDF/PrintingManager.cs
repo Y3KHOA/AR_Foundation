@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Android;
 using System.Collections;
-using SimpleFileBrowser;
 using System.Text;
 
 public class PrintingManager : MonoBehaviour
