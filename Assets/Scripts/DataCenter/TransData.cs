@@ -12,6 +12,7 @@ public class TransData : MonoBehaviour
 
     public List<List<Vector2>> allPoints;
     public List<List<float>> allHeights;
+    private List<List<WallLine>> allWallLines = new List<List<WallLine>>();
     public List<Room> rooms; // Gán từ bên ngoài hoặc thông qua BtnController
 
     public float Area;
@@ -49,6 +50,7 @@ public class TransData : MonoBehaviour
     {
         allPoints = DataTransfer.Instance.GetAllPoints();
         allHeights = DataTransfer.Instance.GetAllHeights();
+        allWallLines= DataTransfer.Instance.GetAllWallLines();
     }
 
     // Đồng bộ dữ liệu vào DataTransfer
@@ -78,13 +80,14 @@ public class TransData : MonoBehaviour
         //lấy dữ liệu từ RoomStorage
         List<List<Vector2>> allProjectedPoints = new List<List<Vector2>>();
         List<List<float>> allHeightsList = new List<List<float>>();
+        List<List<WallLine>> allWallLines = new List<List<WallLine>>();
 
         foreach (Room room in RoomStorage.rooms)
         {
             // Lưu điểm 2D
             List<Vector2> path2D = new List<Vector2>(room.checkpoints);
             Debug.Log("Done Room checkpoint.count: " + room.checkpoints.Count);
-            Debug.Log("Done Room checkpoints.position: " + room.checkpoints[room.checkpoints.Count-1]);
+            Debug.Log("Done Room checkpoints.position: " + room.checkpoints[room.checkpoints.Count - 1]);
             allProjectedPoints.Add(path2D);
 
             // Lưu chiều cao
@@ -92,18 +95,25 @@ public class TransData : MonoBehaviour
             Debug.Log("Done Room heights.count: " + room.heights.Count);
             Debug.Log("Done Room heights " + room.heights);
             allHeightsList.Add(heightList);
+
+            // ✅ Lưu các WallLines đặc biệt
+            List<WallLine> roomWallLines = new List<WallLine>(room.wallLines);
+            allWallLines.Add(roomWallLines);
         }
 
         // Lưu vào DataTransfer
         DataTransfer.Instance.SetAllPoints(allProjectedPoints);
         DataTransfer.Instance.SetAllHeights(allHeightsList);
+        DataTransfer.Instance.SetAllWallLines(allWallLines);
+
         DataTransfer.Instance.AreaValue = Area;
         DataTransfer.Instance.PerimeterValue = Perimeter;
         DataTransfer.Instance.CeilingValue = Ceiling;
 
         // Lưu vào TransData
         this.allPoints = allProjectedPoints;
-        this.allHeights = allHeightsList;        
+        this.allHeights = allHeightsList;
+        this.allWallLines = allWallLines;
     }
 
     int CountTotalPoints(List<List<Vector2>> data)
@@ -126,12 +136,14 @@ public class DataTransfer
     private static DataTransfer instance;
     private List<List<Vector2>> allPoints;
     private List<List<float>> allHeights;
+    private List<List<WallLine>> allWallLines;
     private bool isDataChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu
 
     private DataTransfer()
     {
         allPoints = new List<List<Vector2>>();
         allHeights = new List<List<float>>();
+        allWallLines = new List<List<WallLine>>();
         isDataChanged = false;  // Khởi tạo flag là false
     }
 
@@ -169,6 +181,15 @@ public class DataTransfer
         return allHeights;
     }
 
+    public void SetAllWallLines(List<List<WallLine>> newWallLines)
+    {
+        allWallLines = newWallLines;
+    }
+
+    public List<List<WallLine>> GetAllWallLines()
+    {
+        return allWallLines;
+    }
     public bool IsDataChanged()
     {
         return isDataChanged;

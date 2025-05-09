@@ -33,7 +33,8 @@ public class CheckpointManager : MonoBehaviour
 
     void Start()
     {
-        LoadPointsFromDataTransfer();
+        // LoadPointsFromDataTransfer();
+        LoadPointsFromRoomStorage();
     }
 
     void Update()
@@ -235,10 +236,48 @@ public class CheckpointManager : MonoBehaviour
         return ray.GetPoint(5f);
     }
 
+    void LoadPointsFromRoomStorage()
+    {
+        var rooms = RoomStorage.rooms;
+        if (rooms.Count == 0)
+        {
+            Debug.Log("Không có Room nào để hiển thị.");
+            return;
+        }
+
+        foreach (var room in rooms)
+        {
+            // 1) vẽ checkpoints
+            var checkpointsForPath = new List<GameObject>();
+            foreach (var pt in room.checkpoints)
+            {
+                var worldPos = new Vector3(pt.x, 0, pt.y);
+                var cp = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
+                checkpointsForPath.Add(cp);
+            }
+            // 2) vẽ outline
+            for (int i = 1; i < checkpointsForPath.Count; i++)
+                DrawingTool.DrawLineAndDistance(
+                    checkpointsForPath[i - 1].transform.position,
+                    checkpointsForPath[i].transform.position
+                );
+            // khép kín
+            if (checkpointsForPath.Count > 2)
+                DrawingTool.DrawLineAndDistance(
+                    checkpointsForPath[^1].transform.position,
+                    checkpointsForPath[0].transform.position
+                );
+            // 3) vẽ các WallLine (bao gồm tường thường, cửa, cửa sổ)
+            foreach (var wall in room.wallLines)
+                DrawingTool.DrawLineAndDistance(wall.start, wall.end);
+        }
+    }
+
     void LoadPointsFromDataTransfer()
     {
         List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();
         List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();
+        List<List<WallLine>> allWallLines = DataTransfer.Instance.GetAllWallLines(); // thêm WallLines
 
         if (allPoints.Count == 0)
         {
@@ -253,29 +292,35 @@ public class CheckpointManager : MonoBehaviour
 
             for (int i = 0; i < path.Count; i++)
             {
-                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y); // Y = 0 vì hiển thị 2D
+                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y);
                 GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
                 checkpointsForPath.Add(checkpoint);
 
-                // Nếu có ít nhất 2 điểm, vẽ line giữa các điểm
                 if (i > 0)
                 {
                     DrawingTool.DrawLineAndDistance(checkpointsForPath[i - 1].transform.position, worldPos);
                 }
             }
 
-            // Tự động nối kín nếu đủ điểm và 2 đầu gần nhau
             if (checkpointsForPath.Count > 2 && Vector3.Distance(checkpointsForPath[0].transform.position, checkpointsForPath[^1].transform.position) < closeThreshold)
             {
                 DrawingTool.DrawLineAndDistance(checkpointsForPath[^1].transform.position, checkpointsForPath[0].transform.position);
                 isClosedLoop = true;
             }
 
-            // Lưu vào list tổng
             allCheckpoints.Add(checkpointsForPath);
+
+            // Vẽ thêm WallLines của Room này
+            if (pathIndex < allWallLines.Count)
+            {
+                foreach (WallLine wall in allWallLines[pathIndex])
+                {
+                    DrawingTool.DrawLineAndDistance(wall.start, wall.end);
+                }
+            }
         }
 
-        Debug.Log($"[LoadPoints] Đã nạp {allPoints.Count} mạch với tổng cộng {CountTotalCheckpoints()} checkpoint.");
+        Debug.Log($"[LoadPoints] Đã nạp {allPoints.Count} mạch với tổng cộng {CountTotalCheckpoints()} checkpoint và WallLines.");
     }
 
     int CountTotalCheckpoints()

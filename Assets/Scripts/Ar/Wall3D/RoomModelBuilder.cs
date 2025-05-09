@@ -1,4 +1,4 @@
-using UnityEngine;
+using UnityEngine; 
 using System.Collections.Generic;
 
 public class RoomModelBuilder : MonoBehaviour
@@ -12,6 +12,7 @@ public class RoomModelBuilder : MonoBehaviour
     {
         basePoints = basePts;
         heightPoints = heightPts;
+        Debug.Log("Name Material: " + roomMaterial.name);
     }
 
     public void BuildWalls()
@@ -41,6 +42,7 @@ public class RoomModelBuilder : MonoBehaviour
     private void CreateWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
     {
         GameObject wall = new GameObject("Wall");
+        wall.layer = LayerMask.NameToLayer("Default");
         wall.transform.SetParent(transform);
 
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
