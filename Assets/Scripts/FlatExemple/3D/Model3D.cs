@@ -9,54 +9,85 @@ public class Model3D : MonoBehaviour
 
     void Start()
     {
-        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();     // Danh sách các mạch 2D
-        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();     // Chiều cao tương ứng từng điểm trong từng mạch
+        List<Room> rooms = RoomStorage.rooms;
 
-        if (allPoints == null || allHeights == null || allPoints.Count == 0 || allHeights.Count == 0)
+        if (rooms == null || rooms.Count == 0)
         {
-            Debug.LogWarning("Không có dữ liệu 3D để dựng mô hình.");
+            Debug.LogWarning("Không có Room nào trong RoomStorage.");
             return;
         }
 
-        for (int pathIndex = 0; pathIndex < allPoints.Count; pathIndex++)
+        foreach (Room room in rooms)
         {
-            List<Vector2> path2D = allPoints[pathIndex];
-            List<float> heights = allHeights[pathIndex];
+            List<Vector2> path2D = room.checkpoints;
+            List<float> heights = room.heights;
+            List<WallLine> wallLines = room.wallLines;
 
-            // Bỏ qua nếu dữ liệu không khớp
-            if (path2D == null || heights == null || path2D.Count < 2 || path2D.Count != heights.Count)
+            if (path2D == null || heights == null || wallLines == null || path2D.Count < 2 || path2D.Count != heights.Count)
                 continue;
 
-            List<Vector3> basePts = new List<Vector3>();
-            List<Vector3> heightPts = new List<Vector3>();
+            List<Vector3> basePts = new();
+            List<Vector3> heightPts = new();
 
             for (int i = 0; i < path2D.Count; i++)
             {
-                Vector3 basePos = new Vector3(path2D[i].x, 0f, path2D[i].y);
-                Vector3 heightPos = new Vector3(path2D[i].x, heights[i], path2D[i].y);
+                Vector3 basePos = new(path2D[i].x, 0f, path2D[i].y);
+                Vector3 heightPos = new(path2D[i].x, heights[i], path2D[i].y);
                 basePts.Add(basePos);
                 heightPts.Add(heightPos);
             }
 
-            // Vẽ từng cạnh giữa 2 điểm liên tiếp
+            // Dựng tường từng đoạn
             for (int i = 0; i < basePts.Count - 1; i++)
             {
-                // CreateWall(basePts[i], heightPts[i], basePts[i + 1], heightPts[i + 1]);
+                // Kiểm tra LineType (nếu có WallLine tương ứng)
+                WallLine matchingLine = room.wallLines.Find(line =>
+                    IsMatchingSegment(line, basePts[i], basePts[i + 1])
+                );
+
+                if (matchingLine != null &&
+                    (matchingLine.type == LineType.Door || matchingLine.type == LineType.Window))
+                {
+                    continue; // Bỏ qua không dựng
+                }
+
                 CreateWall(basePts[i], basePts[i + 1], heightPts[i], heightPts[i + 1]);
             }
 
-            // Khép kín mạch nếu có ít nhất 3 điểm
+            // Đoạn cuối khép kín
             if (basePts.Count >= 3)
             {
-                CreateWall(basePts[^1], heightPts[^1], basePts[0], heightPts[0]);
+                WallLine closingLine = room.wallLines.Find(line =>
+                    IsMatchingSegment(line, basePts[^1], basePts[0])
+                );
 
-                // Đảm bảo polygon khép kín cho vẽ sàn
+                if (closingLine == null || (closingLine.type != LineType.Door && closingLine.type != LineType.Window))
+                {
+                    CreateWall(basePts[^1], basePts[0], heightPts[^1], heightPts[0]);
+                }
+
                 if (basePts[0] != basePts[^1])
                     basePts.Add(basePts[0]);
 
                 CreateFloorMesh(basePts);
             }
         }
+    }
+
+    private bool IsMatchingSegment(WallLine line, Vector3 a, Vector3 b)
+    {
+        Vector2 a2D = new(a.x, a.z);
+        Vector2 b2D = new(b.x, b.z);
+        Vector2 l1 = new(line.start.x, line.start.z);
+        Vector2 l2 = new(line.end.x, line.end.z);
+
+        return (Approximately(a2D, l1) && Approximately(b2D, l2)) ||
+               (Approximately(a2D, l2) && Approximately(b2D, l1));
+    }
+
+    private bool Approximately(Vector2 v1, Vector2 v2, float tolerance = 0.01f)
+    {
+        return Vector2.Distance(v1, v2) <= tolerance;
     }
 
     // Vẽ từng tường với vật liệu tương ứng

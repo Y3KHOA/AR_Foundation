@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PanelManagerDoorWindow: MonoBehaviour
+public class PanelManagerDoorWindow : MonoBehaviour
 {
     public BtnController btnController; // Drag vào từ Inspector
     public GameObject panel;            // Drag Panel object vào
@@ -10,9 +10,6 @@ public class PanelManagerDoorWindow: MonoBehaviour
     public Button BtnDoor;
     public Button BtnWindow;
     public Button BtnAdd;
-
-    public bool IsDoorChanged => isDoorChanged;
-    public bool IsWindowChanged => isWindowChanged;
 
     public static PanelManagerDoorWindow Instance { get; private set; }
     private bool isDoorChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Door
@@ -60,7 +57,7 @@ public class PanelManagerDoorWindow: MonoBehaviour
         if (btnController != null && btnController.Flag == 1)
         {
             ShowPanel();
-        }        
+        }
     }
 
     private void ShowPanel()
@@ -81,4 +78,17 @@ public class PanelManagerDoorWindow: MonoBehaviour
         if (openButton != null)
             openButton.SetActive(true);
     }
+
+    public bool IsDoorChanged
+    {
+        get => isDoorChanged;
+        set => isDoorChanged = value;
+    }
+
+    public bool IsWindowChanged
+    {
+        get => isWindowChanged;
+        set => isWindowChanged = value;
+    }
+
 }

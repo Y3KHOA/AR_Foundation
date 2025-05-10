@@ -96,7 +96,7 @@ public class TransData : MonoBehaviour
             Debug.Log("Done Room heights " + room.heights);
             allHeightsList.Add(heightList);
 
-            // ✅ Lưu các WallLines đặc biệt
+            // Lưu các WallLines đặc biệt
             List<WallLine> roomWallLines = new List<WallLine>(room.wallLines);
             allWallLines.Add(roomWallLines);
         }
@@ -129,15 +129,15 @@ public class TransData : MonoBehaviour
 
 public class DataTransfer
 {
-    public float AreaValue { get; set; }
-    public float PerimeterValue { get; set; }
-    public float CeilingValue { get; set; }
-
     private static DataTransfer instance;
     private List<List<Vector2>> allPoints;
     private List<List<float>> allHeights;
     private List<List<WallLine>> allWallLines;
     private bool isDataChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu
+
+    public float AreaValue { get; set; }
+    public float PerimeterValue { get; set; }
+    public float CeilingValue { get; set; }
 
     private DataTransfer()
     {
