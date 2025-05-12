@@ -34,7 +34,7 @@ public class BtnController : MonoBehaviour
     public LineType currentLineType = LineType.Wall;
     public List<WallLine> segmentWallLines = new List<WallLine>();
     public List<Room> rooms = new List<Room>();
-    private Room room = new Room();
+    // private Room room = new Room();
 
     private List<GameObject> currentBasePoints = new List<GameObject>();
     private List<GameObject> currentHeightPoints = new List<GameObject>();
@@ -201,29 +201,6 @@ public class BtnController : MonoBehaviour
             lineManager.DrawPreviewLine(fixedBasePointPosition, previewPoint.transform.position);
         }
 
-        // if (isDoor)
-        // {
-        //     Vector3 currentPos = previewPoint.transform.position;
-        //     float minDistance = float.MaxValue;
-        //     Vector3 closestPoint = currentPos;
-
-        //     foreach (Room room in RoomStorage.rooms)
-        //     {
-        //         foreach (WallLine line in room.wallLines)
-        //         {
-        //             Vector3 projected = ProjectPointOnLineSegment(line.start, line.end, currentPos);
-        //             float distance = Vector3.Distance(currentPos, projected);
-        //             if (distance < minDistance)
-        //             {
-        //                 minDistance = distance;
-        //                 closestPoint = projected;
-        //             }
-        //         }
-        //     }
-
-        //     previewPoint.transform.position = new Vector3(closestPoint.x, currentPos.y, closestPoint.z);
-        // }
-
         if (isWindow)
         {
             Vector3 currentPos = previewPoint.transform.position;
@@ -270,6 +247,17 @@ public class BtnController : MonoBehaviour
         {
             Destroy(spawnedPoint);
         }
+    }
+
+    private bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float tolerance = 0.01f)
+    {
+        Vector2 A1 = new Vector2(a1.x, a1.z);
+        Vector2 A2 = new Vector2(a2.x, a2.z);
+        Vector2 B1 = new Vector2(b1.x, b1.z);
+        Vector2 B2 = new Vector2(b2.x, b2.z);
+
+        return (Vector2.Distance(A1, B1) < tolerance && Vector2.Distance(A2, B2) < tolerance)
+            || (Vector2.Distance(A1, B2) < tolerance && Vector2.Distance(A2, B1) < tolerance);
     }
 
     /// <summary>
@@ -349,18 +337,47 @@ public class BtnController : MonoBehaviour
                     Vector2 doorStart = new Vector2(firstDoorBasePoint.transform.position.x, firstDoorBasePoint.transform.position.z);
                     Vector2 doorEnd = new Vector2(secondDoorBasePoint.transform.position.x, secondDoorBasePoint.transform.position.z);
 
-                    // Cập nhật Room tổng thể:
-                    targetRoom.checkpoints.Add(doorStart);
-                    targetRoom.heights.Add(heightDoor);
-                    targetRoom.checkpoints.Add(doorEnd);
-                    targetRoom.heights.Add(heightDoor);
+                    // === Chèn checkpoint cửa vào giữa đúng vị trí ===
+                    List<Vector2> pts = targetRoom.checkpoints;
+                    List<float> hts = targetRoom.heights;
 
-                    // Ghi WallLine chỉ để đánh dấu kiểu (không dùng nối tiếp)
-                    targetRoom.wallLines.Add(new WallLine(
-                        firstDoorBasePoint.transform.position,
-                        secondDoorBasePoint.transform.position,
-                        LineType.Door
-                    ));
+                    int insertIndex = -1;
+                    for (int i = 0; i < pts.Count - 1; i++)
+                    {
+                        Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
+                        Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+                        if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                        {
+                            insertIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (insertIndex != -1)
+                    {
+                        pts.Insert(insertIndex + 1, doorStart);
+                        hts.Insert(insertIndex + 1, heightDoor);
+                        pts.Insert(insertIndex + 2, doorEnd);
+                        hts.Insert(insertIndex + 2, heightDoor);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
+                        pts.Add(doorStart); hts.Add(heightDoor);
+                        pts.Add(doorEnd); hts.Add(heightDoor);
+                    }
+
+                    // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
+                    targetRoom.wallLines.Remove(targetWall);
+
+                    Vector3 leftStart = targetWall.start;
+                    Vector3 leftEnd = firstDoorBasePoint.transform.position;
+                    Vector3 rightStart = secondDoorBasePoint.transform.position;
+                    Vector3 rightEnd = targetWall.end;
+
+                    targetRoom.wallLines.Add(new WallLine(leftStart, leftEnd, LineType.Wall));
+                    targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door));
+                    targetRoom.wallLines.Add(new WallLine(rightStart, rightEnd, LineType.Wall));
 
                     Debug.Log("Door completed.");
 
@@ -527,6 +544,7 @@ public class BtnController : MonoBehaviour
                 segmentWallLines.Add(wl);
             }
             // Lưu chính xác các WallLine này vào Room hiện tại
+            Room room = new Room();
             room.wallLines.AddRange(segmentWallLines);
             Debug.Log("Done 1: " + segmentWallLines.Count);
 

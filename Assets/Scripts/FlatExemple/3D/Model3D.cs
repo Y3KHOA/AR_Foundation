@@ -6,6 +6,9 @@ public class Model3D : MonoBehaviour
 {
     public Material roomMaterial;
     public Material bottomMaterial;
+    public GameObject doorPrefab;
+    public GameObject windowPrefab;
+
 
     void Start()
     {
@@ -19,59 +22,90 @@ public class Model3D : MonoBehaviour
 
         foreach (Room room in rooms)
         {
-            List<Vector2> path2D = room.checkpoints;
+            List<Vector2> checkpoints = room.checkpoints;
             List<float> heights = room.heights;
             List<WallLine> wallLines = room.wallLines;
 
-            if (path2D == null || heights == null || wallLines == null || path2D.Count < 2 || path2D.Count != heights.Count)
+            if (checkpoints == null || heights == null || wallLines == null ||
+                checkpoints.Count < 2 || checkpoints.Count != heights.Count)
                 continue;
 
-            List<Vector3> basePts = new();
-            List<Vector3> heightPts = new();
-
-            for (int i = 0; i < path2D.Count; i++)
+            // Dựng tường theo từng đoạn
+            for (int i = 0; i < checkpoints.Count - 1; i++)
             {
-                Vector3 basePos = new(path2D[i].x, 0f, path2D[i].y);
-                Vector3 heightPos = new(path2D[i].x, heights[i], path2D[i].y);
-                basePts.Add(basePos);
-                heightPts.Add(heightPos);
-            }
+                Vector3 base1 = new Vector3(checkpoints[i].x, 0f, checkpoints[i].y);
+                Vector3 base2 = new Vector3(checkpoints[i + 1].x, 0f, checkpoints[i + 1].y);
+                Vector3 top1 = base1 + Vector3.up * heights[i];
+                Vector3 top2 = base2 + Vector3.up * heights[i + 1];
 
-            // Dựng tường từng đoạn
-            for (int i = 0; i < basePts.Count - 1; i++)
-            {
-                // Kiểm tra LineType (nếu có WallLine tương ứng)
-                WallLine matchingLine = room.wallLines.Find(line =>
-                    IsMatchingSegment(line, basePts[i], basePts[i + 1])
-                );
+                WallLine match = wallLines.Find(w => IsSameSegment2D(w.start, w.end, base1, base2));
 
-                if (matchingLine != null &&
-                    (matchingLine.type == LineType.Door || matchingLine.type == LineType.Window))
+                if (match != null && (match.type == LineType.Door || match.type == LineType.Window))
                 {
-                    continue; // Bỏ qua không dựng
-                }
+                    // Xử lý cửa hoặc cửa sổ
+                    Vector3 doorStart = match.start;
+                    Vector3 doorEnd = match.end;
 
-                CreateWall(basePts[i], basePts[i + 1], heightPts[i], heightPts[i + 1]);
+                    // Bảo đảm hướng
+                    if (Vector3.Distance(doorStart, base2) < Vector3.Distance(doorStart, base1))
+                        (doorStart, doorEnd) = (doorEnd, doorStart);
+
+                    float wallHeight = Mathf.Max(heights[i], heights[i + 1]);
+                    float doorHeight = Mathf.Min(heights[i], heights[i + 1]); // giả định chiều cao cửa nằm ở checkpoint
+
+                    Vector3 bTop = doorStart + Vector3.up * doorHeight;
+                    Vector3 cTop = doorEnd + Vector3.up * doorHeight;
+
+                    Vector3 bUpper = doorStart + Vector3.up * wallHeight;
+                    Vector3 cUpper = doorEnd + Vector3.up * wallHeight;
+
+                    // Vẽ trái cửa
+                    if (Vector3.Distance(base1, doorStart) > 0.01f)
+                        CreateWall(base1, doorStart, doorStart + Vector3.up * wallHeight, top1);
+
+                    // Vẽ cửa
+                    // CreateWall2(doorStart, doorEnd, cTop, bTop);
+                    CreateWall2(doorStart, doorEnd, bTop, cTop);
+
+                    // Vẽ tường trên cửa
+                    if (wallHeight > doorHeight + 0.01f)
+                        CreateWall(bTop, cTop, bUpper, cUpper);
+
+                    // Vẽ phải cửa
+                    if (Vector3.Distance(doorEnd, base2) > 0.01f)
+                        CreateWall(doorEnd, base2, top2, doorEnd + Vector3.up * wallHeight);
+                }
+                else
+                {
+                    // Tường thường
+                    CreateWall(base1, base2, top1, top2);
+                }
             }
 
-            // Đoạn cuối khép kín
+            // Tạo sàn
+            List<Vector3> basePts = new();
+            foreach (var pt in checkpoints)
+                basePts.Add(new Vector3(pt.x, 0f, pt.y));
+
             if (basePts.Count >= 3)
             {
-                WallLine closingLine = room.wallLines.Find(line =>
-                    IsMatchingSegment(line, basePts[^1], basePts[0])
-                );
-
-                if (closingLine == null || (closingLine.type != LineType.Door && closingLine.type != LineType.Window))
-                {
-                    CreateWall(basePts[^1], basePts[0], heightPts[^1], heightPts[0]);
-                }
-
                 if (basePts[0] != basePts[^1])
                     basePts.Add(basePts[0]);
 
                 CreateFloorMesh(basePts);
             }
         }
+    }
+
+    private bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float tolerance = 0.01f)
+    {
+        Vector2 A1 = new Vector2(a1.x, a1.z);
+        Vector2 A2 = new Vector2(a2.x, a2.z);
+        Vector2 B1 = new Vector2(b1.x, b1.z);
+        Vector2 B2 = new Vector2(b2.x, b2.z);
+
+        return (Vector2.Distance(A1, B1) < tolerance && Vector2.Distance(A2, B2) < tolerance)
+            || (Vector2.Distance(A1, B2) < tolerance && Vector2.Distance(A2, B1) < tolerance);
     }
 
     private bool IsMatchingSegment(WallLine line, Vector3 a, Vector3 b)
@@ -103,6 +137,69 @@ public class Model3D : MonoBehaviour
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
         meshRenderer.material = roomMaterial;
+
+        UnityEngine.Mesh mesh = new UnityEngine.Mesh();
+
+        // Hướng vuông góc với mặt tường để tạo độ dày
+        Vector3 forward = Vector3.Cross(p2 - p1, p4 - p1).normalized;
+        float thickness = 0.05f;
+        Vector3 offset = forward * thickness;
+
+        // Tám đỉnh của khối hộp (bức tường có độ dày)
+        Vector3[] vertices = new Vector3[8];
+        vertices[0] = p1;
+        vertices[1] = p2;
+        vertices[2] = p3;
+        vertices[3] = p4;
+
+        vertices[4] = p1 + offset;
+        vertices[5] = p2 + offset;
+        vertices[6] = p3 + offset;
+        vertices[7] = p4 + offset;
+
+        int[] triangles = {
+            // Mặt trước
+            0, 2, 1, 2, 3, 1,
+            // Mặt sau
+            6, 4, 5, 6, 5, 7,
+            // Trái
+            4, 0, 1, 4, 1, 5,
+            // Phải
+            2, 6, 7, 2, 7, 3,
+            // Trên
+            1, 3, 7, 1, 7, 5,
+            // Dưới
+            4, 6, 2, 4, 2, 0
+        };
+
+        // Vector2[] uv = new Vector2[8]; // có thể chỉnh UV chi tiết nếu cần, nhưng giữ đơn giản
+        Vector2[] uv = new Vector2[8];
+        for (int i = 0; i < 8; i++)
+            uv[i] = new Vector2(vertices[i].x, vertices[i].y);
+
+        mesh.vertices = vertices;
+        mesh.triangles = triangles;
+        mesh.uv = uv;
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+
+        meshFilter.mesh = mesh;
+
+        MeshCollider meshCollider = wall.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = mesh;
+    }
+    private void CreateWall2(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
+    {
+        GameObject wall = new GameObject("Wall");
+        wall.transform.SetParent(transform);
+
+        // Gán Layer
+        // wall.layer = LayerMask.NameToLayer("PreviewModel");
+        SetLayerRecursively(wall, LayerMask.NameToLayer("PreviewModel"));
+
+        MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
+        meshRenderer.material = bottomMaterial;
 
         UnityEngine.Mesh mesh = new UnityEngine.Mesh();
 
