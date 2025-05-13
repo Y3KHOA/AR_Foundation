@@ -56,8 +56,8 @@ public class BtnController : MonoBehaviour
     private GameObject doorPreviewPoint = null;
     private GameObject firstDoorBasePoint = null;
     private GameObject firstDoorTopPoint = null;
-    private bool justPlacedDoor = false;
-
+    private bool measureDoor = false;
+    float heightTemp = 0f;
 
 
     void Start()
@@ -144,49 +144,106 @@ public class BtnController : MonoBehaviour
             Camera cam = Camera.main ?? (Camera.allCameras.Length > 0 ? Camera.allCameras[0] : null);
             if (cam == null) return;
 
-            Vector3 centerWorld = cam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 1f)); // điểm giữa màn hình
-
-            WallLine matchedLine = null;
-            float minDistance = float.MaxValue;
-
-            foreach (Room room in RoomStorage.rooms)
+            if (measureDoor) // 🟢 CHẾ ĐỘ chọn vị trí cửa (preview chạy trên line)
             {
-                foreach (WallLine line in room.wallLines)
-                {
-                    Vector3 projected = ProjectPointOnLineSegment(line.start, line.end, centerWorld);
-                    float distance = Vector3.Distance(centerWorld, projected);
+                Vector3 centerWorld = cam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 1f));
+                WallLine matchedLine = null;
+                float minDistance = float.MaxValue;
 
-                    if (distance < minDistance)
+                foreach (Room room in RoomStorage.rooms)
+                {
+                    foreach (WallLine line in room.wallLines)
                     {
-                        minDistance = distance;
-                        matchedLine = line;
+                        Vector3 projected = ProjectPointOnLineSegment(line.start, line.end, centerWorld);
+                        float distance = Vector3.Distance(centerWorld, projected);
+
+                        if (distance < minDistance)
+                        {
+                            minDistance = distance;
+                            matchedLine = line;
+                        }
                     }
                 }
-            }
 
-            if (matchedLine != null)
+                if (matchedLine != null)
+                {
+                    Vector3 projected = ProjectPointOnLineSegment(matchedLine.start, matchedLine.end, centerWorld);
+
+                    if (previewPoint == null)
+                    {
+                        previewPoint = Instantiate(pointPrefab, projected + Vector3.up * 0.01f, Quaternion.identity);
+                        previewPoint.name = "DoorPreview";
+                    }
+
+                    // Giữ lại Y cũ nếu đang đo chiều cao, hoặc gán 0.01 nếu mới
+                    float y = previewPoint.transform.position.y;
+                    previewPoint.transform.position = new Vector3(projected.x, y, projected.z);
+                    previewPoint.SetActive(true);
+                }
+                else if (previewPoint != null)
+                {
+                    previewPoint.SetActive(false);
+                }
+            }
+            else // 🔵 CHẾ ĐỘ đo chiều cao
             {
-                // Tạo checkpoint nếu chưa có
+                float currentPitch = cam.transform.eulerAngles.x;
+
                 if (previewPoint == null)
                 {
-                    previewPoint = Instantiate(pointPrefab, matchedLine.start + Vector3.up * 0.01f, Quaternion.identity);
-                    previewPoint.name = "DoorPreview";
+                    // Tìm đoạn tường gần camera nhất
+                    Vector3 centerWorld = cam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 1f));
+                    WallLine matchedLine = null;
+                    float minDistance = float.MaxValue;
+
+                    foreach (Room room in RoomStorage.rooms)
+                    {
+                        foreach (WallLine line in room.wallLines)
+                        {
+                            Vector3 projected = ProjectPointOnLineSegment(line.start, line.end, centerWorld);
+                            float distance = Vector3.Distance(centerWorld, projected);
+
+                            if (distance < minDistance)
+                            {
+                                minDistance = distance;
+                                matchedLine = line;
+                            }
+                        }
+                    }
+
+                    if (matchedLine != null)
+                    {
+                        // Tạo previewPoint tại đoạn tường đó
+                        Vector3 projected = ProjectPointOnLineSegment(matchedLine.start, matchedLine.end, centerWorld);
+                        fixedBasePointPosition = projected;
+
+                        previewPoint = Instantiate(pointPrefab, projected + Vector3.up * 0.01f, Quaternion.identity);
+                        previewPoint.name = "HeightPreview";
+
+                        // Cập nhật góc pitch ban đầu
+                        initialCameraPitch = currentPitch;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Không tìm thấy line nào để gán base cho cửa.");
+                        return;
+                    }
                 }
 
-                // Di chuyển previewPoint trượt ngang trên đoạn tường
-                Vector3 projected = ProjectPointOnLineSegment(matchedLine.start, matchedLine.end, centerWorld);
-                float y = previewPoint.transform.position.y; // giữ nguyên Y ban đầu
-                previewPoint.transform.position = new Vector3(projected.x, y, projected.z);
 
-                previewPoint.SetActive(true);
+                float deltaPitch = Mathf.DeltaAngle(initialCameraPitch, currentPitch);
+                float distanceToBase = Vector3.Distance(cam.transform.position, fixedBasePointPosition);
+                float pitchToHeightScale = distanceToBase * 0.02f;
+
+                float rawY = fixedBasePointPosition.y - deltaPitch * pitchToHeightScale;
+                float newY = Mathf.Max(fixedBasePointPosition.y, rawY);
+
+                previewPoint.transform.position = new Vector3(fixedBasePointPosition.x, newY, fixedBasePointPosition.z);
+
+                lineManager.DrawPreviewLine(fixedBasePointPosition, previewPoint.transform.position);
             }
-            else
-            {
-                if (previewPoint != null)
-                    previewPoint.SetActive(false);
-            }
-            
         }
+
         else
         // === khi nhan window ===
         if (isWindow)
@@ -362,99 +419,153 @@ public class BtnController : MonoBehaviour
                 }
             }
 
-            if (targetWall != null && targetRoom != null)
+            if (heightTemp == 0)
             {
+                // ===== LẦN NHẤN ĐẦU =====
                 Vector3 insertPoint = ProjectPointOnLineSegment(targetWall.start, targetWall.end, currentPos);
 
-                // Lần nhấn đầu tiên tạo điểm đầu cửa
                 if (firstDoorBasePoint == null)
                 {
-                    firstDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
-                    firstDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
+                    // Gán vị trí cố định để đo chiều cao từ
+                    fixedBasePointPosition = insertPoint;
 
-                    // Kết nối điểm Pn với Pn'
-                    lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);
-                    // return;
+                    // Tạo point tạm để hiển thị (nếu muốn người dùng thấy gốc)
+                    tempBasePoint = Instantiate(pointPrefab, fixedBasePointPosition, Quaternion.identity);
+                    tempBasePoint.name = "TempBasePoint";
+
+                    Debug.Log("Đã tạo TempBasePoint ở: " + fixedBasePointPosition);
+                    return;
                 }
                 else
                 {
-                    // Lần nhấn thứ hai tạo điểm cuối cửa
-                    GameObject secondDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
-                    GameObject secondDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
+                    // Lần nhấn thứ hai - Kết thúc đo chiều cao
+                    Debug.Log("Lần nhấn 2 - Lưu chiều cao");
 
-                    // 1. Kết nối Pn với Pn' của mỗi điểm
-                    lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);   // p1 ↔ p1'
-                    lineManager.DrawLineAndDistance(secondDoorBasePoint.transform.position, secondDoorTopPoint.transform.position); // p2 ↔ p2'
-
-                    // 2. Kết nối base và top: p1 → p2, p1' → p2'
-                    lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position); // p1 → p2
-                    lineManager.DrawLineAndDistance(firstDoorTopPoint.transform.position, secondDoorTopPoint.transform.position);   // p1' → p2'
-
-                    // Vẽ tường cửa riêng biệt
-                    modelView.CreateWall(
-                        firstDoorBasePoint.transform.position,
-                        secondDoorBasePoint.transform.position,
-                        firstDoorTopPoint.transform.position,
-                        secondDoorTopPoint.transform.position
-                    );
-
-                    // Lưu vào Room (đoạn cửa)
-                    Vector2 doorStart = new Vector2(firstDoorBasePoint.transform.position.x, firstDoorBasePoint.transform.position.z);
-                    Vector2 doorEnd = new Vector2(secondDoorBasePoint.transform.position.x, secondDoorBasePoint.transform.position.z);
-
-                    // === Chèn checkpoint cửa vào giữa đúng vị trí ===
-                    List<Vector2> pts = targetRoom.checkpoints;
-                    List<float> hts = targetRoom.heights;
-
-                    int insertIndex = -1;
-                    for (int i = 0; i < pts.Count - 1; i++)
+                    if (previewPoint != null)
                     {
-                        Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
-                        Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
-                        if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                        heightTemp = previewPoint.transform.position.y - fixedBasePointPosition.y;
+                        heightTemp = Mathf.Max(0, heightTemp); // Đảm bảo không âm
+                        heightDoor = heightTemp;
+
+                        lineManager.DestroyPreviewObjects();
+                        previewPoint.SetActive(false);
+                        Destroy(previewPoint); previewPoint = null;
+
+                        // Xóa tempBasePoint nếu có
+                        if (tempBasePoint != null)
                         {
-                            insertIndex = i;
-                            break;
+                            if (currentBasePoints.Contains(tempBasePoint))
+                            {
+                                currentBasePoints.Remove(tempBasePoint);
+                            }
+                            Destroy(tempBasePoint);
+                            tempBasePoint = null;
                         }
                     }
 
-                    if (insertIndex != -1)
+                    /// Reset lại trạng thái
+                    measureDoor = true;
+                    fixedBasePointPosition = Vector3.zero;
+                    initialCameraPitch = 0f;
+                    heightTemp = 0f;
+
+                    return;
+                }
+            }
+
+            if (targetWall != null && targetRoom != null)
+                {
+                    Vector3 insertPoint = ProjectPointOnLineSegment(targetWall.start, targetWall.end, currentPos);
+
+                    // Lần nhấn đầu tiên tạo điểm đầu cửa
+                    if (firstDoorBasePoint == null)
                     {
-                        pts.Insert(insertIndex + 1, doorStart);
-                        hts.Insert(insertIndex + 1, heightDoor);
-                        pts.Insert(insertIndex + 2, doorEnd);
-                        hts.Insert(insertIndex + 2, heightDoor);
+                        firstDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
+                        firstDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
+
+                        // Kết nối điểm Pn với Pn'
+                        lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);
+                        // return;
                     }
                     else
                     {
-                        Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
-                        pts.Add(doorStart); hts.Add(heightDoor);
-                        pts.Add(doorEnd); hts.Add(heightDoor);
+                        // Lần nhấn thứ hai tạo điểm cuối cửa
+                        GameObject secondDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
+                        GameObject secondDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
+
+                        // 1. Kết nối Pn với Pn' của mỗi điểm
+                        lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);   // p1 ↔ p1'
+                        lineManager.DrawLineAndDistance(secondDoorBasePoint.transform.position, secondDoorTopPoint.transform.position); // p2 ↔ p2'
+
+                        // 2. Kết nối base và top: p1 → p2, p1' → p2'
+                        lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position); // p1 → p2
+                        lineManager.DrawLineAndDistance(firstDoorTopPoint.transform.position, secondDoorTopPoint.transform.position);   // p1' → p2'
+
+                        // Vẽ tường cửa riêng biệt
+                        modelView.CreateWall(
+                            firstDoorBasePoint.transform.position,
+                            secondDoorBasePoint.transform.position,
+                            firstDoorTopPoint.transform.position,
+                            secondDoorTopPoint.transform.position
+                        );
+
+                        // Lưu vào Room (đoạn cửa)
+                        Vector2 doorStart = new Vector2(firstDoorBasePoint.transform.position.x, firstDoorBasePoint.transform.position.z);
+                        Vector2 doorEnd = new Vector2(secondDoorBasePoint.transform.position.x, secondDoorBasePoint.transform.position.z);
+
+                        // === Chèn checkpoint cửa vào giữa đúng vị trí ===
+                        List<Vector2> pts = targetRoom.checkpoints;
+                        List<float> hts = targetRoom.heights;
+
+                        int insertIndex = -1;
+                        for (int i = 0; i < pts.Count - 1; i++)
+                        {
+                            Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
+                            Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+                            if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                            {
+                                insertIndex = i;
+                                break;
+                            }
+                        }
+
+                        if (insertIndex != -1)
+                        {
+                            pts.Insert(insertIndex + 1, doorStart);
+                            hts.Insert(insertIndex + 1, heightDoor);
+                            pts.Insert(insertIndex + 2, doorEnd);
+                            hts.Insert(insertIndex + 2, heightDoor);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
+                            pts.Add(doorStart); hts.Add(heightDoor);
+                            pts.Add(doorEnd); hts.Add(heightDoor);
+                        }
+
+                        // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
+                        targetRoom.wallLines.Remove(targetWall);
+
+                        Vector3 leftStart = targetWall.start;
+                        Vector3 leftEnd = firstDoorBasePoint.transform.position;
+                        Vector3 rightStart = secondDoorBasePoint.transform.position;
+                        Vector3 rightEnd = targetWall.end;
+
+                        targetRoom.wallLines.Add(new WallLine(leftStart, leftEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
+                        targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
+                        targetRoom.wallLines.Add(new WallLine(rightStart, rightEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
+
+                        Debug.Log("Door completed.");
+
+                        // Reset trạng thái về ban đầu
+                        firstDoorBasePoint = null;
+                        firstDoorTopPoint = null;
+
+                        isDoor = false;
+                        PanelManagerDoorWindow.Instance.IsDoorChanged = false;
+                        PanelManagerDoorWindow.Instance.IsClicked = true;
                     }
-
-                    // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
-                    targetRoom.wallLines.Remove(targetWall);
-
-                    Vector3 leftStart = targetWall.start;
-                    Vector3 leftEnd = firstDoorBasePoint.transform.position;
-                    Vector3 rightStart = secondDoorBasePoint.transform.position;
-                    Vector3 rightEnd = targetWall.end;
-
-                    targetRoom.wallLines.Add(new WallLine(leftStart, leftEnd, LineType.Wall,0f, heightValue)); // hoặc chiều cao tường gốc
-                    targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
-                    targetRoom.wallLines.Add(new WallLine(rightStart, rightEnd, LineType.Wall,0f,heightValue)); // hoặc chiều cao tường gốc
-
-                    Debug.Log("Door completed.");
-
-                    // Reset trạng thái về ban đầu
-                    firstDoorBasePoint = null;
-                    firstDoorTopPoint = null;
-
-                    isDoor = false;
-                    PanelManagerDoorWindow.Instance.IsDoorChanged = false;
-                    PanelManagerDoorWindow.Instance.IsClicked = true;
                 }
-            }
 
             return; // Thoát sau khi xử lý cửa
         }
