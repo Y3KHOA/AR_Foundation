@@ -12,11 +12,17 @@ public class WallLine
     public LineType type; // Wall, Door, Window
     public WallLine() { }
 
-    public WallLine(Vector3 start, Vector3 end, LineType type)
+    // Dùng cho cửa sổ:
+    public float distanceHeight = 0f;   // độ cao bắt đầu từ mặt đất
+    public float Height = 0f; // chiều cao của cửa / cửa sổ (độ dày theo trục Y)
+
+    public WallLine(Vector3 start, Vector3 end, LineType type, float baseHeight = 0f, float windowHeight = 0f)
     {
         this.start = start;
         this.end = end;
         this.type = type;
+        this.distanceHeight = baseHeight;
+        this.Height = windowHeight;
     }
 }
 

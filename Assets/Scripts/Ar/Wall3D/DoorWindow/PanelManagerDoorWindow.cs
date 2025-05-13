@@ -11,6 +11,8 @@ public class PanelManagerDoorWindow : MonoBehaviour
     public Button BtnWindow;
     public Button BtnAdd;
 
+    bool isClicked = true;
+
     public static PanelManagerDoorWindow Instance { get; private set; }
     private bool isDoorChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Door
     private bool isWindowChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Window
@@ -54,7 +56,7 @@ public class PanelManagerDoorWindow : MonoBehaviour
     }
     void Update()
     {
-        if (btnController != null && btnController.Flag == 1)
+        if (btnController != null && btnController.Flag == 1 && isClicked)
         {
             ShowPanel();
         }
@@ -68,7 +70,7 @@ public class PanelManagerDoorWindow : MonoBehaviour
         if (openButton != null)
             openButton.SetActive(false);
 
-        btnController.Flag = 0;
+        isClicked = false;
     }
     void ClosePanel()
     {
@@ -89,6 +91,12 @@ public class PanelManagerDoorWindow : MonoBehaviour
     {
         get => isWindowChanged;
         set => isWindowChanged = value;
+    }
+
+    public bool IsClicked
+    {
+        get => isClicked;
+        set => isClicked = value;
     }
 
 }
