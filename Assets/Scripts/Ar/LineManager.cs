@@ -284,4 +284,20 @@ public class LineManager : MonoBehaviour
 
         Debug.Log("Đã xóa previewLine và previewText hoàn toàn.");
     }
+    
+    public void HidePreviewLine()
+    {
+        // Kiểm tra xem previewLine có tồn tại không
+        if (previewLine != null)
+        {
+            previewLine.gameObject.SetActive(false); // Ẩn preview line
+        }
+
+        // Kiểm tra xem previewText có tồn tại không
+        if (previewText != null)
+        {
+            previewText.gameObject.SetActive(false); // Ẩn preview text
+        }
+    }
+
 }

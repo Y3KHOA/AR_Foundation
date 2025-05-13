@@ -1,0 +1,400 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<items>
+	<item>
+		<id>22</id>
+		<name>Khung vuông</name>
+		<image>hinh_vuong</image>
+		<kindsOfItem>
+			<kindOfItem>Kết cấu</kindOfItem>
+		</kindsOfItem>
+		<width>7</width> 
+		<height>0,5</height>
+		<length>7</length>
+		<distance>0</distance>
+		<edgeLengths>
+			<edgeLength>7</edgeLength>
+			<edgeLength>7</edgeLength>
+			<edgeLength>7</edgeLength>
+			<edgeLength>7</edgeLength>
+		</edgeLengths>
+		<directionOfEdges>
+			<direction>1, 0, 0</direction>
+			<direction>0, -1, 0</direction>
+			<direction>-1, 0, 0</direction>
+			<direction>0, 1, 0</direction>
+		</directionOfEdges>
+	</item>
+	<item>
+		<id>22</id>
+		<name>Khung L</name>
+		<image>khung_l</image>
+		<kindsOfItem>
+			<kindOfItem>Kết cấu</kindOfItem>
+		</kindsOfItem>
+		<width>5</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>0</distance>
+		<edgeLengths>
+			<edgeLength>3</edgeLength>
+			<edgeLength>5</edgeLength>
+			<edgeLength>3</edgeLength>
+			<edgeLength>3</edgeLength>
+			<edgeLength>6</edgeLength>
+			<edgeLength>8</edgeLength>
+		</edgeLengths>
+		<directionOfEdges>
+			<direction>1, 0, 0</direction>
+			<direction>0, -1, 0</direction>
+			<direction>1, 0, 0</direction>
+			<direction>0, -1, 0</direction>
+			<direction>-1, 0, 0</direction>
+			<direction>0, 1, 0</direction>
+		</directionOfEdges>
+	</item>
+	<item>
+		<id>22</id>
+		<name>Khung T</name>
+		<image>khung_t</image>
+		<kindsOfItem>
+			<kindOfItem>Kết cấu</kindOfItem>
+		</kindsOfItem>
+		<width>5</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>0</distance>
+	</item>
+	<item>
+		<id>22</id>
+		<name>Khung U</name>
+		<image>khung_u</image>
+		<kindsOfItem>
+			<kindOfItem>Kết cấu</kindOfItem>
+		</kindsOfItem>
+		<width>5</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>0</distance>
+	</item>
+	<item>
+		<id>22</id>
+		<name>Khung thập</name>
+		<image>khung_thap</image>
+		<kindsOfItem>
+			<kindOfItem>Kết cấu</kindOfItem>
+		</kindsOfItem>
+		<width>5</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>0</distance>
+	</item>
+	<item>
+		<id>22</id>
+		<name>Nhà kho</name>
+		<image>kho</image>
+		<kindsOfItem>
+			<kindOfItem>Kết cấu</kindOfItem>
+		</kindsOfItem>
+		<width>5</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>0</distance>
+	</item>
+	<item>
+		<id>22</id>
+		<name>Đường thẳng</name>
+		<image>line</image>
+		<kindsOfItem>
+			<kindOfItem>Thao tác</kindOfItem>
+			<kindOfItem>Vẽ</kindOfItem>
+		</kindsOfItem>
+		<width>0</width>
+		<height>0</height>
+		<length>0</length>
+		<distance>0</distance>
+	</item>
+	<item>
+		<id>2</id>
+		<name>Tivi</name>
+		<image>tv</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<width>0,5</width>
+		<height>1</height>
+		<length>2</length>
+		<distance>2</distance>
+	</item>
+	<item>
+		<id>3</id>
+		<name>Máy lạnh</name>
+		<image>may_lanh</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+			<kindOfItem>Treo tường</kindOfItem>
+		</kindsOfItem>
+		<width>0,5</width>
+		<height>0.3</height>
+		<length>1</length>
+		<distance>5</distance>
+		<direction>
+			<good>
+				<chuot>Đông Nam, Đông, Nam, Bắc</chuot>
+				<trau>Đông, Đông Nam, Nam, Bắc</trau>
+				<ho>Đông, Nam, Đông Nam, Bắc</ho>
+				<meo>Đông, Nam, Đông Nam, Bắc</meo>
+				<rong>Tây Bắc, Tây, Tây Nam, Đông Bắc</rong>
+				<ran>Tây Bắc, Tây, Tây Nam, Đông Bắc</ran>
+				<ngua>Tây, Tây Bắc, Tây Nam, Đông Bắc</ngua>
+				<de>Tây, Tây Bắc, Tây Nam, Đông Bắc</de>
+				<khi>Tây, Tây Bắc, Tây Nam, Đông Bắc</khi>
+				<ga>Tây, Tây Bắc, Tây Nam, Đông Bắc</ga>
+				<cho>Tây, Tây Bắc, Tây Nam, Đông Bắc</cho>
+				<heo>Đông Nam, Đông, Nam, Bắc</heo>
+			</good>
+			<bad>
+				<chuot>Đông Bắc, Tây Nam, Tây, Tây Bắc</chuot>
+				<trau>Đông Bắc, Tây Nam, Tây, Tây Bắc</trau>
+				<ho>Tây Bắc, Tây Nam, Đông Bắc, Tây</ho>
+				<meo>Tây Bắc, Tây Nam, Đông Bắc, Tây</meo>
+				<rong>Nam, Bắc, Đông, Đông Nam</rong>
+				<ran>Nam, Bắc, Đông, Đông Nam</ran>
+				<ngua>Bắc, Nam, Đông, Đông Nam</ngua>
+				<de>Bắc, Nam, Đông, Đông Nam</de>
+				<khi>Bắc, Nam, Đông, Đông Nam</khi>
+				<ga>Bắc, Nam, Đông, Đông Nam</ga>
+				<cho> Bắc, Nam, Đông, Đông Nam</cho>
+				<heo>Đông Bắc, Tây Nam, Tây, Tây Bắc</heo>
+			</bad>
+		</direction>
+	</item>
+	<item>
+		<id>4</id>
+		<name>Ghế</name>
+		<image>ghe</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<width>1</width>
+		<height>1</height>
+		<length>1</length>
+		<distance>1,25</distance>
+	</item>
+	<item>
+		<id>5</id>
+		<name>Ghế sofa</name>
+		<image>ghe_sofa</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<width>1</width>
+		<height>1</height>
+		<length>3</length>
+		<distance>1,25</distance>
+	</item>
+	<item>
+		<id>6</id>
+		<name>Giường đôi</name>
+		<image>giuong_doi</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+		</kindsOfItem>
+		<width>4</width>
+		<height>1</height>
+		<length>4</length>
+		<distance>1,25</distance>
+	</item>
+	<item>
+		<id>7</id>
+		<name>Giường tầng</name>
+		<image>giuong_tang</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+		</kindsOfItem>
+		<width>4</width>
+		<height>2</height>
+		<length>4</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>8</id>
+		<name>Tủ sách</name>
+		<image>tu_sach</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<description>Tủ sách</description>
+		<width>2</width>
+		<height>2</height>
+		<length>2</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>9</id>
+		<name>Cũi</name>
+		<image>cui</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+		</kindsOfItem>
+		<width>4</width>
+		<height>2</height>
+		<length>4</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>10</id>
+		<name>Loa</name>
+		<image>loa</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<width>2</width>
+		<height>2</height>
+		<length>2</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>11</id>
+		<name>Tủ 1 cửa</name>
+		<image>tu_1_cua</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+		</kindsOfItem>
+		<width>3</width>
+		<height>2</height>
+		<length>5</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>12</id>
+		<name>Tủ 2 cửa</name>
+		<image>tu_2_cua</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+		</kindsOfItem>
+		<width>3</width>
+		<height>2</height>
+		<length>5</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>13</id>
+		<name>Bàn billard</name>
+		<image>ban_billard</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<width>1</width>
+		<height>2</height>
+		<length>5</length>
+		<distance>2,15</distance>
+	</item>
+	<item>
+		<id>14</id>
+		<name>Bàn ghế trẻ em</name>
+		<image>child_chair_desk</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+		</kindsOfItem>
+		<description>Bàn ghế trẻ em</description>
+		<width>1</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>15</id>
+		<name>Xe lau dọn</name>
+		<image>cleaning_cart</image>
+		<kindsOfItem>
+			<kindOfItem>Bếp</kindOfItem>
+		</kindsOfItem>
+		<description>Xe đẩy lau dọn</description>
+		<width>2</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>16</id>
+		<name>Móc quần áo</name>
+		<image>coat-hook</image>
+		<kindsOfItem>
+			<kindOfItem>Phòng ngủ</kindOfItem>
+			<kindOfItem>Phòng khách</kindOfItem>
+		</kindsOfItem>
+		<description>Móc quần áo</description>
+		<width>2</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>17</id>
+		<name>Bàn học sinh</name>
+		<image>desk</image>
+		<kindsOfItem>
+			<kindOfItem>Văn phòng</kindOfItem>
+		</kindsOfItem>
+		<description>Bàn học sinh</description>
+		<width>1</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>18</id>
+		<name>Bàn học sinh đôi</name>
+		<image>deskdouble</image>
+		<kindsOfItem>
+			<kindOfItem>Văn phòng</kindOfItem>
+		</kindsOfItem>
+		<description>Bàn học sinh đôi</description>
+		<width>2</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>19</id>
+		<name>Bàn làm việc dài</name>
+		<image>desk1</image>
+		<kindsOfItem>
+			<kindOfItem>Văn phòng</kindOfItem>
+		</kindsOfItem>
+		<description>Bàn làm việc dài</description>
+		<width>4</width>
+		<height>1</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>20</id>
+		<name>Tủ lạnh</name>
+		<image>fridge</image>
+		<kindsOfItem>
+			<kindOfItem>Bếp</kindOfItem>
+		</kindsOfItem>
+		<description>Tủ lạnh</description>
+		<width>2</width>
+		<height>2</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+	<item>
+		<id>21</id>
+		<name>Bếp</name>
+		<image>kitchen</image>
+		<kindsOfItem>
+			<kindOfItem>Bếp</kindOfItem>
+		</kindsOfItem>
+		<description>kitchen</description>
+		<width>3</width>
+		<height>3</height>
+		<length>5</length>
+		<distance>1</distance>
+	</item>
+</items>
