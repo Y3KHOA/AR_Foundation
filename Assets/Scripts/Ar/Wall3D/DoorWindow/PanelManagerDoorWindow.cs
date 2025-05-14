@@ -16,6 +16,7 @@ public class PanelManagerDoorWindow : MonoBehaviour
     public static PanelManagerDoorWindow Instance { get; private set; }
     private bool isDoorChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Door
     private bool isWindowChanged;  // Biến flag để theo dõi sự thay đổi của dữ liệu Window
+    private bool measureMode = false;
 
 
     void Awake()
@@ -38,6 +39,7 @@ public class PanelManagerDoorWindow : MonoBehaviour
         {
             isDoorChanged = true;
             isWindowChanged = false;
+            measureMode = true;
             ClosePanel();
         });
 
@@ -45,6 +47,7 @@ public class PanelManagerDoorWindow : MonoBehaviour
         {
             isDoorChanged = false;
             isWindowChanged = true;
+            measureMode = true;
             ClosePanel();
         });
 
@@ -99,4 +102,9 @@ public class PanelManagerDoorWindow : MonoBehaviour
         set => isClicked = value;
     }
 
+    public bool MeasureMode
+        {
+            get => measureMode;
+            set => measureMode = value;
+        }
 }
