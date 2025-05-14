@@ -10,7 +10,6 @@ public class Model3D : MonoBehaviour
     public GameObject doorPrefab;
     public GameObject windowPrefab;
 
-
     void Start()
     {
         List<Room> rooms = RoomStorage.rooms;
@@ -23,111 +22,189 @@ public class Model3D : MonoBehaviour
 
         foreach (Room room in rooms)
         {
+            // Vẽ sàn trước để không bị các phần khác che khuất
+            CreateFloor(room);
+
+            // Kiểm tra dữ liệu đầu vào phòng
             if (room.wallLines == null || room.wallLines.Count == 0)
                 continue;
 
+            // Lấy chiều cao tường cho phòng này
+            float roomWallHeight = GetRoomHeight(room);
+
+            // Debug.Log($"Phòng có chiều cao tường: {roomWallHeight}");
+
+            // Phân loại các line để xử lý theo thứ tự ưu tiên
+            List<WallLine> walls = new List<WallLine>();
+            List<WallLine> doors = new List<WallLine>();
+            List<WallLine> windows = new List<WallLine>();
+
             foreach (WallLine line in room.wallLines)
             {
-                Vector3 start = line.start;
-                Vector3 end = line.end;
-                float baseY = line.distanceHeight;
-                float height = line.Height;
-
-                Vector3 baseStart = new Vector3(start.x, baseY, start.z);
-                Vector3 baseEnd = new Vector3(end.x, baseY, end.z);
-                Vector3 topStart = baseStart + Vector3.up * height;
-                Vector3 topEnd = baseEnd + Vector3.up * height;
-
                 switch (line.type)
                 {
-                    case LineType.Wall:
-                        {
-                            // Tìm các đoạn cắt (door/window) cùng nằm trên đoạn này
-                            List<WallLine> cutouts = room.wallLines
-                                .Where(w => (w.type == LineType.Door || w.type == LineType.Window) &&
-                                            IsSameSegment2D(w.start, w.end, line.start, line.end))
-                                .OrderBy(w => Vector3.Distance(line.start, w.start))
-                                .ToList();
-
-                            Vector3 currentStart = line.start;
-
-                            foreach (WallLine cut in cutouts)
-                            {
-                                Vector3 cutStart = cut.start;
-                                Vector3 cutEnd = cut.end;
-
-                                if (Vector3.Distance(currentStart, cutStart) > 0.01f)
-                                {
-                                    CreateWall(
-                                        new Vector3(currentStart.x, baseY, currentStart.z),
-                                        new Vector3(cutStart.x, baseY, cutStart.z),
-                                        new Vector3(currentStart.x, baseY + height, currentStart.z),
-                                        new Vector3(cutStart.x, baseY + height, cutStart.z)
-                                    );
-                                }
-
-                                currentStart = cutEnd;
-                            }
-
-                            if (Vector3.Distance(currentStart, line.end) > 0.01f)
-                            {
-                                CreateWall(
-                                    new Vector3(currentStart.x, baseY, currentStart.z),
-                                    new Vector3(line.end.x, baseY, line.end.z),
-                                    new Vector3(currentStart.x, baseY + height, currentStart.z),
-                                    new Vector3(line.end.x, baseY + height, line.end.z)
-                                );
-                            }
-
-                            break;
-                        }
-
-                    case LineType.Door:
-                        {
-                            // Cửa sát sàn
-                            Vector3 top1 = baseStart + Vector3.up * height;
-                            Vector3 top2 = baseEnd + Vector3.up * height;
-                            CreateWall2(baseStart, baseEnd, top1, top2);
-                            break;
-                        }
-
-                    case LineType.Window:
-                        {
-                            // Cửa sổ giữa tường → chia thành 3 phần: dưới - cửa - trên
-                            Vector3 midTop1 = baseStart + Vector3.up * height;
-                            Vector3 midTop2 = baseEnd + Vector3.up * height;
-                            Vector3 fullTop1 = start + Vector3.up * (baseY + height);
-                            Vector3 fullTop2 = end + Vector3.up * (baseY + height);
-
-                            // Phần dưới cửa sổ
-                            if (baseY > 0.01f)
-                                CreateWall(start, end, baseStart, baseEnd);
-
-                            // Phần cửa sổ
-                            CreateWall2(baseStart, baseEnd, midTop1, midTop2);
-
-                            // Phần trên cửa sổ
-                            if (height < 2.5f) // cửa sổ không cao tới trần
-                                CreateWall(midTop1, midTop2, fullTop1, fullTop2);
-                            break;
-                        }
+                    case LineType.Wall: walls.Add(line); break;
+                    case LineType.Door: doors.Add(line); break;
+                    case LineType.Window: windows.Add(line); break;
                 }
             }
 
-                // Dựng sàn
-                if (room.checkpoints != null && room.checkpoints.Count >= 3)
-                {
-                    List<Vector3> basePts = new();
-                    foreach (var pt in room.checkpoints)
-                        basePts.Add(new Vector3(pt.x, 0f, pt.y));
+            // Vẽ tường trước
+            foreach (WallLine wall in walls)
+            {
+                CreateWallSegment(wall, roomWallHeight);
+            }
 
-                    if (basePts[0] != basePts[^1])
-                        basePts.Add(basePts[0]);
+            // Vẽ cửa (và phần tường phía trên cửa nếu có)
+            foreach (WallLine door in doors)
+            {
+                CreateDoorSegment(door, roomWallHeight);
+            }
 
-                    CreateFloorMesh(basePts);
-                }
+            // Vẽ cửa sổ (và phần tường trên/dưới cửa sổ)
+            foreach (WallLine window in windows)
+            {
+                CreateWindowSegment(window, roomWallHeight);
+            }
         }
     }
+
+    // Lấy chiều cao của phòng từ room.heights
+    private float GetRoomHeight(Room room)
+    {
+        // Nếu có chiều cao trong danh sách, lấy giá trị đầu tiên
+        if (room.heights != null && room.heights.Count > 0)
+        {
+            return Mathf.Max(0.01f, room.heights[0]);
+        }
+
+        // Giá trị mặc định nếu không có thông tin chiều cao
+        return 3.0f; // Giả định chiều cao tường mặc định là 3 mét
+    }
+
+    // Hàm tạo sàn từ các điểm checkpoint
+    private void CreateFloor(Room room)
+    {
+        if (room.checkpoints != null && room.checkpoints.Count >= 3)
+        {
+            List<Vector3> floorPoints = new List<Vector3>();
+
+            foreach (var point in room.checkpoints)
+            {
+                // Chuyển đổi từ điểm 2D sang điểm 3D tại mặt sàn (y=0)
+                floorPoints.Add(new Vector3(point.x, 0f, point.y));
+            }
+
+            // Đảm bảo đóng polygon bằng cách thêm điểm đầu tiên vào cuối nếu cần
+            if (floorPoints[0] != floorPoints[floorPoints.Count - 1])
+            {
+                floorPoints.Add(floorPoints[0]);
+            }
+
+            CreateFloorMesh(floorPoints);
+        }
+    }
+
+    // Hàm vẽ phần tường thông thường
+    private void CreateWallSegment(WallLine line, float roomHeight)
+    {
+        Vector3 start = line.start;
+        Vector3 end = line.end;
+
+        float baseY = 0f; // Tường luôn bắt đầu từ mặt sàn
+        float height = roomHeight; // Sử dụng chiều cao từ room.heights
+
+        Vector3 base1 = new Vector3(start.x, baseY, start.z);
+        Vector3 base2 = new Vector3(end.x, baseY, end.z);
+        Vector3 top1 = base1 + Vector3.up * height;
+        Vector3 top2 = base2 + Vector3.up * height;
+
+        CreateWall(base1, base2, top1, top2);
+    }
+
+    // Hàm vẽ cửa và phần tường phía trên cửa (nếu có)
+    private void CreateDoorSegment(WallLine line, float roomHeight)
+    {
+        Vector3 start = line.start;
+        Vector3 end = line.end;
+
+        // Thông số cửa
+        float doorHeight = Mathf.Max(0.01f, line.Height); // Chiều cao cửa từ line.Height
+        float totalWallHeight = roomHeight; // Tổng chiều cao tường từ room.heights
+
+        // 1. Phần cửa - từ sàn đến độ cao cửa
+        Vector3 doorBase1 = new Vector3(start.x, 0f, start.z);
+        Vector3 doorBase2 = new Vector3(end.x, 0f, end.z);
+        Vector3 doorTop1 = doorBase1 + Vector3.up * doorHeight;
+        Vector3 doorTop2 = doorBase2 + Vector3.up * doorHeight;
+
+        CreateWall2(doorBase1, doorBase2, doorTop1, doorTop2); // Sử dụng CreateWall2 cho cửa
+
+        // 2. Phần tường phía trên cửa (nếu có)
+        float wallHeightAboveDoor = totalWallHeight - doorHeight;
+
+        if (wallHeightAboveDoor > 0.01f)
+        {
+            Vector3 aboveBase1 = doorTop1;
+            Vector3 aboveBase2 = doorTop2;
+            Vector3 aboveTop1 = aboveBase1 + Vector3.up * wallHeightAboveDoor;
+            Vector3 aboveTop2 = aboveBase2 + Vector3.up * wallHeightAboveDoor;
+
+            CreateWall(aboveBase1, aboveBase2, aboveTop1, aboveTop2);
+        }
+    }
+
+    // Hàm vẽ cửa sổ và phần tường trên/dưới cửa sổ
+    private void CreateWindowSegment(WallLine line, float roomHeight)
+    {
+        Vector3 start = line.start;
+        Vector3 end = line.end;
+
+        // Thông số cửa sổ
+        float totalWallHeight = roomHeight; // Tổng chiều cao tường từ room.heights
+        float windowDistance = Mathf.Max(0f, line.distanceHeight); // Khoảng cách từ sàn đến đáy cửa sổ
+        float windowHeight = Mathf.Max(0.01f, line.Height); // Chiều cao cửa sổ
+
+        // 1. Phần tường dưới cửa sổ
+        if (windowDistance > 0.01f)
+        {
+            Vector3 lowerBase1 = new Vector3(start.x, 0f, start.z);
+            Vector3 lowerBase2 = new Vector3(end.x, 0f, end.z);
+            Vector3 lowerTop1 = lowerBase1 + Vector3.up * windowDistance;
+            Vector3 lowerTop2 = lowerBase2 + Vector3.up * windowDistance;
+
+            CreateWall(lowerBase1, lowerBase2, lowerTop1, lowerTop2);
+        }
+
+        // 2. Phần cửa sổ
+        Vector3 windowBase1 = new Vector3(start.x, windowDistance, start.z);
+        Vector3 windowBase2 = new Vector3(end.x, windowDistance, end.z);
+        Vector3 windowTop1 = windowBase1 + Vector3.up * windowHeight;
+        Vector3 windowTop2 = windowBase2 + Vector3.up * windowHeight;
+
+        CreateWall2(windowBase1, windowBase2, windowTop1, windowTop2); // Sử dụng CreateWall2 cho cửa sổ
+
+        // 3. Phần tường trên cửa sổ
+        float aboveHeight = totalWallHeight - windowDistance - windowHeight;
+
+        if (aboveHeight > 0.01f)
+        {
+            Vector3 upperBase1 = windowTop1;
+            Vector3 upperBase2 = windowTop2;
+            Vector3 upperTop1 = upperBase1 + Vector3.up * aboveHeight;
+            Vector3 upperTop2 = upperBase2 + Vector3.up * aboveHeight;
+
+            CreateWall(upperBase1, upperBase2, upperTop1, upperTop2);
+        }
+    }
+
+    Vector3 GetNextCutPoint(Vector3 wallStart, Vector3 cutStart, Vector3 cutEnd)
+    {
+        float distStart = Vector3.Distance(wallStart, cutStart);
+        float distEnd = Vector3.Distance(wallStart, cutEnd);
+        return distEnd > distStart ? cutEnd : cutStart;
+    }
+
     bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float threshold = 0.01f)
     {
         // Chuyển sang 2D (bỏ Y)
