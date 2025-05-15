@@ -6,6 +6,7 @@ using System.Linq;
 public class Model3D : MonoBehaviour
 {
     public Material roomMaterial;
+    public Material roomMaterial2;
     public Material bottomMaterial;
     public GameObject doorPrefab;
     public GameObject windowPrefab;
@@ -28,6 +29,10 @@ public class Model3D : MonoBehaviour
             // Kiểm tra dữ liệu đầu vào phòng
             if (room.wallLines == null || room.wallLines.Count == 0)
                 continue;
+            Debug.Log("==== LIST WALLLINES cua phong " + rooms.IndexOf(room) + " ====");
+            foreach (var l in room.wallLines)
+                Debug.Log($"LIST WALLLINES cua phong:{l.type}: {l.start} -> {l.end}");
+            SnapWallLinePoints(room.wallLines);
 
             // Lấy chiều cao tường cho phòng này
             float roomWallHeight = GetRoomHeight(room);
@@ -69,6 +74,23 @@ public class Model3D : MonoBehaviour
         }
     }
 
+    // Hàm vẽ phần tường thông thường
+    private void CreateWallSegment(WallLine line, float roomHeight)
+    {
+        Vector3 start = line.start;
+        Vector3 end = line.end;
+
+        float baseY = 0f; // Tường luôn bắt đầu từ mặt sàn
+        float height = roomHeight; // Sử dụng chiều cao từ room.heights
+
+        Vector3 base1 = new Vector3(start.x, baseY, start.z);
+        Vector3 base2 = new Vector3(end.x, baseY, end.z);
+        Vector3 top1 = base1 + Vector3.up * height;
+        Vector3 top2 = base2 + Vector3.up * height;
+
+        CreateWall(base1, base2, top1, top2);
+    }
+
     // Lấy chiều cao của phòng từ room.heights
     private float GetRoomHeight(Room room)
     {
@@ -103,23 +125,6 @@ public class Model3D : MonoBehaviour
 
             CreateFloorMesh(floorPoints);
         }
-    }
-
-    // Hàm vẽ phần tường thông thường
-    private void CreateWallSegment(WallLine line, float roomHeight)
-    {
-        Vector3 start = line.start;
-        Vector3 end = line.end;
-
-        float baseY = 0f; // Tường luôn bắt đầu từ mặt sàn
-        float height = roomHeight; // Sử dụng chiều cao từ room.heights
-
-        Vector3 base1 = new Vector3(start.x, baseY, start.z);
-        Vector3 base2 = new Vector3(end.x, baseY, end.z);
-        Vector3 top1 = base1 + Vector3.up * height;
-        Vector3 top2 = base2 + Vector3.up * height;
-
-        CreateWall(base1, base2, top1, top2);
     }
 
     // Hàm vẽ cửa và phần tường phía trên cửa (nếu có)
@@ -198,27 +203,6 @@ public class Model3D : MonoBehaviour
         }
     }
 
-    Vector3 GetNextCutPoint(Vector3 wallStart, Vector3 cutStart, Vector3 cutEnd)
-    {
-        float distStart = Vector3.Distance(wallStart, cutStart);
-        float distEnd = Vector3.Distance(wallStart, cutEnd);
-        return distEnd > distStart ? cutEnd : cutStart;
-    }
-
-    bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float threshold = 0.01f)
-    {
-        // Chuyển sang 2D (bỏ Y)
-        Vector2 a1_2D = new Vector2(a1.x, a1.z);
-        Vector2 a2_2D = new Vector2(a2.x, a2.z);
-        Vector2 b1_2D = new Vector2(b1.x, b1.z);
-        Vector2 b2_2D = new Vector2(b2.x, b2.z);
-
-        // So sánh không phân biệt thứ tự điểm (thuận hoặc ngược chiều)
-        return
-            (Vector2.Distance(a1_2D, b1_2D) < threshold && Vector2.Distance(a2_2D, b2_2D) < threshold) ||
-            (Vector2.Distance(a1_2D, b2_2D) < threshold && Vector2.Distance(a2_2D, b1_2D) < threshold);
-    }
-
     // Vẽ từng tường với vật liệu tương ứng
     private void CreateWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
     {
@@ -294,7 +278,7 @@ public class Model3D : MonoBehaviour
 
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
-        meshRenderer.material = bottomMaterial;
+        meshRenderer.material = roomMaterial2;
 
         UnityEngine.Mesh mesh = new UnityEngine.Mesh();
 
@@ -435,4 +419,23 @@ public class Model3D : MonoBehaviour
 
         mf.mesh = mesh;
     }
+
+    void SnapWallLinePoints(List<WallLine> wallLines, float epsilon = 0.001f)
+    {
+        for (int i = 0; i < wallLines.Count; i++)
+        {
+            for (int j = 0; j < wallLines.Count; j++)
+            {
+                if (i == j) continue;
+
+                // Snap điểm cuối của line i với điểm đầu của line j nếu gần nhau
+                if (Vector3.Distance(wallLines[i].end, wallLines[j].start) < epsilon)
+                    wallLines[j].start = wallLines[i].end;
+                // Snap điểm đầu của line i với điểm cuối của line j nếu gần nhau
+                if (Vector3.Distance(wallLines[i].start, wallLines[j].end) < epsilon)
+                    wallLines[j].end = wallLines[i].start;
+            }
+        }
+    }
+
 }

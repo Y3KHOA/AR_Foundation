@@ -4,6 +4,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 
 public class BtnController : MonoBehaviour
 {
@@ -568,10 +569,15 @@ public class BtnController : MonoBehaviour
                             pts.Add(doorEnd); hts.Add(heightDoor);
                         }
 
-                        // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
-                        targetRoom.wallLines.Remove(targetWall);
+                    // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
+                    // targetRoom.wallLines.Remove(targetWall);
+                    targetRoom.wallLines.RemoveAll(
+                    l =>
+                        (Vector3.Distance(l.start, targetWall.start) < 0.001f && Vector3.Distance(l.end, targetWall.end) < 0.001f) ||
+                        (Vector3.Distance(l.start, targetWall.end) < 0.001f && Vector3.Distance(l.end, targetWall.start) < 0.001f)
+                    );
 
-                        Vector3 leftStart = targetWall.start;
+                    Vector3 leftStart = targetWall.start;
                         Vector3 leftEnd = firstDoorBasePoint.transform.position;
                         Vector3 rightStart = secondDoorBasePoint.transform.position;
                         Vector3 rightEnd = targetWall.end;
@@ -580,7 +586,12 @@ public class BtnController : MonoBehaviour
                         targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
                         targetRoom.wallLines.Add(new WallLine(rightStart, rightEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
 
-                        Debug.Log("Door completed.");
+                    float epsilon = 0.01f;
+                    targetRoom.wallLines = targetRoom.wallLines
+                        .Where(l => Vector3.Distance(l.start, l.end) > epsilon)
+                        .ToList();
+
+                    Debug.Log("Door completed.");
 
                         // Reset trạng thái về ban đầu
                         firstDoorBasePoint = null;
