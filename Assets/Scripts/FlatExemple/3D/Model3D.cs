@@ -74,22 +74,6 @@ public class Model3D : MonoBehaviour
         }
     }
 
-    // Hàm vẽ phần tường thông thường
-    private void CreateWallSegment(WallLine line, float roomHeight)
-    {
-        Vector3 start = line.start;
-        Vector3 end = line.end;
-
-        float baseY = 0f; // Tường luôn bắt đầu từ mặt sàn
-        float height = roomHeight; // Sử dụng chiều cao từ room.heights
-
-        Vector3 base1 = new Vector3(start.x, baseY, start.z);
-        Vector3 base2 = new Vector3(end.x, baseY, end.z);
-        Vector3 top1 = base1 + Vector3.up * height;
-        Vector3 top2 = base2 + Vector3.up * height;
-
-        CreateWall(base1, base2, top1, top2);
-    }
 
     // Lấy chiều cao của phòng từ room.heights
     private float GetRoomHeight(Room room)
@@ -127,6 +111,23 @@ public class Model3D : MonoBehaviour
         }
     }
 
+
+    // Hàm vẽ phần tường thông thường
+    private void CreateWallSegment(WallLine line, float roomHeight)
+    {
+        Vector3 start = line.start;
+        Vector3 end = line.end;
+
+        float baseY = 0f; // Tường luôn bắt đầu từ mặt sàn
+        float height = roomHeight; // Sử dụng chiều cao từ room.heights
+
+        Vector3 base1 = new Vector3(start.x, baseY, start.z);
+        Vector3 base2 = new Vector3(end.x, baseY, end.z);
+        Vector3 top1 = base1 + Vector3.up * height;
+        Vector3 top2 = base2 + Vector3.up * height;
+
+        CreateWall(base1, base2, top1, top2);
+    }
     // Hàm vẽ cửa và phần tường phía trên cửa (nếu có)
     private void CreateDoorSegment(WallLine line, float roomHeight)
     {
