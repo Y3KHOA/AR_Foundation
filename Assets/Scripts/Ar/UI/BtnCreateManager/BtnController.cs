@@ -543,14 +543,49 @@ public class BtnController : MonoBehaviour
                     List<Vector2> pts = targetRoom.checkpoints;
                     List<float> hts = targetRoom.heights;
 
-                    int insertIndex = FindWallSegmentIndex(pts, targetWall.start, targetWall.end);
-                    Debug.Log("insertIndex = " + insertIndex);
+                    int insertIndex = -1;
+                    for (int i = 0; i < pts.Count - 1; i++)
+                    {
+                        Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
+                        Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+
+                        if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                        {
+                            insertIndex = i;
+                            break;
+                        }
+                        if (insertIndex == -1 && pts.Count >= 2)
+                        {
+                            Vector3 a1 = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
+                            Vector3 b1 = new Vector3(pts[0].x, 0, pts[0].y);
+
+                            if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                            {
+                                insertIndex = pts.Count - 1;
+                            }
+                        }
+                    }
+                    Debug.Log("insertIndex pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex Door = " + insertIndex);
+
                     if (insertIndex != -1)
                     {
-                        pts.Insert(insertIndex + 1, doorStart);
-                        hts.Insert(insertIndex + 1, heightDoor);
-                        pts.Insert(insertIndex + 2, doorEnd);
-                        hts.Insert(insertIndex + 2, heightDoor);
+                        if (insertIndex == pts.Count - 1)
+                        {
+                            // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
+                            pts.Insert(pts.Count, doorStart);
+                            hts.Insert(hts.Count, heightDoor);
+                            pts.Insert(pts.Count, doorEnd);
+                            hts.Insert(hts.Count, heightDoor);
+                        }
+                        else
+                        {
+                            // Chèn giữa đoạn bình thường
+                            pts.Insert(insertIndex + 1, doorStart);
+                            hts.Insert(insertIndex + 1, heightDoor);
+                            pts.Insert(insertIndex + 2, doorEnd);
+                            hts.Insert(insertIndex + 2, heightDoor);
+                        }
                     }
                     else
                     {
@@ -737,16 +772,29 @@ public class BtnController : MonoBehaviour
                     List<float> hts = targetRoom.heights;
 
                     int insertIndex = -1;
-                    for (int i = 0; i < pts.Count - 1; i++)
+                    for (int i = 0; i < pts.Count; i++)
                     {
                         Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
-                        Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+                        Vector3 b;
+
+                        if (i == pts.Count - 1)
+                        {
+                            // Cạnh cuối nối với điểm đầu tiên
+                            b = new Vector3(pts[0].x, 0, pts[0].y);
+                        }
+                        else
+                        {
+                            b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+                        }
+
                         if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
                         {
                             insertIndex = i;
                             break;
                         }
                     }
+                    Debug.Log("insertIndex pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex Window = " + insertIndex);
 
                     if (insertIndex != -1)
                     {

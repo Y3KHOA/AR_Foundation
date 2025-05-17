@@ -128,6 +128,7 @@ public class Model3D : MonoBehaviour
 
         CreateWall(base1, base2, top1, top2);
     }
+
     // Hàm vẽ cửa và phần tường phía trên cửa (nếu có)
     private void CreateDoorSegment(WallLine line, float roomHeight)
     {
