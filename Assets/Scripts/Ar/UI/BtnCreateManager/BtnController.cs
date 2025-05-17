@@ -398,7 +398,7 @@ public class BtnController : MonoBehaviour
         }
     }
 
-    private bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float tolerance = 0.01f)
+    private bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float tolerance = 0.001f)
     {
         Vector2 A1 = new Vector2(a1.x, a1.z);
         Vector2 A2 = new Vector2(a2.x, a2.z);
@@ -544,24 +544,35 @@ public class BtnController : MonoBehaviour
                     List<float> hts = targetRoom.heights;
 
                     int insertIndex = -1;
-                    for (int i = 0; i < pts.Count - 1; i++)
+                    if (pts.Count >= 2)
                     {
-                        Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
-                        Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+                        Vector3 last = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
+                        Vector3 first = new Vector3(pts[0].x, 0, pts[0].y);
 
-                        if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                        if (IsSameSegment2D(last, first, targetWall.start, targetWall.end))
                         {
-                            insertIndex = i;
-                            break;
+                            insertIndex = pts.Count - 1;
                         }
-                        if (insertIndex == -1 && pts.Count >= 2)
+                        else
                         {
-                            Vector3 a1 = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
-                            Vector3 b1 = new Vector3(pts[0].x, 0, pts[0].y);
+                            Debug.Log("insertIndex = -1");
+                        }
+                    }
+                    Debug.Log("insertIndex 0 pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex 0 Door = " + insertIndex);
+
+                    // Nếu không phải cạnh cuối, kiểm tra các cạnh còn lại
+                    if (insertIndex == -1)
+                    {
+                        for (int i = 0; i < pts.Count - 1; i++)
+                        {
+                            Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
+                            Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
 
                             if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
                             {
-                                insertIndex = pts.Count - 1;
+                                insertIndex = i;
+                                break;
                             }
                         }
                     }
@@ -1131,17 +1142,6 @@ public class BtnController : MonoBehaviour
             }
         }
     }
-    // Cải tiến hàm kiểm tra đoạn thẳng trùng nhau
-    // private bool IsSameSegment2D(Vector3 a1, Vector3 b1, Vector3 a2, Vector3 b2)
-    // {
-    //     float epsilon = 0.01f; // Tăng độ chính xác nếu cần
-
-    //     // Kiểm tra cả hai hướng (a1->b1 trùng với a2->b2 hoặc a1->b1 trùng với b2->a2)
-    //     bool directMatch = Vector3.Distance(a1, a2) < epsilon && Vector3.Distance(b1, b2) < epsilon;
-    //     bool reverseMatch = Vector3.Distance(a1, b2) < epsilon && Vector3.Distance(b1, a2) < epsilon;
-
-    //     return directMatch || reverseMatch;
-    // }
 
     // Cải tiến phần tìm insertIndex
     int FindWallSegmentIndex(List<Vector2> checkpoints, Vector3 wallStart, Vector3 wallEnd)

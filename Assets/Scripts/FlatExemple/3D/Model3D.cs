@@ -32,7 +32,7 @@ public class Model3D : MonoBehaviour
             Debug.Log("==== LIST WALLLINES cua phong " + rooms.IndexOf(room) + " ====");
             foreach (var l in room.wallLines)
                 Debug.Log($"LIST WALLLINES cua phong:{l.type}: {l.start} -> {l.end}");
-            SnapWallLinePoints(room.wallLines);
+            // SnapWallLinePoints(room.wallLines);
 
             // Lấy chiều cao tường cho phòng này
             float roomWallHeight = GetRoomHeight(room);
@@ -44,73 +44,47 @@ public class Model3D : MonoBehaviour
             List<WallLine> doors = new List<WallLine>();
             List<WallLine> windows = new List<WallLine>();
 
+            // foreach (WallLine line in room.wallLines)
+            // {
+            //     switch (line.type)
+            //     {
+            //         case LineType.Wall: walls.Add(line); break;
+            //         case LineType.Door: doors.Add(line); break;
+            //         case LineType.Window: windows.Add(line); break;
+            //     }
+            // }
+
+            // // Vẽ tường trước
+            // foreach (WallLine wall in walls)
+            // {
+            //     CreateWallSegment(wall, roomWallHeight);
+            // }
+
+            // // Vẽ cửa (và phần tường phía trên cửa nếu có)
+            // foreach (WallLine door in doors)
+            // {
+            //     CreateDoorSegment(door, roomWallHeight);
+            // }
+
+            // // Vẽ cửa sổ (và phần tường trên/dưới cửa sổ)
+            // foreach (WallLine window in windows)
+            // {
+            //     CreateWindowSegment(window, roomWallHeight);
+            // }
             foreach (WallLine line in room.wallLines)
             {
                 switch (line.type)
                 {
-                    case LineType.Wall: walls.Add(line); break;
-                    case LineType.Door: doors.Add(line); break;
-                    case LineType.Window: windows.Add(line); break;
+                    case LineType.Wall:
+                        CreateWallSegment(line, roomWallHeight); break;
+                    case LineType.Door:
+                        CreateDoorSegment(line, roomWallHeight); break;
+                    case LineType.Window:
+                        CreateWindowSegment(line, roomWallHeight); break;
                 }
             }
-
-            // Vẽ tường trước
-            foreach (WallLine wall in walls)
-            {
-                CreateWallSegment(wall, roomWallHeight);
-            }
-
-            // Vẽ cửa (và phần tường phía trên cửa nếu có)
-            foreach (WallLine door in doors)
-            {
-                CreateDoorSegment(door, roomWallHeight);
-            }
-
-            // Vẽ cửa sổ (và phần tường trên/dưới cửa sổ)
-            foreach (WallLine window in windows)
-            {
-                CreateWindowSegment(window, roomWallHeight);
-            }
         }
     }
-
-
-    // Lấy chiều cao của phòng từ room.heights
-    private float GetRoomHeight(Room room)
-    {
-        // Nếu có chiều cao trong danh sách, lấy giá trị đầu tiên
-        if (room.heights != null && room.heights.Count > 0)
-        {
-            return Mathf.Max(0.01f, room.heights[0]);
-        }
-
-        // Giá trị mặc định nếu không có thông tin chiều cao
-        return 3.0f; // Giả định chiều cao tường mặc định là 3 mét
-    }
-
-    // Hàm tạo sàn từ các điểm checkpoint
-    private void CreateFloor(Room room)
-    {
-        if (room.checkpoints != null && room.checkpoints.Count >= 3)
-        {
-            List<Vector3> floorPoints = new List<Vector3>();
-
-            foreach (var point in room.checkpoints)
-            {
-                // Chuyển đổi từ điểm 2D sang điểm 3D tại mặt sàn (y=0)
-                floorPoints.Add(new Vector3(point.x, 0f, point.y));
-            }
-
-            // Đảm bảo đóng polygon bằng cách thêm điểm đầu tiên vào cuối nếu cần
-            if (floorPoints[0] != floorPoints[floorPoints.Count - 1])
-            {
-                floorPoints.Add(floorPoints[0]);
-            }
-
-            CreateFloorMesh(floorPoints);
-        }
-    }
-
 
     // Hàm vẽ phần tường thông thường
     private void CreateWallSegment(WallLine line, float roomHeight)
@@ -204,6 +178,44 @@ public class Model3D : MonoBehaviour
             CreateWall(upperBase1, upperBase2, upperTop1, upperTop2);
         }
     }
+
+
+    // Lấy chiều cao của phòng từ room.heights
+    private float GetRoomHeight(Room room)
+    {
+        // Nếu có chiều cao trong danh sách, lấy giá trị đầu tiên
+        if (room.heights != null && room.heights.Count > 0)
+        {
+            return Mathf.Max(0.01f, room.heights[0]);
+        }
+
+        // Giá trị mặc định nếu không có thông tin chiều cao
+        return 3.0f; // Giả định chiều cao tường mặc định là 3 mét
+    }
+
+    // Hàm tạo sàn từ các điểm checkpoint
+    private void CreateFloor(Room room)
+    {
+        if (room.checkpoints != null && room.checkpoints.Count >= 3)
+        {
+            List<Vector3> floorPoints = new List<Vector3>();
+
+            foreach (var point in room.checkpoints)
+            {
+                // Chuyển đổi từ điểm 2D sang điểm 3D tại mặt sàn (y=0)
+                floorPoints.Add(new Vector3(point.x, 0f, point.y));
+            }
+
+            // Đảm bảo đóng polygon bằng cách thêm điểm đầu tiên vào cuối nếu cần
+            if (floorPoints[0] != floorPoints[floorPoints.Count - 1])
+            {
+                floorPoints.Add(floorPoints[0]);
+            }
+
+            CreateFloorMesh(floorPoints);
+        }
+    }
+
 
     // Vẽ từng tường với vật liệu tương ứng
     private void CreateWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
