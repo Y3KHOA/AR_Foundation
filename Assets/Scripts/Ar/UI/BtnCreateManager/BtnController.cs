@@ -543,7 +543,8 @@ public class BtnController : MonoBehaviour
                     List<Vector2> pts = targetRoom.checkpoints;
                     List<float> hts = targetRoom.heights;
 
-                    int insertIndex = -1;
+                    int insertIndex = FindWallSegmentIndex(pts, targetWall.start, targetWall.end);
+
                     if (pts.Count >= 2)
                     {
                         Vector3 last = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
@@ -584,10 +585,10 @@ public class BtnController : MonoBehaviour
                         if (insertIndex == pts.Count - 1)
                         {
                             // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
-                            pts.Insert(pts.Count, doorStart);
-                            hts.Insert(hts.Count, heightDoor);
-                            pts.Insert(pts.Count, doorEnd);
-                            hts.Insert(hts.Count, heightDoor);
+                            pts.Insert(0, doorEnd);
+                            hts.Insert(0, heightDoor);
+                            pts.Insert(0, doorStart);
+                            hts.Insert(0, heightDoor);
                         }
                         else
                         {
@@ -621,14 +622,35 @@ public class BtnController : MonoBehaviour
                         Debug.LogWarning("ko tim thay doan tuong de xoa");
                     }
 
-                    Vector3 leftStart = targetWall.start;
-                    Vector3 leftEnd = firstDoorBasePoint.transform.position;
-                    Vector3 rightStart = secondDoorBasePoint.transform.position;
-                    Vector3 rightEnd = targetWall.end;
+                    List<WallLine> newSegments = WallSplitter.SplitWall(
+                        targetWall,
+                        new List<InsertItem> {
+                            new InsertItem(LineType.Door,
+                                firstDoorBasePoint.transform.position,
+                                secondDoorBasePoint.transform.position,
+                                heightDoor)
+                        },
+                        heightValue // chiều cao tường gốc
+                    );
 
-                    targetRoom.wallLines.Add(new WallLine(leftStart, leftEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
-                    targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
-                    targetRoom.wallLines.Add(new WallLine(rightStart, rightEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
+                    targetRoom.wallLines.Remove(targetWall);
+                    // 1. Tìm đúng vị trí của đoạn tường bị split
+                    int index = targetRoom.wallLines.IndexOf(targetWall);
+                    if (index == -1)
+                    {
+                        // Fallback nếu không tìm thấy (dữ liệu bất thường)
+                        Debug.LogWarning("Không tìm thấy targetWall để thay thế. Thêm vào cuối.");
+                        targetRoom.wallLines.AddRange(newSegments);
+                    }
+                    else
+                    {
+                        // 2. Xóa đoạn cũ
+                        targetRoom.wallLines.RemoveAt(index);
+
+                        // 3. Chèn đúng vị trí (giữ nguyên thứ tự hình học)
+                        targetRoom.wallLines.InsertRange(index, newSegments);
+                    }
+
 
                     float epsilon = 0.01f;
                     targetRoom.wallLines = targetRoom.wallLines
