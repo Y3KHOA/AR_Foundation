@@ -4,6 +4,7 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 
 public class BtnController : MonoBehaviour
 {
@@ -55,7 +56,7 @@ public class BtnController : MonoBehaviour
     private float heightDoor = 0.5f;
     private GameObject firstDoorBasePoint = null;
     private GameObject firstDoorTopPoint = null;
-    private bool measureRoom =false;
+    private bool measureRoom = false;
     private bool isMeasuringDoorHeight = false;
     private bool isMeasuringWindowHeight = false;
 
@@ -335,7 +336,7 @@ public class BtnController : MonoBehaviour
                 lineManager.DrawPreviewLine(fixedBasePointPosition, previewPoint.transform.position);
             }
         }
-        
+
         // === khi nhan height=00 ===
         else
         {
@@ -397,7 +398,7 @@ public class BtnController : MonoBehaviour
         }
     }
 
-    private bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float tolerance = 0.01f)
+    private bool IsSameSegment2D(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2, float tolerance = 0.001f)
     {
         Vector2 A1 = new Vector2(a1.x, a1.z);
         Vector2 A2 = new Vector2(a2.x, a2.z);
@@ -491,7 +492,7 @@ public class BtnController : MonoBehaviour
                             isMeasuringDoorHeight = false;
                             fixedBasePointPosition = Vector3.zero;
                             initialCameraPitch = 0f;
-                            PanelManagerDoorWindow.Instance.MeasureMode= false;
+                            PanelManagerDoorWindow.Instance.MeasureMode = false;
 
                             return;
                         }
@@ -501,95 +502,166 @@ public class BtnController : MonoBehaviour
                         }
                     }
                 }
-                
+
                 // Lần nhấn đầu tiên tạo điểm đầu cửa
-                    if (firstDoorBasePoint == null)
-                    {
-                        firstDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
-                        firstDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
+                if (firstDoorBasePoint == null)
+                {
+                    firstDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
+                    firstDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
 
-                        // Kết nối điểm Pn với Pn'
-                        lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);
-                        // return;
+                    // Kết nối điểm Pn với Pn'
+                    lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);
+                    // return;
+                }
+                else
+                {
+                    // Lần nhấn thứ hai tạo điểm cuối cửa
+                    GameObject secondDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
+                    GameObject secondDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
+
+                    // 1. Kết nối Pn với Pn' của mỗi điểm
+                    lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);   // p1 ↔ p1'
+                    lineManager.DrawLineAndDistance(secondDoorBasePoint.transform.position, secondDoorTopPoint.transform.position); // p2 ↔ p2'
+
+                    // 2. Kết nối base và top: p1 → p2, p1' → p2'
+                    lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position); // p1 → p2
+                    lineManager.DrawLineAndDistance(firstDoorTopPoint.transform.position, secondDoorTopPoint.transform.position);   // p1' → p2'
+
+                    // Vẽ tường cửa riêng biệt
+                    modelView.CreateWall(
+                        firstDoorBasePoint.transform.position,
+                        secondDoorBasePoint.transform.position,
+                        firstDoorTopPoint.transform.position,
+                        secondDoorTopPoint.transform.position
+                    );
+
+                    // Lưu vào Room (đoạn cửa)
+                    Vector2 doorStart = new Vector2(firstDoorBasePoint.transform.position.x, firstDoorBasePoint.transform.position.z);
+                    Vector2 doorEnd = new Vector2(secondDoorBasePoint.transform.position.x, secondDoorBasePoint.transform.position.z);
+
+                    // === Chèn checkpoint cửa vào giữa đúng vị trí ===
+                    List<Vector2> pts = targetRoom.checkpoints;
+                    List<float> hts = targetRoom.heights;
+
+                    int insertIndex = FindWallSegmentIndex(pts, targetWall.start, targetWall.end);
+
+                    // Nhận diện wrap segment
+                    bool isWrap = false;
+
+                    float epsilon = 0.01f;
+
+                    if (pts.Count >= 2)
+                    {
+                        Vector3 last = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
+                        Vector3 first = new Vector3(pts[0].x, 0, pts[0].y);
+
+                        isWrap = (Vector3.Distance(targetWall.start, last) < epsilon && Vector3.Distance(targetWall.end, first) < epsilon)
+                        || (Vector3.Distance(targetWall.start, first) < epsilon && Vector3.Distance(targetWall.end, last) < epsilon);
                     }
-                    else
+                    Debug.Log("insertIndex 0 pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex 0 Door = " + insertIndex);
+
+                    // Nếu không phải cạnh cuối, kiểm tra các cạnh còn lại
+                    if (insertIndex == -1)
                     {
-                        // Lần nhấn thứ hai tạo điểm cuối cửa
-                        GameObject secondDoorBasePoint = Instantiate(pointPrefab, insertPoint, Quaternion.identity);
-                        GameObject secondDoorTopPoint = Instantiate(pointPrefab, insertPoint + Vector3.up * heightDoor, Quaternion.identity);
-
-                        // 1. Kết nối Pn với Pn' của mỗi điểm
-                        lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, firstDoorTopPoint.transform.position);   // p1 ↔ p1'
-                        lineManager.DrawLineAndDistance(secondDoorBasePoint.transform.position, secondDoorTopPoint.transform.position); // p2 ↔ p2'
-
-                        // 2. Kết nối base và top: p1 → p2, p1' → p2'
-                        lineManager.DrawLineAndDistance(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position); // p1 → p2
-                        lineManager.DrawLineAndDistance(firstDoorTopPoint.transform.position, secondDoorTopPoint.transform.position);   // p1' → p2'
-
-                        // Vẽ tường cửa riêng biệt
-                        modelView.CreateWall(
-                            firstDoorBasePoint.transform.position,
-                            secondDoorBasePoint.transform.position,
-                            firstDoorTopPoint.transform.position,
-                            secondDoorTopPoint.transform.position
-                        );
-
-                        // Lưu vào Room (đoạn cửa)
-                        Vector2 doorStart = new Vector2(firstDoorBasePoint.transform.position.x, firstDoorBasePoint.transform.position.z);
-                        Vector2 doorEnd = new Vector2(secondDoorBasePoint.transform.position.x, secondDoorBasePoint.transform.position.z);
-
-                        // === Chèn checkpoint cửa vào giữa đúng vị trí ===
-                        List<Vector2> pts = targetRoom.checkpoints;
-                        List<float> hts = targetRoom.heights;
-
-                        int insertIndex = -1;
                         for (int i = 0; i < pts.Count - 1; i++)
                         {
                             Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
                             Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+
                             if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
                             {
                                 insertIndex = i;
                                 break;
                             }
                         }
+                    }
+                    Debug.Log("insertIndex pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex Door = " + insertIndex);
 
-                        if (insertIndex != -1)
+                    if (isWrap)
+                    {
+                        Debug.Log("[L]Day la doan wrap cuoi! Su dung logic wrap dac biet.");
+
+                        // Log danh sach truoc khi xoa
+                        Debug.Log("[L]Truoc khi xoa wrap, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Truoc xoa: {l.type} {l.start} -> {l.end}");
+
+                        // Remove đoạn wrap
+                        WallLine wrapToRemove = targetRoom.wallLines.FirstOrDefault(
+                            l => (Vector3.Distance(l.start, targetWall.start) < epsilon && Vector3.Distance(l.end, targetWall.end) < epsilon) ||
+                                (Vector3.Distance(l.start, targetWall.end) < epsilon && Vector3.Distance(l.end, targetWall.start) < epsilon));
+                        if (wrapToRemove != null)
                         {
-                            pts.Insert(insertIndex + 1, doorStart);
-                            hts.Insert(insertIndex + 1, heightDoor);
-                            pts.Insert(insertIndex + 2, doorEnd);
-                            hts.Insert(insertIndex + 2, heightDoor);
+                            Debug.Log($"[L]Xoa thanh cong wrap: {wrapToRemove.type} {wrapToRemove.start} -> {wrapToRemove.end}");
+                            targetRoom.wallLines.Remove(wrapToRemove);
                         }
                         else
                         {
-                            Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
-                            pts.Add(doorStart); hts.Add(heightDoor);
-                            pts.Add(doorEnd); hts.Add(heightDoor);
+                            Debug.LogWarning("[L]Khong tim thay doan wrap de xoa!");
                         }
 
-                        // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
-                        targetRoom.wallLines.Remove(targetWall);
+                        // Log danh sach sau khi xoa
+                        Debug.Log("[L]Sau khi xoa wrap, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Sau xoa: {l.type} {l.start} -> {l.end}");
 
-                        Vector3 leftStart = targetWall.start;
-                        Vector3 leftEnd = firstDoorBasePoint.transform.position;
-                        Vector3 rightStart = secondDoorBasePoint.transform.position;
-                        Vector3 rightEnd = targetWall.end;
-
-                        targetRoom.wallLines.Add(new WallLine(leftStart, leftEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
+                        // Split đoạn wrap: Pn → DoorA → DoorB → P1
+                        targetRoom.wallLines.Add(new WallLine(targetWall.start, firstDoorBasePoint.transform.position, LineType.Wall, 0f, heightValue));
                         targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
-                        targetRoom.wallLines.Add(new WallLine(rightStart, rightEnd, LineType.Wall, 0f, heightValue)); // hoặc chiều cao tường gốc
-
-                        Debug.Log("Door completed.");
-
-                        // Reset trạng thái về ban đầu
-                        firstDoorBasePoint = null;
-                        firstDoorTopPoint = null;
-
-                        isDoor = false;
-                        PanelManagerDoorWindow.Instance.IsDoorChanged = false;
-                        PanelManagerDoorWindow.Instance.IsClicked = true;
+                        targetRoom.wallLines.Add(new WallLine(secondDoorBasePoint.transform.position, targetWall.end, LineType.Wall, 0f, heightValue));
                     }
+                    else
+                    {
+                        Debug.Log("[L]Day la doan thuong, xu ly nhu binh thuong.");
+
+                        // Log danh sach truoc khi xoa
+                        Debug.Log("[L]Truoc khi xoa doan thuong, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Truoc xoa: {l.type} {l.start} -> {l.end}");
+
+                        // Remove đoạn thường
+                        WallLine lineToRemove = targetRoom.wallLines.FirstOrDefault(
+                            l => (Vector3.Distance(l.start, targetWall.start) < epsilon && Vector3.Distance(l.end, targetWall.end) < epsilon) ||
+                                (Vector3.Distance(l.start, targetWall.end) < epsilon && Vector3.Distance(l.end, targetWall.start) < epsilon));
+                        if (lineToRemove != null)
+                        {
+                            Debug.Log($"[L]Xoa thanh cong: {lineToRemove.type} {lineToRemove.start} -> {lineToRemove.end}");
+                            targetRoom.wallLines.Remove(lineToRemove);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("[L]Khong tim thay doan tuong de xoa!");
+                        }
+
+                        // Log danh sach sau khi xoa
+                        Debug.Log("[L]Sau khi xoa doan thuong, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Sau xoa: {l.type} {l.start} -> {l.end}");
+
+
+                        // Split đoạn thường: Pi → DoorA → DoorB → Pi+1
+                        targetRoom.wallLines.Add(new WallLine(targetWall.start, firstDoorBasePoint.transform.position, LineType.Wall, 0f, heightValue));
+                        targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
+                        targetRoom.wallLines.Add(new WallLine(secondDoorBasePoint.transform.position, targetWall.end, LineType.Wall, 0f, heightValue));
+                    }
+                    
+                    targetRoom.wallLines = targetRoom.wallLines
+                        .Where(l => Vector3.Distance(l.start, l.end) > epsilon)
+                        .ToList();
+
+                    SnapWallLinePoints(targetRoom.wallLines);
+                    Debug.Log("Door completed.");
+
+                    // Reset trạng thái về ban đầu
+                    firstDoorBasePoint = null;
+                    firstDoorTopPoint = null;
+
+                    isDoor = false;
+                    PanelManagerDoorWindow.Instance.IsDoorChanged = false;
+                    PanelManagerDoorWindow.Instance.IsClicked = true;
+                }
             }
 
             return; // Thoát sau khi xử lý cửa
@@ -627,7 +699,6 @@ public class BtnController : MonoBehaviour
 
             if (targetWall != null && targetRoom != null)
             {
-                // Vector3 insertPoint = ProjectPointOnLineSegment(targetWall.start, targetWall.end, currentPos);
                 Vector3 insertPoint = currentPos;
 
                 if (PanelManagerDoorWindow.Instance.MeasureMode)
@@ -726,24 +797,61 @@ public class BtnController : MonoBehaviour
                     List<Vector2> pts = targetRoom.checkpoints;
                     List<float> hts = targetRoom.heights;
 
-                    int insertIndex = -1;
-                    for (int i = 0; i < pts.Count - 1; i++)
+                    int insertIndex = FindWallSegmentIndex(pts, targetWall.start, targetWall.end);
+
+                    if (pts.Count >= 2)
                     {
-                        Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
-                        Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
-                        if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                        Vector3 last = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
+                        Vector3 first = new Vector3(pts[0].x, 0, pts[0].y);
+
+                        if (IsSameSegment2D(last, first, targetWall.start, targetWall.end))
                         {
-                            insertIndex = i;
-                            break;
+                            insertIndex = pts.Count - 1;
+                        }
+                        else
+                        {
+                            Debug.Log("insertIndex = -1");
                         }
                     }
+                    Debug.Log("insertIndex 0 pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex 0 Door = " + insertIndex);
+
+                    // Nếu không phải cạnh cuối, kiểm tra các cạnh còn lại
+                    if (insertIndex == -1)
+                    {
+                        for (int i = 0; i < pts.Count - 1; i++)
+                        {
+                            Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
+                            Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+
+                            if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                            {
+                                insertIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    Debug.Log("insertIndex pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex Door = " + insertIndex);
 
                     if (insertIndex != -1)
                     {
-                        pts.Insert(insertIndex + 1, doorStart);
-                        hts.Insert(insertIndex + 1, heightDoor);
-                        pts.Insert(insertIndex + 2, doorEnd);
-                        hts.Insert(insertIndex + 2, heightDoor);
+                        if (insertIndex == pts.Count - 1)
+                        {
+                            // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
+                            pts.Insert(0, doorEnd);
+                            hts.Insert(0, heightDoor);
+                            pts.Insert(0, doorStart);
+                            hts.Insert(0, heightDoor);
+                        }
+                        else
+                        {
+                            // Chèn giữa đoạn bình thường
+                            pts.Insert(insertIndex + 1, doorStart);
+                            hts.Insert(insertIndex + 1, heightDoor);
+                            pts.Insert(insertIndex + 2, doorEnd);
+                            hts.Insert(insertIndex + 2, heightDoor);
+                        }
                     }
                     else
                     {
@@ -753,7 +861,19 @@ public class BtnController : MonoBehaviour
                     }
 
                     // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
-                    targetRoom.wallLines.Remove(targetWall);
+                    WallLine lineToRemove = targetRoom.wallLines.FirstOrDefault(
+                            l => (Vector3.Distance(l.start, targetWall.start) < 0.001f && Vector3.Distance(l.end, targetWall.end) < 0.001f) ||
+                                (Vector3.Distance(l.start, targetWall.end) < 0.001f && Vector3.Distance(l.end, targetWall.start) < 0.001f)
+);
+                    if (lineToRemove != null)
+                    {
+
+                        targetRoom.wallLines.Remove(lineToRemove);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("ko tim thay doan tuong de xoa");
+                    }
 
                     Vector3 leftStart = targetWall.start;
                     Vector3 leftEnd = firstDoorBasePoint.transform.position;
@@ -932,6 +1052,7 @@ public class BtnController : MonoBehaviour
             for (int i = 0; i < baseCopy.Count; i++)
             {
                 Vector3 start = baseCopy[i].transform.position;
+                // Vector3 end = baseCopy[i + 1].transform.position;
                 Vector3 end = baseCopy[(i + 1) % baseCopy.Count].transform.position;
 
                 WallLine wl = new WallLine(start, end, currentLineType, 0f, heightValue);
@@ -1058,4 +1179,50 @@ public class BtnController : MonoBehaviour
         return a + ab * t;
     }
 
+    void SnapWallLinePoints(List<WallLine> wallLines, float epsilon = 0.001f)
+    {
+        for (int i = 0; i < wallLines.Count; i++)
+        {
+            for (int j = 0; j < wallLines.Count; j++)
+            {
+                if (i == j) continue;
+
+                if (Vector3.Distance(wallLines[i].end, wallLines[j].start) < epsilon)
+                    wallLines[j].start = wallLines[i].end;
+                if (Vector3.Distance(wallLines[i].start, wallLines[j].end) < epsilon)
+                    wallLines[j].end = wallLines[i].start;
+            }
+        }
+    }
+
+    // Cải tiến phần tìm insertIndex
+    int FindWallSegmentIndex(List<Vector2> checkpoints, Vector3 wallStart, Vector3 wallEnd)
+    {
+        for (int i = 0; i < checkpoints.Count; i++)
+        {
+            int j = (i + 1) % checkpoints.Count;
+            Vector3 a = new Vector3(checkpoints[i].x, 0, checkpoints[i].y);
+            Vector3 b = new Vector3(checkpoints[j].x, 0, checkpoints[j].y);
+
+            if (IsSameSegment2D(a, b, wallStart, wallEnd))
+            {
+                return i;
+            }
+        }
+
+        // Debug để phát hiện vấn đề
+        Debug.LogWarning($"Không tìm thấy đoạn tường. Wall start: {wallStart}, Wall end: {wallEnd}");
+        Debug.LogWarning($"Đang tìm trong {checkpoints.Count} điểm checkpoint");
+
+        // In ra tất cả các đoạn để debug
+        for (int i = 0; i < checkpoints.Count; i++)
+        {
+            int j = (i + 1) % checkpoints.Count;
+            Vector3 a = new Vector3(checkpoints[i].x, 0, checkpoints[i].y);
+            Vector3 b = new Vector3(checkpoints[j].x, 0, checkpoints[j].y);
+            Debug.Log($"Checkpoint segment {i}: {a} -> {b}");
+        }
+
+        return -1;
+    }
 }
