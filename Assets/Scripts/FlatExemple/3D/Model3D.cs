@@ -32,172 +32,71 @@ public class Model3D : MonoBehaviour
             Debug.Log("==== LIST WALLLINES cua phong " + rooms.IndexOf(room) + " ====");
             foreach (var l in room.wallLines)
                 Debug.Log($"LIST WALLLINES cua phong:{l.type}: {l.start} -> {l.end}");
-            // SnapWallLinePoints(room.wallLines);
-            
+
             // Lấy chiều cao tường cho phòng này
             float roomWallHeight = GetRoomHeight(room);
-
-            // Debug.Log($"Phòng có chiều cao tường: {roomWallHeight}");
-
-            // Xác định đoạn tường cuối để xử lý đặc biệt
-            List<WallLine> lastSection = IdentifyLastWallSection(room.wallLines);
-
-            // Liệt kê các đoạn tường cuối để log
-            Debug.Log("==== DOAN TUONG CUOI CAN XOA VA VE LAI ====");
-            foreach (var l in lastSection)
-                Debug.Log($"Doan tuong cuoi:{l.type}: {l.start} -> {l.end}");
-
-            // Tạo bản sao danh sách wallLines để thêm line ảo (không làm thay đổi dữ liệu gốc)
-            List<WallLine> effectiveLines = new List<WallLine>(room.wallLines);
-            // Thêm line ảo pn' nếu có ít nhất 2 điểm
-            if (effectiveLines.Count >= 1)
-            {
-                WallLine last = effectiveLines[effectiveLines.Count - 1];
-
-                WallLine virtualLine = new WallLine
-                (
-                    last.end,        // start
-                    last.end,        // end
-                    last.type,       // cùng kiểu với line trước (Wall/Door/Window nếu cần)
-                    last.distanceHeight,              // length không quan trọng, chỉ để hợp lệ
-                    last.Height      // giữ nguyên chiều cao
-                );
-
-                effectiveLines.Add(virtualLine); // Chỉ thêm vào danh sách tạm thời
-                Debug.Log($"[Add Virtual Line] {virtualLine.start} -> {virtualLine.end}");
-            }
-            foreach (var l in effectiveLines)
-                Debug.Log($"LIST WALLLINES cua phong+ ao:{l.type}: {l.start} -> {l.end}");
 
             // Phân loại các line để xử lý theo thứ tự ưu tiên, loại trừ các đoạn cuối
             List<WallLine> walls = new List<WallLine>();
             List<WallLine> doors = new List<WallLine>();
             List<WallLine> windows = new List<WallLine>();
 
-            // Lưu trữ các GameObjects của đoạn cuối để có thể xóa sau này
+            // List để lưu trữ các đối tượng đoạn cuối
             List<GameObject> lastSectionObjects = new List<GameObject>();
 
-            foreach(WallLine line in effectiveLines)
+            // Lần đầu tiên, vẽ TẤT CẢ các đoạn ngoại trừ các đoạn cuối đặc biệt
+            foreach (WallLine line in room.wallLines)
             {
-                bool isLastSectionPart = lastSection.Contains(line);
-
-                switch (line.type)
+                if (line.type == LineType.Wall)
                 {
-                    case LineType.Wall:
-                        if (!isLastSectionPart)
-                            walls.Add(line);
-                        break;
-                    case LineType.Door:
-                        if (!isLastSectionPart)
-                            doors.Add(line);
-                        break;
-                    case LineType.Window:
-                        if (!isLastSectionPart)
-                            windows.Add(line);
-                        break;
-                }
-            }
-
-            // Vẽ tất cả các phần không phải đoạn cuối
-
-            // Vẽ tường trước
-            foreach (WallLine wall in walls)
-            {
-                CreateWallSegment(wall, roomWallHeight);
-            }
-
-            // Vẽ cửa (và phần tường phía trên cửa nếu có)
-            foreach (WallLine door in doors)
-            {
-                CreateDoorSegment(door, roomWallHeight);
-            }
-
-            // Vẽ cửa sổ (và phần tường trên/dưới cửa sổ)
-            foreach (WallLine window in windows)
-            {
-                CreateWindowSegment(window, roomWallHeight);
-            }
-
-            // Vẽ đoạn cuối lần đầu để lưu lại các GameObject
-            foreach (WallLine line in lastSection)
-            {
-                GameObject obj = null;
-                switch (line.type)
-                {
-                    case LineType.Wall:
-                        obj = CreateWallSegment(line, roomWallHeight);
-                        break;
-                    case LineType.Door:
-                        obj = CreateDoorSegment(line, roomWallHeight);
-                        break;
-                    case LineType.Window:
-                        obj = CreateWindowSegment(line, roomWallHeight);
-                        break;
-                }
-
-                if (obj != null)
-                    lastSectionObjects.Add(obj);
-            }
-
-            // Xóa đi tất cả các đoạn cuối và vẽ lại
-            if (lastSectionObjects.Count > 0)
-            {
-                Debug.Log($"Xoa {lastSectionObjects.Count} doan tuong cuoi va ve lai");
-
-                // Xóa các đoạn tường cuối đã vẽ
-                foreach (GameObject obj in lastSectionObjects)
-                {
-                    Destroy(obj);
-                }
-
-                // Vẽ lại các đoạn tường cuối
-                foreach (WallLine line in lastSection)
-                {
-                    switch (line.type)
+                    // Nếu có một Door/Window nào có cùng start-end (hoặc đảo ngược), thì bỏ qua Wall này
+                    bool overlap = room.wallLines.Any(l =>
+                        (l.type == LineType.Door || l.type == LineType.Window) &&
+                        (
+                            (Vector3.Distance(l.start, line.start) < 0.01f && Vector3.Distance(l.end, line.end) < 0.01f) ||
+                            (Vector3.Distance(l.start, line.end) < 0.01f && Vector3.Distance(l.end, line.start) < 0.01f)
+                        )
+                    );
+                    if (overlap)
                     {
-                        case LineType.Wall:
-                            CreateWallSegment(line, roomWallHeight);
-                            break;
-                        case LineType.Door:
-                            CreateDoorSegment(line, roomWallHeight);
-                            break;
-                        case LineType.Window:
-                            CreateWindowSegment(line, roomWallHeight);
-                            break;
+                        Debug.Log($"[SKIP WALL] Doan nay trung voi cua hoac cua so: {line.start} -> {line.end}");
+                        continue;
                     }
-                    Debug.Log($"Da ve lai doan: {line.type} from {line.start} to {line.end}");
+
+                    CreateWallSegment(line, roomWallHeight);
+                }
+                else if (line.type == LineType.Door)
+                {
+                    CreateDoorSegment(line, roomWallHeight);
+                }
+                else if (line.type == LineType.Window)
+                {
+                    CreateWindowSegment(line, roomWallHeight);
                 }
             }
+
         }
-    }
-
-    // Hàm xác định đoạn tường cuối của phòng (dựa vào các đặc điểm đoạn nối)
-    private List<WallLine> IdentifyLastWallSection(List<WallLine> allLines)
-    {
-        if (allLines == null || allLines.Count < 3)
-            return new List<WallLine>();
-
-        for (int i = allLines.Count - 3; i >= 0; i--)
-        {
-            var l1 = allLines[i];
-            var l2 = allLines[i + 1];
-            var l3 = allLines[i + 2];
-
-            if (l1.type == LineType.Wall &&
-                (l2.type == LineType.Door || l2.type == LineType.Window) &&
-                l3.type == LineType.Wall)
-            {
-                return new List<WallLine> { l1, l2, l3 };
-            }
-        }
-
-        // Không tìm thấy pattern phù hợp, trả về đoạn cuối cùng như cũ
-        return new List<WallLine> { allLines[allLines.Count - 1] };
     }
 
     // Hàm vẽ phần tường thông thường
     private GameObject CreateWallSegment(WallLine line, float roomHeight)
     {
+        // Kiểm tra nếu có Door/Window nào trùng hoàn toàn đoạn này
+        bool isOverlapWithDoorOrWindow = RoomStorage.rooms
+            .SelectMany(r => r.wallLines)
+            .Any(l =>
+                (l.type == LineType.Door || l.type == LineType.Window) &&
+                (
+                    (Vector3.Distance(l.start, line.start) < 0.01f && Vector3.Distance(l.end, line.end) < 0.01f) ||
+                    (Vector3.Distance(l.start, line.end) < 0.01f && Vector3.Distance(l.end, line.start) < 0.01f)
+                )
+            );
+        if (isOverlapWithDoorOrWindow)
+        {
+            // Vẽ cửa thay vì tường
+            Debug.Log($"[SKIP WALL] Doan nay trung voi cua hoac cua so: {line.start} -> {line.end}");
+            return CreateDoorSegment(line, roomHeight);
+        }
         Vector3 start = line.start;
         Vector3 end = line.end;
 
@@ -273,7 +172,7 @@ public class Model3D : MonoBehaviour
         Vector3 windowTop1 = windowBase1 + Vector3.up * windowHeight;
         Vector3 windowTop2 = windowBase2 + Vector3.up * windowHeight;
 
-        GameObject windowObj=CreateWall2(windowBase1, windowBase2, windowTop1, windowTop2); // Sử dụng CreateWall2 cho cửa sổ
+        GameObject windowObj = CreateWall2(windowBase1, windowBase2, windowTop1, windowTop2); // Sử dụng CreateWall2 cho cửa sổ
 
         // 3. Phần tường trên cửa sổ
         float aboveHeight = totalWallHeight - windowDistance - windowHeight;
@@ -328,7 +227,6 @@ public class Model3D : MonoBehaviour
         }
     }
 
-
     // Vẽ từng tường với vật liệu tương ứng
     private GameObject CreateWall(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
     {
@@ -336,7 +234,6 @@ public class Model3D : MonoBehaviour
         wall.transform.SetParent(transform);
 
         // Gán Layer
-        // wall.layer = LayerMask.NameToLayer("PreviewModel");
         SetLayerRecursively(wall, LayerMask.NameToLayer("PreviewModel"));
 
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
@@ -379,7 +276,6 @@ public class Model3D : MonoBehaviour
             4, 6, 2, 4, 2, 0
         };
 
-        // Vector2[] uv = new Vector2[8]; // có thể chỉnh UV chi tiết nếu cần, nhưng giữ đơn giản
         Vector2[] uv = new Vector2[8];
         for (int i = 0; i < 8; i++)
             uv[i] = new Vector2(vertices[i].x, vertices[i].y);
@@ -397,19 +293,20 @@ public class Model3D : MonoBehaviour
 
         return wall;
     }
+
     private GameObject CreateWall2(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4)
     {
         GameObject wall = new GameObject("Wall");
         wall.transform.SetParent(transform);
 
         // Gán Layer
-        // wall.layer = LayerMask.NameToLayer("PreviewModel");
         SetLayerRecursively(wall, LayerMask.NameToLayer("PreviewModel"));
 
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
         Material instance = new Material(roomMaterial2);
         instance.renderQueue = 3000; // Cửa nên vẽ sau tường
+        instance.SetInt("_ZWrite", 1);
         meshRenderer.material = instance;
 
         UnityEngine.Mesh mesh = new UnityEngine.Mesh();
@@ -446,7 +343,6 @@ public class Model3D : MonoBehaviour
             4, 6, 2, 4, 2, 0
         };
 
-        // Vector2[] uv = new Vector2[8]; // có thể chỉnh UV chi tiết nếu cần, nhưng giữ đơn giản
         Vector2[] uv = new Vector2[8];
         for (int i = 0; i < 8; i++)
             uv[i] = new Vector2(vertices[i].x, vertices[i].y);
@@ -553,5 +449,4 @@ public class Model3D : MonoBehaviour
 
         mf.mesh = mesh;
     }
-
 }

@@ -545,19 +545,18 @@ public class BtnController : MonoBehaviour
 
                     int insertIndex = FindWallSegmentIndex(pts, targetWall.start, targetWall.end);
 
+                    // Nhận diện wrap segment
+                    bool isWrap = false;
+
+                    float epsilon = 0.01f;
+
                     if (pts.Count >= 2)
                     {
                         Vector3 last = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
                         Vector3 first = new Vector3(pts[0].x, 0, pts[0].y);
 
-                        if (IsSameSegment2D(last, first, targetWall.start, targetWall.end))
-                        {
-                            insertIndex = pts.Count - 1;
-                        }
-                        else
-                        {
-                            Debug.Log("insertIndex = -1");
-                        }
+                        isWrap = (Vector3.Distance(targetWall.start, last) < epsilon && Vector3.Distance(targetWall.end, first) < epsilon)
+                        || (Vector3.Distance(targetWall.start, first) < epsilon && Vector3.Distance(targetWall.end, last) < epsilon);
                     }
                     Debug.Log("insertIndex 0 pts.Count = " + pts.Count);
                     Debug.Log("insertIndex 0 Door = " + insertIndex);
@@ -580,79 +579,74 @@ public class BtnController : MonoBehaviour
                     Debug.Log("insertIndex pts.Count = " + pts.Count);
                     Debug.Log("insertIndex Door = " + insertIndex);
 
-                    if (insertIndex != -1)
+                    if (isWrap)
                     {
-                        if (insertIndex == pts.Count - 1)
+                        Debug.Log("[L]Day la doan wrap cuoi! Su dung logic wrap dac biet.");
+
+                        // Log danh sach truoc khi xoa
+                        Debug.Log("[L]Truoc khi xoa wrap, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Truoc xoa: {l.type} {l.start} -> {l.end}");
+
+                        // Remove đoạn wrap
+                        WallLine wrapToRemove = targetRoom.wallLines.FirstOrDefault(
+                            l => (Vector3.Distance(l.start, targetWall.start) < epsilon && Vector3.Distance(l.end, targetWall.end) < epsilon) ||
+                                (Vector3.Distance(l.start, targetWall.end) < epsilon && Vector3.Distance(l.end, targetWall.start) < epsilon));
+                        if (wrapToRemove != null)
                         {
-                            // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
-                            pts.Insert(0, doorEnd);
-                            hts.Insert(0, heightDoor);
-                            pts.Insert(0, doorStart);
-                            hts.Insert(0, heightDoor);
+                            Debug.Log($"[L]Xoa thanh cong wrap: {wrapToRemove.type} {wrapToRemove.start} -> {wrapToRemove.end}");
+                            targetRoom.wallLines.Remove(wrapToRemove);
                         }
                         else
                         {
-                            // Chèn giữa đoạn bình thường
-                            pts.Insert(insertIndex + 1, doorStart);
-                            hts.Insert(insertIndex + 1, heightDoor);
-                            pts.Insert(insertIndex + 2, doorEnd);
-                            hts.Insert(insertIndex + 2, heightDoor);
+                            Debug.LogWarning("[L]Khong tim thay doan wrap de xoa!");
                         }
+
+                        // Log danh sach sau khi xoa
+                        Debug.Log("[L]Sau khi xoa wrap, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Sau xoa: {l.type} {l.start} -> {l.end}");
+
+                        // Split đoạn wrap: Pn → DoorA → DoorB → P1
+                        targetRoom.wallLines.Add(new WallLine(targetWall.start, firstDoorBasePoint.transform.position, LineType.Wall, 0f, heightValue));
+                        targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
+                        targetRoom.wallLines.Add(new WallLine(secondDoorBasePoint.transform.position, targetWall.end, LineType.Wall, 0f, heightValue));
                     }
                     else
                     {
-                        Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
-                        pts.Add(doorStart); hts.Add(heightDoor);
-                        pts.Add(doorEnd); hts.Add(heightDoor);
+                        Debug.Log("[L]Day la doan thuong, xu ly nhu binh thuong.");
+
+                        // Log danh sach truoc khi xoa
+                        Debug.Log("[L]Truoc khi xoa doan thuong, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Truoc xoa: {l.type} {l.start} -> {l.end}");
+
+                        // Remove đoạn thường
+                        WallLine lineToRemove = targetRoom.wallLines.FirstOrDefault(
+                            l => (Vector3.Distance(l.start, targetWall.start) < epsilon && Vector3.Distance(l.end, targetWall.end) < epsilon) ||
+                                (Vector3.Distance(l.start, targetWall.end) < epsilon && Vector3.Distance(l.end, targetWall.start) < epsilon));
+                        if (lineToRemove != null)
+                        {
+                            Debug.Log($"[L]Xoa thanh cong: {lineToRemove.type} {lineToRemove.start} -> {lineToRemove.end}");
+                            targetRoom.wallLines.Remove(lineToRemove);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("[L]Khong tim thay doan tuong de xoa!");
+                        }
+
+                        // Log danh sach sau khi xoa
+                        Debug.Log("[L]Sau khi xoa doan thuong, danh sach wallLines:");
+                        foreach (var l in targetRoom.wallLines)
+                            Debug.Log($"[L]Sau xoa: {l.type} {l.start} -> {l.end}");
+
+
+                        // Split đoạn thường: Pi → DoorA → DoorB → Pi+1
+                        targetRoom.wallLines.Add(new WallLine(targetWall.start, firstDoorBasePoint.transform.position, LineType.Wall, 0f, heightValue));
+                        targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
+                        targetRoom.wallLines.Add(new WallLine(secondDoorBasePoint.transform.position, targetWall.end, LineType.Wall, 0f, heightValue));
                     }
-
-                    // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
-                    // targetRoom.wallLines.Remove(targetWall);
-                    WallLine lineToRemove = targetRoom.wallLines.FirstOrDefault(
-                            l => (Vector3.Distance(l.start, targetWall.start) < 0.001f && Vector3.Distance(l.end, targetWall.end) < 0.001f) ||
-                                (Vector3.Distance(l.start, targetWall.end) < 0.001f && Vector3.Distance(l.end, targetWall.start) < 0.001f)
-);
-                    if (lineToRemove != null)
-                    {
-                        
-                        targetRoom.wallLines.Remove(lineToRemove);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("ko tim thay doan tuong de xoa");
-                    }
-
-                    List<WallLine> newSegments = WallSplitter.SplitWall(
-                        targetWall,
-                        new List<InsertItem> {
-                            new InsertItem(LineType.Door,
-                                firstDoorBasePoint.transform.position,
-                                secondDoorBasePoint.transform.position,
-                                heightDoor)
-                        },
-                        heightValue // chiều cao tường gốc
-                    );
-
-                    targetRoom.wallLines.Remove(targetWall);
-                    // 1. Tìm đúng vị trí của đoạn tường bị split
-                    int index = targetRoom.wallLines.IndexOf(targetWall);
-                    if (index == -1)
-                    {
-                        // Fallback nếu không tìm thấy (dữ liệu bất thường)
-                        Debug.LogWarning("Không tìm thấy targetWall để thay thế. Thêm vào cuối.");
-                        targetRoom.wallLines.AddRange(newSegments);
-                    }
-                    else
-                    {
-                        // 2. Xóa đoạn cũ
-                        targetRoom.wallLines.RemoveAt(index);
-
-                        // 3. Chèn đúng vị trí (giữ nguyên thứ tự hình học)
-                        targetRoom.wallLines.InsertRange(index, newSegments);
-                    }
-
-
-                    float epsilon = 0.01f;
+                    
                     targetRoom.wallLines = targetRoom.wallLines
                         .Where(l => Vector3.Distance(l.start, l.end) > epsilon)
                         .ToList();
@@ -705,7 +699,6 @@ public class BtnController : MonoBehaviour
 
             if (targetWall != null && targetRoom != null)
             {
-                // Vector3 insertPoint = ProjectPointOnLineSegment(targetWall.start, targetWall.end, currentPos);
                 Vector3 insertPoint = currentPos;
 
                 if (PanelManagerDoorWindow.Instance.MeasureMode)
@@ -804,37 +797,61 @@ public class BtnController : MonoBehaviour
                     List<Vector2> pts = targetRoom.checkpoints;
                     List<float> hts = targetRoom.heights;
 
-                    int insertIndex = -1;
-                    for (int i = 0; i < pts.Count; i++)
-                    {
-                        Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
-                        Vector3 b;
+                    int insertIndex = FindWallSegmentIndex(pts, targetWall.start, targetWall.end);
 
-                        if (i == pts.Count - 1)
+                    if (pts.Count >= 2)
+                    {
+                        Vector3 last = new Vector3(pts[pts.Count - 1].x, 0, pts[pts.Count - 1].y);
+                        Vector3 first = new Vector3(pts[0].x, 0, pts[0].y);
+
+                        if (IsSameSegment2D(last, first, targetWall.start, targetWall.end))
                         {
-                            // Cạnh cuối nối với điểm đầu tiên
-                            b = new Vector3(pts[0].x, 0, pts[0].y);
+                            insertIndex = pts.Count - 1;
                         }
                         else
                         {
-                            b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+                            Debug.Log("insertIndex = -1");
                         }
+                    }
+                    Debug.Log("insertIndex 0 pts.Count = " + pts.Count);
+                    Debug.Log("insertIndex 0 Door = " + insertIndex);
 
-                        if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                    // Nếu không phải cạnh cuối, kiểm tra các cạnh còn lại
+                    if (insertIndex == -1)
+                    {
+                        for (int i = 0; i < pts.Count - 1; i++)
                         {
-                            insertIndex = i;
-                            break;
+                            Vector3 a = new Vector3(pts[i].x, 0, pts[i].y);
+                            Vector3 b = new Vector3(pts[i + 1].x, 0, pts[i + 1].y);
+
+                            if (IsSameSegment2D(a, b, targetWall.start, targetWall.end))
+                            {
+                                insertIndex = i;
+                                break;
+                            }
                         }
                     }
                     Debug.Log("insertIndex pts.Count = " + pts.Count);
-                    Debug.Log("insertIndex Window = " + insertIndex);
+                    Debug.Log("insertIndex Door = " + insertIndex);
 
                     if (insertIndex != -1)
                     {
-                        pts.Insert(insertIndex + 1, doorStart);
-                        hts.Insert(insertIndex + 1, heightDoor);
-                        pts.Insert(insertIndex + 2, doorEnd);
-                        hts.Insert(insertIndex + 2, heightDoor);
+                        if (insertIndex == pts.Count - 1)
+                        {
+                            // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
+                            pts.Insert(0, doorEnd);
+                            hts.Insert(0, heightDoor);
+                            pts.Insert(0, doorStart);
+                            hts.Insert(0, heightDoor);
+                        }
+                        else
+                        {
+                            // Chèn giữa đoạn bình thường
+                            pts.Insert(insertIndex + 1, doorStart);
+                            hts.Insert(insertIndex + 1, heightDoor);
+                            pts.Insert(insertIndex + 2, doorEnd);
+                            hts.Insert(insertIndex + 2, heightDoor);
+                        }
                     }
                     else
                     {
@@ -844,7 +861,19 @@ public class BtnController : MonoBehaviour
                     }
 
                     // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
-                    targetRoom.wallLines.Remove(targetWall);
+                    WallLine lineToRemove = targetRoom.wallLines.FirstOrDefault(
+                            l => (Vector3.Distance(l.start, targetWall.start) < 0.001f && Vector3.Distance(l.end, targetWall.end) < 0.001f) ||
+                                (Vector3.Distance(l.start, targetWall.end) < 0.001f && Vector3.Distance(l.end, targetWall.start) < 0.001f)
+);
+                    if (lineToRemove != null)
+                    {
+
+                        targetRoom.wallLines.Remove(lineToRemove);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("ko tim thay doan tuong de xoa");
+                    }
 
                     Vector3 leftStart = targetWall.start;
                     Vector3 leftEnd = firstDoorBasePoint.transform.position;
@@ -1023,6 +1052,7 @@ public class BtnController : MonoBehaviour
             for (int i = 0; i < baseCopy.Count; i++)
             {
                 Vector3 start = baseCopy[i].transform.position;
+                // Vector3 end = baseCopy[i + 1].transform.position;
                 Vector3 end = baseCopy[(i + 1) % baseCopy.Count].transform.position;
 
                 WallLine wl = new WallLine(start, end, currentLineType, 0f, heightValue);
