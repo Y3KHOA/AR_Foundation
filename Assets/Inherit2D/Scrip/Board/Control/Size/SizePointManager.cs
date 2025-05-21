@@ -250,6 +250,13 @@ public class SizePointManager : MonoBehaviour
 
         if (item.CompareKindOfItem(kindGroundString))
         {
+            // Kiểm tra danh sách độ dài cạnh có đủ 4 cạnh không
+            if (item.edgeLengthList == null || item.edgeLengthList.Count < 4)
+            {
+                Debug.LogError($"[DrawOutline] edgeLengthList ko du! Count = {item.edgeLengthList?.Count ?? -1}");
+                return;
+            }
+
             // Phân nhánh theo loại item
             float c1 = item.edgeLengthList[0] * 10f; // top
             float c2 = item.edgeLengthList[1] * 10f; // right

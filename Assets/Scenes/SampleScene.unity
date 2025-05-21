@@ -3393,7 +3393,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 35.05
+  m_fontSize: 37.1
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4022,6 +4022,52 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 657387278}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &299958734
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 299958736}
+  - component: {fileID: 299958735}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &299958735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 299958734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5994a27e6d99897419de2dbf1ec9963e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cellSize: 80
+  viewRange: 20
+--- !u!4 &299958736
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 299958734}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 557.4661, y: -596.4443, z: -21.694324}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &307916119
 GameObject:
   m_ObjectHideFlags: 0
@@ -4643,18 +4689,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Padding: {x: -8, y: -5, z: -8, w: -5}
   m_Softness: {x: 0, y: 0}
---- !u!114 &370453949 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3635093337844402870, guid: c6ee0ee4de25b484098a03030c8af177,
-    type: 3}
-  m_PrefabInstance: {fileID: 1813482704}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &400169038
 GameObject:
   m_ObjectHideFlags: 0
@@ -4682,7 +4716,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400169038}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4716,7 +4750,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400169038}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8a8695521f0d02e499659fee002a26c2, type: 3}
   m_Name: 
@@ -6541,11 +6575,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c440d36ef5827834dade994d047af153, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buttonCatalogPanel: {fileID: 966925664}
-  view360BTN: {fileID: 0}
-  lockBTN: {fileID: 370453949}
-  lockSprite: {fileID: 21300000, guid: ce7ac8cd186acfb40aac9d1c70a0c714, type: 3}
-  unLockSprite: {fileID: 21300000, guid: 05590eda19df91b45b2571a52f467d42, type: 3}
 --- !u!114 &532605551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15679,7 +15708,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30.65
+  m_fontSize: 32.45
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -16654,7 +16683,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 23.85
+  m_fontSize: 25.3
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -18926,7 +18955,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 33.2
+  m_fontSize: 31.55
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -23010,6 +23039,7 @@ SceneRoots:
   - {fileID: 1026400469}
   - {fileID: 627932766}
   - {fileID: 1040900265}
+  - {fileID: 299958736}
   - {fileID: 1741612944}
   - {fileID: 646804566}
   - {fileID: 90925109}
