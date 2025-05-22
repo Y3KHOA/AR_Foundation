@@ -64,18 +64,22 @@ public class SizePointManager : MonoBehaviour
     //
     private float verticalOffset = -1f;
     private float inwardOffset = 1f;
+    private Room currentRoom;
 
     public void Start()
     {
+        currentRoom = new Room();
+        RoomStorage.rooms.Add(currentRoom);
+        
         gameManager = GameManager.instance;
 
         backgroundMaterialTemp = new Material(tempMaterial);
         itemMaterialTemp = new Material(tempMaterial);
 
-        if(item.CompareKindOfItem(kindGroundString))
+        if (item.CompareKindOfItem(kindGroundString))
         {
             lineRenderer.widthMultiplier = groundWidth;
-        }   
+        }
         else
         {
             lineRenderer.widthMultiplier = itemWidth;
@@ -213,15 +217,15 @@ public class SizePointManager : MonoBehaviour
         sizePointList[index].transform.position = newPosition;
 
         //Phân biệt loại điểm để xử lý phù hợp
-        if (sizePointList[index].pointType == SizePointType.Corner)
-        {
-            UpdateMidPointsFromCorners();
-        }
-        else if (sizePointList[index].pointType == SizePointType.Midpoint)
-        {
-            UpdateCornersFromMidpoint(index, newPosition);
-            UpdateMidPointsFromCorners();
-        }
+        // if (sizePointList[index].pointType == SizePointType.Corner)
+        // {
+        //     UpdateMidPointsFromCorners();
+        // }
+        // else if (sizePointList[index].pointType == SizePointType.Midpoint)
+        // {
+        //     UpdateCornersFromMidpoint(index, newPosition);
+        //     UpdateMidPointsFromCorners();
+        // }
 
         //Vẽ lại hình   
         UpdateLineRenderer();
@@ -231,6 +235,7 @@ public class SizePointManager : MonoBehaviour
         {
             sizePointList[i].transform.position = new Vector3(sizePointList[i].transform.position.x, sizePointList[i].transform.position.y, -4f);
         }
+        
     }
 
     public List<SizePointEditor> GetSizePoints()
@@ -358,7 +363,7 @@ public class SizePointManager : MonoBehaviour
             Vector3 normal = transform.TransformDirection(new Vector3(-edgeDirection.y, edgeDirection.x, 0)).normalized;
 
             // Điều chỉnh khoảng cách text
-            float textOffset = Mathf.Max(0.05f * length, 8.5f);
+            float textOffset = Mathf.Max(0.03f * length, 0.5f);
             midpoint += normal * textOffset;
             midpoint.z = -1;
 
@@ -369,7 +374,7 @@ public class SizePointManager : MonoBehaviour
             // Cập nhật nội dung text
             TextMesh textMesh = textObject.GetComponent<TextMesh>();
             textMesh.text = (length / 10).ToString("F2");
-            textMesh.fontSize = Mathf.Clamp((int)(length * 3), 12, 40);
+            textMesh.fontSize = Mathf.Clamp((int)(length * 3), 5, 10);
             textMesh.color = Color.black;
         }
     }
@@ -398,7 +403,12 @@ public class SizePointManager : MonoBehaviour
             extensionLineList.Add(CreateExtensionLine());
         }
         // Reset Room data tạm thời
-        Room newRoom = new Room();
+        if (currentRoom == null)
+        {
+            currentRoom = new Room();
+        }
+        currentRoom.checkpoints.Clear();
+        currentRoom.wallLines.Clear();
 
         // Vẽ tất cả các cạnh của đa giác
         for (int i = 0; i < edgeCount; i++)
@@ -468,7 +478,7 @@ public class SizePointManager : MonoBehaviour
         foreach (GameObject corner in iconObjects)
         {
             Vector3 pos = corner.transform.position;
-            newRoom.checkpoints.Add(new Vector2(pos.x, pos.y));
+            currentRoom.checkpoints.Add(new Vector2(pos.x, pos.y));
         }
         // Tạo wallLines từ checkpoint
         for (int i = 0; i < iconObjects.Count; i++)
@@ -479,18 +489,17 @@ public class SizePointManager : MonoBehaviour
                 : iconObjects[i + 1].transform.position;
 
             WallLine wall = new WallLine(p1, p2, currentLineType);
-            newRoom.wallLines.Add(wall);
+            currentRoom.wallLines.Add(wall);
         }
 
-        Debug.Log("Room saved with " + newRoom.checkpoints.Count + " points and " + newRoom.wallLines.Count + " lines.");
+    Debug.Log("Room saved with " + currentRoom.checkpoints.Count + " points and " + currentRoom.wallLines.Count + " lines.");
 
         // Lưu vào RoomStorage
-        RoomStorage.rooms.Add(newRoom);
-
-        Debug.Log("Room saved with " + newRoom.checkpoints.Count + " points and " + newRoom.wallLines.Count + " lines.");
-
-    // Lưu vào RoomStorage
-    RoomStorage.rooms.Add(newRoom);
+        if (!RoomStorage.rooms.Contains(currentRoom))
+        {
+            RoomStorage.rooms.Clear(); // chỉ cần clear 1 lần đầu
+            RoomStorage.rooms.Add(currentRoom);
+        }
     }
 
     private GameObject CreateCircleIcon()
@@ -521,29 +530,46 @@ public class SizePointManager : MonoBehaviour
     {
         if (!areaText.gameObject.activeSelf) return;
 
-        ////Text
-        //if(!item.CompareKindOfItem(kindGroundString))
-        //{
-            areaText.text = (item.width * item.length).ToString("F2") + "m²";
-        //}    
-        //else
-        //{
+        // Tính diện tích
+        List<Vector3> points = sizePointList.Select(p => p.transform.position).ToList();
+        float area = CalculatePolygonArea(points) / 100f; // tùy đơn vị bạn dùng là cm hay m
 
-        //}    
+        // Gán text
+        areaText.text = area.ToString("F2") + "m²";
 
-        //Scale
-        float fontSize = (item.width + item.length) / 3.5f;
-        areaTextRect.localScale = new Vector2(fontSize / 10, fontSize / 10);
+        // Gán vào panel thông tin bên phải
+        // gameManager.guiCanvasManager.infomationItemCanvas.floorAreaText.text = area.ToString("F2") + "m²";
+        InfomationItemCanvas.instance.floorAreaText.text = area.ToString("F2") + "m²";
 
-        ////Pos
-        //Vector3 posA = sizePointList[1].transform.localPosition;
-        //Vector3 posB = sizePointList[5].transform.localPosition;
-        //Vector3 posC = sizePointList[3].transform.localPosition;
-        //Vector3 posD = sizePointList[7].transform.localPosition;
-        //Vector3 average = (posA + posB) / 2;
-        //average.z = -1;
-        //areaText.transform.localPosition = average;
-    }    
+        // Cập nhật vị trí (trung tâm polygon)
+        Vector3 center = Vector3.zero;
+        foreach (var p in sizePointList)
+            center += p.transform.position;
+        center /= sizePointList.Count;
+        center.z = -1f; // để không bị che hoặc z-fighting
+
+        areaText.transform.position = center;
+
+        // Cập nhật scale cho phù hợp
+        float fontSize = Mathf.Clamp(area / 2f, 0.8f, 1f);
+        areaTextRect.localScale = new Vector2(fontSize, fontSize);
+    }
+
+    private float CalculatePolygonArea(List<Vector3> points)
+    {
+        int n = points.Count;
+        float area = 0f;
+
+        for (int i = 0; i < n; i++)
+        {
+            Vector3 p1 = transform.InverseTransformPoint(points[i]);
+            Vector3 p2 = transform.InverseTransformPoint(points[(i + 1) % n]);
+
+            area += (p1.x * p2.y) - (p2.x * p1.y);
+        }
+
+        return Mathf.Abs(area) / 2f;
+    }
 
     public void CreateSizePoints()
     {
@@ -594,7 +620,7 @@ public class SizePointManager : MonoBehaviour
                 if (i % 2 == 0)
                     sizePointList[i].gameObject.SetActive(false);
             }
-        }    
+        }
     }
 
     private void CreateSizePoint(Vector3 position, SizePointType pointType)

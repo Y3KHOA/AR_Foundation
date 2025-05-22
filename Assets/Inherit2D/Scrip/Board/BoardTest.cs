@@ -6,17 +6,30 @@ public class BoardTest : MonoBehaviour
     public float cellSize = 0.5f;
     public float viewRange = 10f; // Phạm vi hiển thị lưới quanh camera
     private Camera cam;
-
+    public Material backgroundMaterial; // Gán trong Inspector
+    private GameObject background;
     private Dictionary<string, GameObject> gridLines = new();
 
     void Start()
     {
         cam = Camera.main;
+
+        background = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        background.name = "Background";
+        background.GetComponent<Renderer>().material = backgroundMaterial;
+        background.layer = LayerMask.NameToLayer("Background"); // optional
+
     }
 
     void Update()
     {
         UpdateGridAroundCamera();
+        
+        float width = viewRange * 2;
+        float height = viewRange * 2;
+        background.transform.position = new Vector3(cam.transform.position.x, cam.transform.position.y, 1f); // Z = 1 để nằm sau lưới
+        background.transform.localScale = new Vector3(width, height, 1);
+
     }
 
     void UpdateGridAroundCamera()

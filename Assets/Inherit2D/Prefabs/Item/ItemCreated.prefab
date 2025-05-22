@@ -170,7 +170,7 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5317442094337625816}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -344,7 +344,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 858bd3c85311d3b40968e4133448e250, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sizePointPrefab: {fileID: 3881545952315812420, guid: ba8d407ffce18e143862733ce94c6e68, type: 3}
+  sizePointPrefab: {fileID: 3881545952315812420, guid: ba8d407ffce18e143862733ce94c6e68,
+    type: 3}
   sizePointList: []
   lineRenderer: {fileID: 8842756289749306524}
   item:
@@ -370,7 +371,8 @@ MonoBehaviour:
   areaTextRect: {fileID: 8789302009879245768}
   edgeLengthTextFont: {fileID: 12800000, guid: d36a0eb2552dc90468e741b13ba61a77, type: 3}
   edgeLineRenderers: []
-  edgeLineRendererPrefab: {fileID: 2200153024102594419, guid: 4850a642d3100fd4cb6be04b44802bf5, type: 3}
+  edgeLineRendererPrefab: {fileID: 2200153024102594419, guid: 4850a642d3100fd4cb6be04b44802bf5,
+    type: 3}
   edgeLineMaterial: {fileID: 2100000, guid: 762c57c38f5ecaa458b189eb0aa66d8d, type: 2}
   circleSprite: {fileID: 21300000, guid: 1889c83b414468b47905fbe182fa795a, type: 3}
   sizePointParent: {fileID: 493718976923441970}
@@ -382,6 +384,9 @@ MonoBehaviour:
   edgeLengthTextObjects: []
   isUsingImageBackground: 0
   oldSizePointPos: []
+  currentLineType: 0
+  wallLines: []
+  rooms: []
 --- !u!1 &6032295860701906731
 GameObject:
   m_ObjectHideFlags: 0
@@ -766,7 +771,8 @@ MonoBehaviour:
   m_text: 220.5m2
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a4a05656ee07e954693f551091535cbc, type: 2}
-  m_sharedMaterial: {fileID: 525258616581486387, guid: a4a05656ee07e954693f551091535cbc, type: 2}
+  m_sharedMaterial: {fileID: 525258616581486387, guid: a4a05656ee07e954693f551091535cbc,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -954,5 +960,6 @@ MonoBehaviour:
   isMoving: 0
   sizePointManager: {fileID: 2031932098976817961}
   roomParent: {fileID: 7055702925954627444}
+  roomList: {fileID: 0}
   rectTransform: {fileID: 5317442094337625816}
   numberOfColorChanges: 0

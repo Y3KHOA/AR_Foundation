@@ -2,33 +2,64 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Board2D : MonoBehaviour
+public class DynamicGrid : MonoBehaviour
 {
-    [Header("Box")]
     public GameObject boxPrefab;
-    public int numberOfBox = 0;
+    public int gridWidth = 10;
+    public int gridHeight = 10;
+    public float cellSize = 1f;
 
-    private List<GameObject> boxsList = new List<GameObject>();
-    private Camera mainCamera; 
+    private Transform[,] grid;
+    private Camera mainCamera;
+    private Vector2Int currentOrigin;
 
-    // Start is called before the first frame update
     void Start()
     {
         mainCamera = Camera.main;
+        grid = new Transform[gridWidth, gridHeight];
 
-        if(numberOfBox <= 0)
+        // Khởi tạo lưới
+        for (int x = 0; x < gridWidth; x++)
         {
-            numberOfBox = 1;
+            for (int y = 0; y < gridHeight; y++)
+            {
+                GameObject box = Instantiate(boxPrefab, transform);
+                grid[x, y] = box.transform;
+            }
         }
 
-        InitBox();
+        UpdateGrid();
     }
 
-    private void InitBox()
+    void Update()
     {
-        for (int i = 0; i < numberOfBox; i++)
+        Vector2Int newOrigin = GetCameraCenterCell();
+
+        if (newOrigin != currentOrigin)
         {
-            boxsList.Add(Instantiate(boxPrefab, transform));
+            currentOrigin = newOrigin;
+            UpdateGrid();
+        }
+    }
+
+    Vector2Int GetCameraCenterCell()
+    {
+        Vector3 camPos = mainCamera.transform.position;
+        int cx = Mathf.FloorToInt(camPos.x / cellSize);
+        int cy = Mathf.FloorToInt(camPos.y / cellSize);
+        return new Vector2Int(cx, cy);
+    }
+
+    void UpdateGrid()
+    {
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                int worldX = currentOrigin.x + x - gridWidth / 2;
+                int worldY = currentOrigin.y + y - gridHeight / 2;
+                grid[x, y].position = new Vector3(worldX * cellSize, worldY * cellSize, 0);
+            }
         }
     }
 }
