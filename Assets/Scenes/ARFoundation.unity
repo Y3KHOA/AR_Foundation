@@ -1068,6 +1068,7 @@ GameObject:
   - component: {fileID: 165585590}
   - component: {fileID: 165585591}
   - component: {fileID: 165585592}
+  - component: {fileID: 165585593}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1242,6 +1243,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   btnController: {fileID: 165585589}
   okButton: {fileID: 684494582}
+--- !u!114 &165585593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 165585583}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77cb8a717db122342a9165433cb6e213, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  compassLabelPrefab: {fileID: 29184227775121210, guid: e49cce2cc3663de4c84ee49fefa52ea3,
+    type: 3}
+  distanceTextPrefab: {fileID: 8205753649675154513, guid: 42ab14659f79d5442a50f537ea26487a,
+    type: 3}
 --- !u!114 &187238236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1286,8 +1303,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 165585589}
-        m_TargetAssemblyTypeName: BtnController, Assembly-CSharp
+      - m_Target: {fileID: 165585593}
+        m_TargetAssemblyTypeName: CompassRoomManager, Assembly-CSharp
         m_MethodName: OnSetCompassDirectionForCurrentRoom
         m_Mode: 1
         m_Arguments:
@@ -2655,7 +2672,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 137.3, y: 150}
+  m_AnchoredPosition: {x: 137.2998, y: 150}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &684494584
