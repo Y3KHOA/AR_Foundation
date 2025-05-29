@@ -2,6 +2,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý giao diện người dùng bật lên trong trò chơi, cho phép hiển thị tin nhắn hoặc thông báo.
+/// </summary>
 public class MaterialGroundCanvas : MonoBehaviour
 {
     [Header("UI")]
@@ -15,7 +18,7 @@ public class MaterialGroundCanvas : MonoBehaviour
     {
         nameText.text = materialGround.nameMaterial;
         LoadImage(materialGround.image);
-    }    
+    }
 
     private void LoadImage(string imageName)
     {

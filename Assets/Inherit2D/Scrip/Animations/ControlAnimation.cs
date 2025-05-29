@@ -1,6 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// Lớp này xử lý hoạt ảnh điều khiển cho các thành phần UI, cho phép chúng xuất hiện và biến mất theo thời gian đếm ngược.
+/// </summary>
 public class ControlAnimation : MonoBehaviour
 {
     private Animator popupAnimator;
@@ -17,17 +20,17 @@ public class ControlAnimation : MonoBehaviour
     {
         popupAnimator.SetInteger("state", 1);
         StartCoroutine(CountDown());
-    }   
-    
+    }
+
     public void EndOfFrameDisappear()
     {
         popupAnimator.SetInteger("state", 0);
         popupAnimator.gameObject.SetActive(false);
-    }    
+    }
 
     private IEnumerator CountDown()
     {
-        while(tempTime > 0)
+        while (tempTime > 0)
         {
             tempTime -= Time.deltaTime * 2;
             yield return null;
@@ -35,5 +38,5 @@ public class ControlAnimation : MonoBehaviour
 
         tempTime = waitTime;
         popupAnimator.SetInteger("state", 2);
-    }    
+    }
 }

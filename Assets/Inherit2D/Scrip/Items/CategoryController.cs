@@ -4,6 +4,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý các danh mục vật phẩm trong trò chơi, cho phép tải và hiển thị dữ liệu danh mục một cách động.
+/// </summary>
 public class CategoryController : MonoBehaviour
 {
     public GameObject categoryCanvasPrefab;
@@ -106,12 +109,12 @@ public class CategoryController : MonoBehaviour
             categoryCanvas.categoryController = this;
             categoryCanvasList.Add(categoryCanvas);
         }
-    }  
-    
+    }
+
     private void ControlFontSize()
     {
         float minFont = float.MaxValue;
-        foreach(TextMeshProUGUI text in textMeshProUGUIsList)
+        foreach (TextMeshProUGUI text in textMeshProUGUIsList)
         {
             if (text.fontSize < minFont)
                 minFont = text.fontSize;

@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý biểu ngữ tiêu đề nút trong trò chơi, cho phép người dùng mở cài đặt cấu hình cho vật phẩm hoặc mặt đất.
+/// </summary>
 public class ConfigurationButtonGroup : MonoBehaviour
 {
     [Header("Image")]
@@ -21,21 +24,21 @@ public class ConfigurationButtonGroup : MonoBehaviour
 
     public void DisplayArea()
     {
-        if(gameManager.itemIndex != null)
+        if (gameManager.itemIndex != null)
         {
-            if(displayArea.image.sprite == check)
+            if (displayArea.image.sprite == check)
             {
                 displayArea.image.sprite = uncheck;
                 gameManager.itemIndex.sizePointManager.areaText.gameObject.SetActive(false);
-            }    
+            }
             else
             {
                 displayArea.image.sprite = check;
                 gameManager.itemIndex.sizePointManager.areaText.gameObject.SetActive(true);
-            }    
-        }    
-    }   
-    
+            }
+        }
+    }
+
     public void DisplayRuler()
     {
         if (gameManager.itemIndex != null)
@@ -51,14 +54,14 @@ public class ConfigurationButtonGroup : MonoBehaviour
                 gameManager.itemIndex.sizePointManager.EnableEdgeText(true);
             }
         }
-    }    
+    }
 
     public void UpdateInfomationCheckButton(ItemCreated itemCreated)
     {
-        if(itemCreated.sizePointManager.areaText.gameObject.activeSelf)
+        if (itemCreated.sizePointManager.areaText.gameObject.activeSelf)
         {
             displayArea.image.sprite = check;
-        }    
+        }
         else
         {
             displayArea.image.sprite = uncheck;
@@ -72,5 +75,5 @@ public class ConfigurationButtonGroup : MonoBehaviour
         {
             displayRuler.image.sprite = uncheck;
         }
-    }    
+    }
 }

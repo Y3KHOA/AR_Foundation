@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Lớp này quản lý các điểm kích thước trong một hệ thống 2D, cho phép người dùng kéo và thả các điểm kích thước để thay đổi kích thước của đối tượng.
+/// </summary>
 public class SizePointEditor : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
     public SizePointManager sizePointManager;
@@ -43,15 +46,15 @@ public class SizePointEditor : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             float temp = 1;
             if (gameManager.itemIndex != null)
             {
-                if(gameManager.itemIndex.item.CompareKindOfItem(kindGroundString))
+                if (gameManager.itemIndex.item.CompareKindOfItem(kindGroundString))
                 {
                     temp = 2;
-                }    
+                }
                 else
                 {
                     temp = 1.5f;
-                }    
-            }    
+                }
+            }
             float screenHeight = Screen.height;
             float cameraSize = mainCamera.orthographicSize;
             float scaleFactor = cameraSize / screenHeight;
@@ -79,7 +82,7 @@ public class SizePointEditor : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     {
         if (isDragging)
         {
-            if(oldPosIndex == Vector3.zero)
+            if (oldPosIndex == Vector3.zero)
             {
                 oldPosIndex = transform.localPosition;
                 oldPosList = new List<Vector3>();
@@ -88,7 +91,7 @@ public class SizePointEditor : MonoBehaviour, IPointerDownHandler, IPointerUpHan
                     oldPosList.Add(Vector3.zero);
                     oldPosList[i] = sizePointManager.sizePointList[i].transform.localPosition;
                 }
-            }    
+            }
 
             Vector3 mousePosition = mainCamera.ScreenToWorldPoint(eventData.position);
             mousePosition.z = 0;
@@ -102,11 +105,11 @@ public class SizePointEditor : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             {
                 if (index == 1 || index == 5)
                 {
-                    localMousePosition.x = transform.localPosition.x; 
+                    localMousePosition.x = transform.localPosition.x;
                 }
                 else if (index == 3 || index == 7)
                 {
-                    localMousePosition.y = transform.localPosition.y; 
+                    localMousePosition.y = transform.localPosition.y;
                 }
             }
 

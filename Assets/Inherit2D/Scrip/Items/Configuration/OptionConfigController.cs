@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý biểu ngữ tiêu đề nút trong trò chơi, cho phép người dùng mở cài đặt cấu hình cho vật phẩm hoặc mặt đất.
+/// </summary>
 public class OptionConfigController : MonoBehaviour
 {
     [Header("Option")]
@@ -9,10 +12,10 @@ public class OptionConfigController : MonoBehaviour
 
     [Header("Material Control")]
     public MaterialController materialController;
-    
+
     public void OpenObjectCanvasOnClick()
     {
-        if(!objectOption.isOpen)
+        if (!objectOption.isOpen)
         {
             materialOption.isOpen = false;
 
@@ -25,9 +28,9 @@ public class OptionConfigController : MonoBehaviour
             objectOption.onBTN.gameObject.SetActive(true);
             materialOption.onBTN.gameObject.SetActive(false);
             materialOption.offBTN.gameObject.SetActive(true);
-        }       
-    }   
-    
+        }
+    }
+
     public void OpenMaterialCanvasOnClick()
     {
         if (!materialOption.isOpen)
@@ -47,5 +50,5 @@ public class OptionConfigController : MonoBehaviour
             //Control font size
             StartCoroutine(materialController.DelayedControlFontSize());
         }
-    }    
+    }
 }

@@ -3,6 +3,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý bảng điều khiển không gian làm việc để chuyển đổi giữa chế độ xem 2D và 3D trong trò chơi.
+/// </summary>
 public class ButtonWorkSpacePanel : MonoBehaviour
 {
     private GameManager gameManager;
@@ -25,10 +28,10 @@ public class ButtonWorkSpacePanel : MonoBehaviour
         if (!gameManager.isOn3DView)
         {
             gameManager.guiCanvasManager.boardCanvas.SetActive(false);
-            for(int i = 0; i < canvasList.Count; i++)
+            for (int i = 0; i < canvasList.Count; i++)
             {
                 canvasList[i].gameObject.SetActive(false);
-            }    
+            }
             gameManager.guiCanvasManager.view3dCanvas.SetActive(true);
             gameManager.isOn3DView = true;
             gameManager.hasItem = false;

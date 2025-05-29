@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý biểu ngữ tiêu đề nút trong trò chơi, cho phép người dùng mở cài đặt cấu hình cho vật phẩm hoặc mặt đất.
+/// </summary>
 public class ImagePicker : MonoBehaviour
 {
     private Material groundMaterial;
     private Texture2D groundTexture;
-    private Vector2 tilingSize = new Vector2(5f, 5f); 
+    private Vector2 tilingSize = new Vector2(5f, 5f);
 
     private GameManager gameManager;
     private MaterialGroundCanvas groundCanvas;
@@ -41,10 +44,10 @@ public class ImagePicker : MonoBehaviour
         gameManager.itemIndex.sizePointManager.isUsingImageBackground = true;
 
         //Border
-        foreach(MaterialGroundCanvas groundCanvas in materialController.materialGroundCanvasList)
+        foreach (MaterialGroundCanvas groundCanvas in materialController.materialGroundCanvasList)
         {
             groundCanvas.selectedBorderGO.SetActive(false);
-        }    
+        }
         groundCanvas.selectedBorderGO.SetActive(true);
     }
 }

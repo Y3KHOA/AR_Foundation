@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Lớp này quản lý các canvas và giao diện người dùng trong trò chơi.
+/// </summary>
 public class GUICanvasManager : MonoBehaviour
 {
     public static GUICanvasManager instance;
@@ -63,10 +66,10 @@ public class GUICanvasManager : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if(wordSpaceRect == null) return;
+        if (wordSpaceRect == null) return;
 
         // Kiểm tra xem có touch hay chuột
-        if (Input.touchCount > 0 || Input.GetMouseButton(0)) 
+        if (Input.touchCount > 0 || Input.GetMouseButton(0))
         {
             Vector2 touchPosition;
 

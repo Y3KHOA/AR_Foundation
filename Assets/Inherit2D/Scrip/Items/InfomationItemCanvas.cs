@@ -1,6 +1,9 @@
 ﻿using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Lớp này quản lý việc hiển thị thông tin cho các vật phẩm trong trò chơi.
+/// </summary>
 public class InfomationItemCanvas : MonoBehaviour
 {
     public static InfomationItemCanvas instance;

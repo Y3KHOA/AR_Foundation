@@ -8,6 +8,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý các nút bảng điều khiển phía dưới trong trò chơi, bao gồm các chức năng hoàn tác, làm lại, xóa, khóa và danh mục.
+/// </summary>
 public class ButtonBottomPanel : MonoBehaviour
 {
     public ButtonCatalogPanel buttonCatalogPanel;
@@ -49,7 +52,7 @@ public class ButtonBottomPanel : MonoBehaviour
         int numberOfButtonActive = 0;
         foreach (Button button in buttonsList)
         {
-            if(button.gameObject.activeSelf)
+            if (button.gameObject.activeSelf)
                 numberOfButtonActive++;
         }
 
@@ -61,12 +64,12 @@ public class ButtonBottomPanel : MonoBehaviour
 
         gridLayoutGroup.cellSize = new Vector2(cellSize, cellSize);
         gridLayoutGroup.spacing = new Vector2(numberOfButtonActive * 0.75f, 0);
-    }    
+    }
 
     public void OpenCatalogOnClick()
     {
         int t = 0;
-        if(gameManager.guiCanvasManager.catalogBannerRect.localScale.x == 0) t = 1;
+        if (gameManager.guiCanvasManager.catalogBannerRect.localScale.x == 0) t = 1;
         else t = 0;
 
         gameManager.guiCanvasManager.catalogBannerRect.localScale = new Vector3(t, 1, 1);
@@ -82,8 +85,8 @@ public class ButtonBottomPanel : MonoBehaviour
             gameManager.itemHasChosen.CancelChosenItem();
             return;
         }
-        
-        if(gameManager.undoActionList.previousActions.Count > 0)
+
+        if (gameManager.undoActionList.previousActions.Count > 0)
         {
             //Lấy action trong danh sách action
             int indexAction = gameManager.undoActionList.previousActions.Count - 1;
@@ -100,11 +103,11 @@ public class ButtonBottomPanel : MonoBehaviour
                             {
                                 int index = gameManager.createdItems2DList.Count - 1;
                                 ItemCreated itemIndex = gameManager.createdItems2DList[index];
-                                
+
                                 //Redo
                                 ItemCreated itemRedo = Instantiate(itemIndex, gameManager.redoItemsParent.transform);
                                 itemRedo.gameObject.SetActive(false);
-                                gameManager.redoItemsList.Add(itemRedo);   
+                                gameManager.redoItemsList.Add(itemRedo);
 
                                 //Undo
                                 Destroy(itemIndex.gameObject);
@@ -162,7 +165,7 @@ public class ButtonBottomPanel : MonoBehaviour
                             //Đổi màu
                             if (itemIndex != null)
                             {
-                                if(pAction.texture != null)
+                                if (pAction.texture != null)
                                 {
                                     Texture texture = itemIndex.sizePointManager.backgroundMaterialTemp.GetTexture("_MainTex");
                                     Material groundMaterial;
@@ -179,7 +182,7 @@ public class ButtonBottomPanel : MonoBehaviour
                                         itemIndex.sizePointManager.backgroundMeshRenderer.material = groundMaterial;
                                     }
                                     pAction.texture = texture;
-                                }   
+                                }
                                 else
                                 {
                                     ColorPicker colorPicker = itemIndex.item.colorPicker;
@@ -194,7 +197,7 @@ public class ButtonBottomPanel : MonoBehaviour
                                     }
 
                                     pAction.colorPicker = colorPicker;
-                                }    
+                                }
                             }
                             break;
                         }
@@ -203,11 +206,11 @@ public class ButtonBottomPanel : MonoBehaviour
                             ItemCreated item = gameManager.createdItems2DList.Find(x => x.itemId == pAction.itemId);
 
                             List<Vector3> sizePointPosCurrentList = new List<Vector3>();
-                            for(int i = 0; i < item.sizePointManager.sizePointList.Count; i++)
+                            for (int i = 0; i < item.sizePointManager.sizePointList.Count; i++)
                             {
                                 sizePointPosCurrentList.Add(Vector3.zero);
                                 sizePointPosCurrentList[i] = item.sizePointManager.sizePointList[i].transform.localPosition;
-                            }    
+                            }
 
                             if (item != null)
                             {
@@ -263,7 +266,7 @@ public class ButtonBottomPanel : MonoBehaviour
                                     pAction.position.z = -0.5f;
                                 }
                                 itemIndex.transform.position = pAction.position;
-                                itemIndex.transform.SetParent(gameManager.createdItems2DParent.transform); 
+                                itemIndex.transform.SetParent(gameManager.createdItems2DParent.transform);
                                 gameManager.createdItems2DList.Add(itemIndex);
                                 gameManager.redoItemsList.Remove(gameManager.redoItemsList.Find(x => x.itemId == itemId));
                             }
@@ -385,7 +388,7 @@ public class ButtonBottomPanel : MonoBehaviour
 
     public void DeleteOnClick()
     {
-        if(gameManager.itemIndex != null)
+        if (gameManager.itemIndex != null)
         {
             ItemCreated item = gameManager.createdItems2DList.Find(x => x.itemId == gameManager.itemIndex.itemId);
             if (item != null)
@@ -411,19 +414,19 @@ public class ButtonBottomPanel : MonoBehaviour
             }
             gameManager.itemIndex = null;
         }
-    }  
+    }
 
     public void LockOnClick()
     {
-        if(gameManager.isLock)
+        if (gameManager.isLock)
         {
             gameManager.isLock = false;
             lockBTN.image.sprite = unLockSprite;
-        }   
+        }
         else
         {
             gameManager.isLock = true;
             lockBTN.image.sprite = lockSprite;
-        }    
-    }       
+        }
+    }
 }

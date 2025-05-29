@@ -10,6 +10,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý việc tạo và điều khiển các mục trong không gian làm việc của trò chơi.
+/// </summary>
 public class ItemCreated : MonoBehaviour
 {
     [Header("Item")]
@@ -167,11 +170,11 @@ public class ItemCreated : MonoBehaviour
                         }
                         else
                         {
-                            if(!gameManager.GetDrawingStatus()) //Nếu đang thêm tường
+                            if (!gameManager.GetDrawingStatus()) //Nếu đang thêm tường
                             {
                                 SetMousePosition(board2dRect);
                                 SetPosition();
-                            }    
+                            }
                         }
                         gameManager.hasItem = true;
 
@@ -231,7 +234,7 @@ public class ItemCreated : MonoBehaviour
                             {
                                 gameManager.itemIndex.rotationBTN.gameObject.SetActive(true);
                                 gameManager.itemIndex.moveBTN.gameObject.SetActive(true);
-                            }    
+                            }
                             gameManager.itemIndex.rotationBTN.UpdatePosition();
                             gameManager.itemIndex.rotationBTN.AdjustSizePointToCamera();
                             gameManager.itemIndex.moveBTN.UpdatePosition();
@@ -250,7 +253,7 @@ public class ItemCreated : MonoBehaviour
             gameManager.sizePointClick = false;
             SavePreviousMoveAction();
         }
-    }    
+    }
 
     private void ClearSelection()
     {
@@ -284,7 +287,7 @@ public class ItemCreated : MonoBehaviour
 
     private void SetPosition()
     {
-        Vector3 targetPosition = mousePosition + clickOffset; 
+        Vector3 targetPosition = mousePosition + clickOffset;
         targetPosition.x = Mathf.Clamp(targetPosition.x, -board2dRect.rect.width / 2, board2dRect.rect.width / 2);
         targetPosition.y = Mathf.Clamp(targetPosition.y, -board2dRect.rect.height / 2, board2dRect.rect.height / 2);
         if (gameManager.itemIndex.item.CompareKindOfItem(kindGroundString))

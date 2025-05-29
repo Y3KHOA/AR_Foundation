@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// Lớp này tạo và quản lý lưới hiển thị quanh camera trong chế độ 2D.
+/// </summary>
 public class BoardTest : MonoBehaviour
 {
     public float cellSize = 0.5f;
@@ -24,7 +27,7 @@ public class BoardTest : MonoBehaviour
     void Update()
     {
         UpdateGridAroundCamera();
-        
+
         float width = viewRange * 2;
         float height = viewRange * 2;
         background.transform.position = new Vector3(cam.transform.position.x, cam.transform.position.y, 1f); // Z = 1 để nằm sau lưới

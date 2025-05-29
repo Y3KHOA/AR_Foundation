@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Lớp đại diện cho giao diện cấu hình mục, cho phép người dùng nhập thông tin về mục như tên, kích thước và các thuộc tính khác.
+/// </summary>
 public class ItemConfigCanvas : MonoBehaviour
 {
     [Header("Input field")]

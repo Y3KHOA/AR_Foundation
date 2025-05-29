@@ -26,9 +26,9 @@ public class Board3D : MonoBehaviour
             y -= cellSize;
             for (int column = 0; column < cols; column++)
             {          
-                // Tính toán vị trí của ô vuông
+                // Tính toán vị trí của ô vuông.
                 Vector3 position = new Vector3(x, y, 0);
-                // Tạo ô vuông tại vị trí đã tính toán
+                // Tạo ô vuông tại vị trí đã tính toán.
                 Instantiate(boxPrefab, position, Quaternion.identity, transform);
                 x += cellSize;
             }

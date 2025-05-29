@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Lớp tiện ích chung cho các tính toán và xác định hướng trong trò chơi.
+/// </summary>
 public static class Ultilities
 {
     //Để tính hướng phong thủy thì cần biết

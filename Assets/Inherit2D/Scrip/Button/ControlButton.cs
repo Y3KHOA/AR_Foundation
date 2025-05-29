@@ -3,6 +3,9 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý kích thước của các nút điều khiển trong UI, cho phép chúng điều chỉnh kích thước dựa trên RectTransform cha hoặc tỷ lệ phần trăm được chỉ định.
+/// </summary>
 public class ControlButton : MonoBehaviour
 {
     public float percentSize = 0.85f;
@@ -27,7 +30,7 @@ public class ControlButton : MonoBehaviour
 
     private void UpdateSize()
     {
-        if(rectTransformParent == null)
+        if (rectTransformParent == null)
         {
             float size;
             size = rectTransform.rect.height * percentSize;
@@ -37,11 +40,11 @@ public class ControlButton : MonoBehaviour
                 rt.sizeDelta = new Vector2(size, size);
             }
 
-            foreach(RectTransform rt in buttonRectDiffList)
+            foreach (RectTransform rt in buttonRectDiffList)
             {
                 rt.sizeDelta = new Vector2(size * 1.35f, size);
-            }    
-        }     
+            }
+        }
         else
         {
             float size;
@@ -51,6 +54,6 @@ public class ControlButton : MonoBehaviour
             {
                 rt.sizeDelta = new Vector2(size, size);
             }
-        }    
-    }    
+        }
+    }
 }

@@ -3,6 +3,9 @@ using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý việc kéo và thả các item trong không gian làm việc của trò chơi.
+/// </summary>
 public class ItemCanvas : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerDownHandler
 {
     [Header("Item")]
@@ -115,7 +118,7 @@ public class ItemCanvas : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 gameManager.guiCanvasManager.buttonCatalogPanel.openCatalogButton.image.sprite = gameManager.guiCanvasManager.buttonCatalogPanel.normalSprite;
                 gameManager.guiCanvasManager.categoryCanvas.SetActive(false);
                 gameManager.itemHasChosen.HaveItem(tempItem);
-            }      
+            }
         }
     }
 
@@ -148,7 +151,7 @@ public class ItemCanvas : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        mousePosTemp = Input.mousePosition;   
+        mousePosTemp = Input.mousePosition;
     }
 
     public void DrawWallOnClick()

@@ -4,6 +4,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// GroundConfigCanvas là MonoBehaviour quản lý cấu hình các vật phẩm mặt đất trong trò chơi.
+/// </summary>
 public class GroundConfigCanvas : MonoBehaviour
 {
     [Header("Input size")]
@@ -36,7 +39,7 @@ public class GroundConfigCanvas : MonoBehaviour
 
         //Spacing
         float spacingY = cellY * 0.14f;
-        gridLayoutGroup.spacing = new Vector2 (0, spacingY);
+        gridLayoutGroup.spacing = new Vector2(0, spacingY);
     }
 
     public void InitSizeInputField(int numberOfInputField)
@@ -83,7 +86,7 @@ public class GroundConfigCanvas : MonoBehaviour
                 {
                     inputConfig.inputField.text = inputConfig.valueTemp;
                 }
-            }  
+            }
 
             UpdateInfomationItem();
             if (inputConfig.valueTemp != temp.ToString())
@@ -99,7 +102,7 @@ public class GroundConfigCanvas : MonoBehaviour
         for (int i = 0; i < configuration.itemCreated.item.edgeLengthList.Count; i++)
         {
             configuration.itemCreated.item.edgeLengthList[i] = float.Parse(inputSizeList[i].inputField.text);
-        }    
+        }
 
         gameManager.guiCanvasManager.infomationItemCanvas.UpdateInfomation(configuration.itemCreated.item);
     }

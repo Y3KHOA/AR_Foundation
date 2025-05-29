@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Lớp đại diện cho vật liệu mặt đất trong trò chơi.
+/// </summary>
 public class OptionCanvas : MonoBehaviour
 {
     [HideInInspector] public RectTransform rectTransform;
@@ -17,6 +20,6 @@ public class OptionCanvas : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

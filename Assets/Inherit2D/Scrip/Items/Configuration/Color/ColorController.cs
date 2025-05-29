@@ -7,6 +7,9 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý chức năng chọn màu trong trò chơi, cho phép người chơi chọn và sửa đổi màu sắc cho vật phẩm.
+/// </summary>
 public class ColorController : MonoBehaviour
 {
     public static ColorController instance;
@@ -54,7 +57,7 @@ public class ColorController : MonoBehaviour
         mainCamera = Camera.main;
 
         //Event
-        alphaSlider.onValueChanged.AddListener(delegate { OnSliderValueChanged(alphaSlider.value);});
+        alphaSlider.onValueChanged.AddListener(delegate { OnSliderValueChanged(alphaSlider.value); });
 
         LoadColorChart();
 
@@ -104,7 +107,7 @@ public class ColorController : MonoBehaviour
         float cellSize = height / sprites.Length;
         gridLayoutGroup.cellSize = new Vector2(cellSize * 11.5f, cellSize * 11.5f);
 
-        for(int i = 0; i < sprites.Length; i++)
+        for (int i = 0; i < sprites.Length; i++)
         {
             ColorPicker color = Instantiate(colorPrefab, colorChartParent.transform).GetComponent<ColorPicker>();
             color.image.sprite = sprites[i];
@@ -127,7 +130,7 @@ public class ColorController : MonoBehaviour
         {
             colorPickerIndex.alpha = alphaValue;
             ChangeAlphaColor(alphaValue);
-        }    
+        }
     }
 
     public void DisableColorPicker()
@@ -137,7 +140,7 @@ public class ColorController : MonoBehaviour
         if (gameManager.itemIndex.item.colorPicker == null) return;
         colorPickerIndex = gameManager.itemIndex.item.colorPicker;
         colorPickerIndex.border.SetActive(false);
-    }    
+    }
 
     public void EnableColorPickerOnClick(MaterialGroundCanvas materialGroundCanvas)
     {
@@ -165,12 +168,12 @@ public class ColorController : MonoBehaviour
             startColor.a = 0;
             alphaMaterial.SetColor("_GradientStartColor", startColor);
             alphaMaterial.SetColor("_GradientEndColor", colorIndex);
-        }    
+        }
     }
 
     public void ChangeAlphaColor(float alpha)
     {
-        if(gameManager.itemIndex == null) return;
+        if (gameManager.itemIndex == null) return;
         ItemCreated itemIndex = gameManager.itemIndex;
         itemIndex.sizePointManager.ChangeColor(itemIndex.item.colorPicker);
         alphaSlider.value = alpha;

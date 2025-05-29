@@ -5,6 +5,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý các hành động trước đó trong trò chơi, bao gồm thông tin về ID mục, hành động đã thực hiện, vị trí, xoay, bộ chọn màu và kích thước.
+/// </summary>
 [Serializable]
 public class PreviousAction
 {

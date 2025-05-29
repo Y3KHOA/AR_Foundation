@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Lớp đại diện cho vật liệu mặt đất trong trò chơi.
+/// </summary>
 public class NewMonoBehaviourScript : MonoBehaviour
 {
     public RectTransform handleRect;
@@ -21,5 +24,5 @@ public class NewMonoBehaviourScript : MonoBehaviour
 
         // Đặt khoảng cách từ trên (Top)
         handleRect.offsetMax = new Vector2(handleRect.offsetMax.x, -parentHeight * 0.05f);
-    }    
+    }
 }

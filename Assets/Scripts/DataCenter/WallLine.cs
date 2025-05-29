@@ -35,8 +35,9 @@ public class Room
     public List<Vector2> checkpoints = new List<Vector2>();
     public List<WallLine> wallLines = new List<WallLine>();
     public List<float> heights = new List<float>();
-    public float headingCompass; // Hướng của phòng tính theo độ
+    public List<float> headingCompass; // Hướng của phòng tính theo độ
 
+    // public float headingCompass; // Hướng của phòng tính theo độ
     public float area;
     public float ceilingArea;
     public float perimeter;

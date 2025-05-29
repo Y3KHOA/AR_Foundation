@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp đại diện cho một mục trong trò chơi, chứa thông tin về ID, tên, kích thước, hướng và màu sắc của mục.
+/// </summary>
 [Serializable]
 public class Item
 {

@@ -29,7 +29,7 @@
 
 //    public void EnableControlChild(bool status)
 //    {
-//        foreach (SizeControlChild child in sizeControlList)
+//        foreach (SizeControlChild child in sizeControlList) 
 //        {
 //            child.gameObject.SetActive(status);
 //        }    

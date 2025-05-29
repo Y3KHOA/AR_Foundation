@@ -11,6 +11,9 @@ using System.Net;
 using NUnit.Framework.Internal;
 using UnityEngine.U2D;
 
+/// <summary>
+/// Lớp SizePointManager dùng để quản lý các điểm kích thước (size points) trong một mô hình 2D, bao gồm việc tạo, cập nhật và hiển thị các điểm góc và trung điểm của một hình đa giác (thường là hình chữ nhật hoặc tường). Nó cũng xử lý việc vẽ đường viền, tính toán diện tích, hiển thị thông tin cạnh và thêm collider cho các đoạn thẳng.
+/// </summary>
 public class SizePointManager : MonoBehaviour
 {
     [Header("Size")]
@@ -24,7 +27,7 @@ public class SizePointManager : MonoBehaviour
     [HideInInspector] public Material backgroundMaterialTemp;
     private Material itemMaterialTemp;
     public Texture2D backgroundTexture;
-    
+
     [Header("Text")]
     public TextMeshProUGUI areaText;
     public RectTransform areaTextRect;
@@ -56,7 +59,7 @@ public class SizePointManager : MonoBehaviour
     private float groundWidth = 0.8f;
     private float itemWidth = 0.4f;
     private float offsetDistance = -3.2f;
-    
+
     public LineType currentLineType = LineType.Wall;
     public List<WallLine> wallLines = new List<WallLine>();
     public List<Room> rooms = new List<Room>();
@@ -70,7 +73,7 @@ public class SizePointManager : MonoBehaviour
     {
         currentRoom = new Room();
         RoomStorage.rooms.Add(currentRoom);
-        
+
         gameManager = GameManager.instance;
 
         backgroundMaterialTemp = new Material(tempMaterial);
@@ -235,7 +238,7 @@ public class SizePointManager : MonoBehaviour
         {
             sizePointList[i].transform.position = new Vector3(sizePointList[i].transform.position.x, sizePointList[i].transform.position.y, -4f);
         }
-        
+
     }
 
     public List<SizePointEditor> GetSizePoints()
@@ -492,7 +495,7 @@ public class SizePointManager : MonoBehaviour
             currentRoom.wallLines.Add(wall);
         }
 
-    Debug.Log("Room saved with " + currentRoom.checkpoints.Count + " points and " + currentRoom.wallLines.Count + " lines.");
+        Debug.Log("Room saved with " + currentRoom.checkpoints.Count + " points and " + currentRoom.wallLines.Count + " lines.");
 
         // Lưu vào RoomStorage
         if (!RoomStorage.rooms.Contains(currentRoom))
@@ -502,6 +505,9 @@ public class SizePointManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Đoạn code CreateCircleIcon() này có nhiệm vụ tạo một icon hình tròn (thường dùng để đánh dấu đầu mút hoặc midpoint của cạnh trong bản vẽ 2D/3D như CAD).
+    /// </summary>
     private GameObject CreateCircleIcon()
     {
         GameObject icon = new GameObject("EdgeIcon");
@@ -514,6 +520,9 @@ public class SizePointManager : MonoBehaviour
         return icon;
     }
 
+    /// <summary>
+    /// Đoạn code CreateExtensionLine() có nhiệm vụ tạo một đoạn thẳng nhỏ (line) dưới dạng UI Image dùng để hiển thị các đường phụ (extension lines)
+    /// </summary>
     private GameObject CreateExtensionLine()
     {
         GameObject icon = new GameObject("ExtensionLine");
@@ -526,6 +535,9 @@ public class SizePointManager : MonoBehaviour
         return icon;
     }
 
+    /// <summary>
+    /// Hàm UpdateAreaText() có nhiệm vụ cập nhật thông tin và hiển thị diện tích sàn (floor area) của một đa giác (thường là một căn phòng hoặc mặt sàn) trên UI trong Unity. Nó xử lý việc tính toán diện tích, hiển thị text giữa vùng đã chọn và cập nhật kích thước chữ cho phù hợp.
+    /// </summary>
     public void UpdateAreaText()
     {
         if (!areaText.gameObject.activeSelf) return;
@@ -555,6 +567,9 @@ public class SizePointManager : MonoBehaviour
         areaTextRect.localScale = new Vector2(fontSize, fontSize);
     }
 
+    /// <summary>
+    /// Hàm CalculatePolygonArea(List<Vector3> points) dùng để tính diện tích của một đa giác (polygon) trong không gian 2D (trên mặt phẳng X-Y) từ danh sách các điểm 3D (Vector3), sử dụng công thức hình học Gauss / Shoelace formula.
+    /// </summary>
     private float CalculatePolygonArea(List<Vector3> points)
     {
         int n = points.Count;
@@ -571,6 +586,12 @@ public class SizePointManager : MonoBehaviour
         return Mathf.Abs(area) / 2f;
     }
 
+    /// <summary>
+    /// Hàm CreateSizePoints() có nhiệm vụ tạo các điểm đo (SizePoint) bao gồm:
+    /// góc(Corner) : tại các điểm đầu mút của đoạn tường.
+    /// trung điểm (Midpoint): tại giữa mỗi đoạn tường.
+    /// Dùng để hiển thị hoặc chỉnh sửa các cạnh trong một mô hình (thường là tường hoặc sàn) từ LineRenderer.
+    /// </summary>
     public void CreateSizePoints()
     {
         if (lineRenderer == null || lineRenderer.positionCount < 2)
@@ -623,15 +644,21 @@ public class SizePointManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Hàm CreateSizePoint(Vector3 position, SizePointType pointType) dùng để tạo và cấu hình một điểm đo kích thước (size point) tại vị trí xác định, rồi thêm nó vào danh sách quản lý. Đây là một phần trong hệ thống đo đạc (góc/trung điểm) trong bản vẽ tường hoặc sàn.
+    /// </summary>
     private void CreateSizePoint(Vector3 position, SizePointType pointType)
     {
         SizePointEditor sizePoint = Instantiate(sizePointPrefab, sizePointParent.transform).GetComponent<SizePointEditor>();
         sizePoint.transform.position = position;
         sizePoint.sizePointManager = this;
-        sizePoint.pointType = pointType; 
+        sizePoint.pointType = pointType;
         sizePointList.Add(sizePoint);
     }
 
+    /// <summary>
+    /// Hàm AddMeshCollider() dùng để gắn (hoặc đảm bảo đã gắn) một MeshCollider vào GameObject hiện tại và đồng bộ lại hình dạng collider theo MeshFilter.
+    /// </summary>
     private void AddMeshCollider()
     {
         MeshCollider meshCollider = gameObject.GetComponent<MeshCollider>();
@@ -645,6 +672,9 @@ public class SizePointManager : MonoBehaviour
         meshCollider.convex = false; // Nếu muốn va chạm chính xác với Mesh
     }
 
+    /// <summary>
+    /// Hàm AddLineColliders() có nhiệm vụ tạo collider cho từng đoạn thẳng trong LineRenderer để phục vụ mục đích va chạm, tương tác (như raycast, chọn tường, xóa tường...).
+    /// </summary>
     private void AddLineColliders()
     {
         // Xóa các collider cũ
@@ -689,7 +719,7 @@ public class SizePointManager : MonoBehaviour
 
             // Thêm BoxCollider
             BoxCollider boxCollider = colliderObject.AddComponent<BoxCollider>();
-            boxCollider.size = new Vector3(distance, 0.8f, 0.1f); 
+            boxCollider.size = new Vector3(distance, 0.8f, 0.1f);
         }
     }
 
@@ -746,6 +776,9 @@ public class SizePointManager : MonoBehaviour
     //    polyExtruderGO.transform.rotation = Quaternion.Euler(-90f, 0f, 0f);
     //}
 
+    /// <summary>
+    /// Hàm CreateBackgroundMesh(Vector3[] corners) có nhiệm vụ tạo mặt nền (floor mesh) từ các điểm đầu vào (thường là đa giác của một phòng), sau đó hiển thị mesh này bằng MeshRenderer và áp dụng vật liệu + collider tương ứng.
+    /// </summary>
     private void CreateBackgroundMesh(Vector3[] corners)
     {
         if (backgroundMeshRenderer == null || backgroundMeshFilter == null)
@@ -822,6 +855,9 @@ public class SizePointManager : MonoBehaviour
         backgroundMeshRenderer.material.renderQueue = 3000;
     }
 
+    /// <summary>
+    /// Hàm EnableSizePoint(bool statusSizePoint) có nhiệm vụ bật/tắt hiển thị các điểm đo kích thước (SizePoint) trên một đối tượng (thường là sàn nhà hoặc vật thể) dựa theo loại đối tượng và trạng thái yêu cầu.
+    /// </summary>
     public void EnableSizePoint(bool statusSizePoint)
     {
         if (item.CompareKindOfItem(kindGroundString))
@@ -842,6 +878,13 @@ public class SizePointManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Đoạn hàm EnableEdgeText(bool status) có chức năng ẩn hoặc hiện các đối tượng hiển thị thông tin cạnh trong mô hình — bao gồm:
+    /// Text độ dài cạnh(edgeLengthTextObjects)
+    /// Các đường cạnh(edgeLineRenderers)
+    /// Các biểu tượng(icon)
+    /// Các đường kéo dài phụ trợ(extensionLineList)
+    /// </summary>
     public void EnableEdgeText(bool status)
     {
         for (int i = 0; i < edgeLengthTextObjects.Count; i++)
@@ -857,6 +900,9 @@ public class SizePointManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Đoạn code ChangeColor(ColorPicker colorPicker) có chức năng thay đổi texture và màu sắc của vật liệu nền hoặc vật liệu vật thể dựa trên lựa chọn từ ColorPicker (có thể là UI chọn màu hoặc texture).
+    /// </summary>
     public void ChangeColor(ColorPicker colorPicker)
     {
         Color newColor = colorPicker.image.sprite.texture.GetPixel(50, 50);
@@ -881,6 +927,9 @@ public class SizePointManager : MonoBehaviour
         isUsingImageBackground = false;
     }
 
+    /// <summary>
+    /// Đoạn code SetDefaultColor() này dùng để thiết lập lại vật liệu nền (backgroundMaterialTemp) và gán vật liệu mới cho một MeshRenderer — thường dùng để reset lại mặt nền (background) về mặc định.
+    /// </summary>
     public void SetDefaultColor()
     {
         Material material = new Material(tempMaterial);
@@ -890,6 +939,9 @@ public class SizePointManager : MonoBehaviour
         backgroundMeshRenderer.material = material;
     }
 
+    /// <summary>
+    /// Chức năng của đoạn code này là tìm tất cả GameObject con trực tiếp trong một Transform cha có tên trùng với chuỗi name truyền vào.
+    /// </summary>
     private List<GameObject> GetAllGOInParent(string name, Transform parent)
     {
         List<GameObject> edgeIcons = new List<GameObject>();
