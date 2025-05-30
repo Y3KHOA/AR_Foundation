@@ -74,7 +74,6 @@ public class Model3D : MonoBehaviour
                     CreateWindowSegment(line, roomWallHeight);
                 }
             }
-
         }
     }
 

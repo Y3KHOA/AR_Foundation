@@ -4,6 +4,7 @@ using TMPro;
 public class CompassRoomManager : MonoBehaviour
 {
     public GameObject compassLabelPrefab;
+    public GameObject compassLabelPrefab2;
     public GameObject distanceTextPrefab;
 
     public void OnSetCompassDirectionForCurrentRoom()
@@ -17,66 +18,41 @@ public class CompassRoomManager : MonoBehaviour
         }
 
         Room currentRoom = RoomStorage.rooms[RoomStorage.rooms.Count - 1];
-        float heading = CompassManager.Instance.GetCurrentHeading();
+        float heading = CompassManager.Instance.GetCurrentHeading(); // lấy từ compass mượt
 
-        // Lấy camera và vị trí raycast
-        Camera cam = Camera.main ?? (Camera.allCameras.Length > 0 ? Camera.allCameras[0] : null);
-        if (cam == null)
+        currentRoom.headingCompass = heading;
+        Debug.Log($"[Set Heading] {heading:0.0}° for room");
+        // In ra hướng và vị trí hiện tại đã lưu
+        Debug.Log($"[Room Info] Compass Heading: {currentRoom.headingCompass:0.0}, Position: {currentRoom.Compass}");
+
+        // Tìm trung tâm phòng để đặt nhãn
+        Vector3 center = GetRoomCenter(currentRoom);
+
+        // Tạo nhãn hoặc mũi tên hướng
+        CreateCompassLabel(heading);
+    }
+    private Vector3 GetRoomCenter(Room room)
+    {
+        if (room.checkpoints == null || room.checkpoints.Count == 0)
+            return Vector3.zero;
+
+        float sumX = 0, sumY = 0;
+        foreach (var pt in room.checkpoints)
         {
-            Debug.LogError("Không tìm thấy camera.");
-            return;
+            sumX += pt.x;
+            sumY += pt.y;
         }
 
-        Vector3 rayPos;
-        if (Physics.Raycast(new Ray(cam.transform.position, Vector3.down), out RaycastHit hit, 10f))
-            rayPos = hit.point;
-        else
-            rayPos = cam.transform.position + cam.transform.forward * 0.5f;
-
-        // Tìm index tường gần nhất
-        int nearestIndex = FindNearestWallIndex(currentRoom, rayPos);
-
-        if (nearestIndex >= 0)
-        {
-            while (currentRoom.headingCompass.Count <= nearestIndex)
-                currentRoom.headingCompass.Add(-1f);
-
-            currentRoom.headingCompass[nearestIndex] = heading;
-            Debug.Log($"Gán heading {heading:0.0}° cho wallLines[{nearestIndex}]");
-
-            CreateCompassLabel(heading, currentRoom.wallLines[nearestIndex], rayPos);
-        }
-        else
-        {
-            Debug.LogWarning("Không xác định được đoạn tường gần nhất.");
-        }
+        float centerX = sumX / room.checkpoints.Count;
+        float centerZ = sumY / room.checkpoints.Count;
+        return new Vector3(centerX, 0, centerZ);
     }
 
-    private int FindNearestWallIndex(Room room, Vector3 referencePos)
+    private void CreateCompassLabel(float heading)
     {
-        int nearestIndex = -1;
-        float minDist = float.MaxValue;
-
-        for (int i = 0; i < room.wallLines.Count; i++)
+        if (compassLabelPrefab == null)
         {
-            WallLine wall = room.wallLines[i];
-            Vector3 nearestPoint = ClosestPointOnLine(wall.start, wall.end, referencePos);
-            float dist = Vector3.Distance(referencePos, nearestPoint);
-
-            if (dist < minDist)
-            {
-                minDist = dist;
-                nearestIndex = i;
-            }
-        }
-        return nearestIndex;
-    }
-
-    private void CreateCompassLabel(float heading, WallLine wall, Vector3 spawnPosition)
-    {
-        if (compassLabelPrefab == null || distanceTextPrefab == null)
-        {
-            Debug.LogWarning("Chưa gán compassLabelPrefab hoặc distanceTextPrefab!");
+            Debug.LogWarning("Chưa gán compassLabelPrefab!");
             return;
         }
 
@@ -87,37 +63,90 @@ public class CompassRoomManager : MonoBehaviour
             return;
         }
 
-        // Tìm điểm gần nhất trên tường
-        Vector3 nearestPointOnWall = ClosestPointOnLine(wall.start, wall.end, spawnPosition);
-        Vector3 dirToWall = (nearestPointOnWall - spawnPosition).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(dirToWall, Vector3.up);
-        lookRotation = Quaternion.Euler(90f, lookRotation.eulerAngles.y, 90f);
+        Room currentRoom = RoomStorage.rooms[RoomStorage.rooms.Count - 1];
 
-        // Tạo mũi tên
-        GameObject label = Instantiate(compassLabelPrefab, spawnPosition, lookRotation, transform);
-        Debug.Log($"[Compass] Mũi tên tạo tại {spawnPosition}, hướng về tường gần nhất.");
+        Vector3 camPos = cam.transform.position;
+        Ray ray = new Ray(camPos, Vector3.down);
+        Vector3 spawnPosition;
 
-        // Tạo vị trí text phía dưới mũi tên
-        Vector3 textPosition = spawnPosition - new Vector3(0, 0.05f, 0);
-
-        GameObject textObj = Instantiate(distanceTextPrefab, textPosition, Quaternion.identity, transform);
-
-        // Quay text đối mặt camera
-        Vector3 toCam = cam.transform.position - textPosition;
-        toCam.y = 0;
-        textObj.transform.rotation = Quaternion.LookRotation(toCam, Vector3.up);
-        textObj.transform.localScale = Vector3.one * 0.05f;
-
-        string directionText = $"{heading:0}° {GetCompassDirectionName(heading)}";
-        TextMeshPro tmp = textObj.GetComponentInChildren<TextMeshPro>(true);
-        if (tmp != null)
+        if (Physics.Raycast(ray, out RaycastHit hit, 10f))
         {
-            tmp.fontSize = 3f;
-            tmp.text = directionText;
-            Debug.Log($"[Text] Gán vào TMP: {directionText}");
+            spawnPosition = hit.point + Vector3.up * 0.1f;
+            currentRoom.Compass = new Vector2(spawnPosition.x, spawnPosition.z);
+            Debug.Log($"Raycast hit ARPlane: {hit.point}");
+        }
+        else
+        {
+            spawnPosition = camPos + cam.transform.forward * 0.5f - Vector3.up * 0.3f;
+            currentRoom.Compass = new Vector2(spawnPosition.x, spawnPosition.z);
+            Debug.LogWarning("Không raycast được mặt sàn AR, fallback tại vị trí camera.");
+        }
+
+        // Xác định tường gần nhất
+        WallLine nearestWall = null;
+        Vector3 nearestPointOnWall = Vector3.zero;
+        float minDistance = float.MaxValue;
+
+        foreach (var wall in currentRoom.wallLines)
+        {
+            Vector3 closest = ClosestPointOnLine(wall.start, wall.end, spawnPosition);
+            float dist = Vector3.Distance(spawnPosition, closest);
+
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                nearestWall = wall;
+                nearestPointOnWall = closest;
+            }
+        }
+
+        if (nearestWall != null)
+        {
+            Quaternion lookRotation = Quaternion.Euler(90f, heading, 135f); // Quay quanh trục Y theo hướng la bàn
+
+            Debug.Log("[0] huong mui ten: " + lookRotation.eulerAngles);
+            Debug.Log("[0] huong mui ten: " + lookRotation);
+
+            // Xoá tất cả mũi tên cũ
+            foreach (Transform child in transform)
+            {
+                if (child.name.Contains("CompassLabel"))
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+            foreach (Transform child in transform)
+            {
+                if (child.name.Contains("CompassLabel2"))
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+
+            GameObject label = Instantiate(
+                compassLabelPrefab,
+                spawnPosition,
+                lookRotation,
+                transform
+            );
+            label.name = "CompassLabel";
+            GameObject label2 = Instantiate(
+                compassLabelPrefab2,
+                spawnPosition,
+                lookRotation,
+                transform
+            );
+            label2.name = "CompassLabel2";
+
+            SetLayerRecursively(label2, LayerMask.NameToLayer("PreviewModel"));
+        }
+        else
+        {
+            Debug.LogWarning("Không tìm thấy tường gần nhất để hướng mũi tên.");
         }
     }
 
+    // Hàm bổ trợ tìm điểm gần nhất trên đoạn thẳng
     private Vector3 ClosestPointOnLine(Vector3 a, Vector3 b, Vector3 p)
     {
         Vector3 ab = b - a;
@@ -126,10 +155,20 @@ public class CompassRoomManager : MonoBehaviour
         return a + ab * t;
     }
 
+
     private string GetCompassDirectionName(float heading)
     {
         string[] dirs = { "Bắc", "Đông Bắc", "Đông", "Đông Nam", "Nam", "Tây Nam", "Tây", "Tây Bắc" };
         int index = Mathf.RoundToInt(heading / 45f) % 8;
         return dirs[index];
+    }
+
+    void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
+        }
     }
 }
