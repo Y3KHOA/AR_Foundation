@@ -11,6 +11,8 @@ public class Model3D : MonoBehaviour
     public GameObject doorPrefab;
     public GameObject windowPrefab;
 
+    public GameObject compassPrefab;       // Prefab la bàn 3D
+
     void Start()
     {
         List<Room> rooms = RoomStorage.rooms;
@@ -74,6 +76,9 @@ public class Model3D : MonoBehaviour
                     CreateWindowSegment(line, roomWallHeight);
                 }
             }
+                // Đặt mô hình la bàn 3D tại vị trí lưu trong Room
+                Vector3 compassPosition = new Vector3(room.Compass.x, 0.5f, room.Compass.y); // chỉnh lại y theo độ cao sàn nếu cần
+                GameObject compassObject = Instantiate(compassPrefab, compassPosition, Quaternion.Euler(0, room.headingCompass, 0));
         }
     }
 
