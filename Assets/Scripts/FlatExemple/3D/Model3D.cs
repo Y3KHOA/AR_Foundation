@@ -10,6 +10,9 @@ public class Model3D : MonoBehaviour
     public Material bottomMaterial;
     public GameObject doorPrefab;
     public GameObject windowPrefab;
+    public GameObject modelHolder;
+
+    public GameObject compassPrefab;       // Prefab la bàn 3D
 
     void Start()
     {
@@ -23,15 +26,26 @@ public class Model3D : MonoBehaviour
 
         foreach (Room room in rooms)
         {
+            if (room.Compass == Vector2.zero)
+            {
+                Debug.LogWarning($"[Room {rooms.IndexOf(room)}] Compass chua duoc thiet lap!");
+            }
+            else
+            {
+                Debug.Log($"[Room {rooms.IndexOf(room)}] Compass = {room.Compass}, Heading = {room.headingCompass}");
+            }
+
             // Vẽ sàn trước để không bị các phần khác che khuất
             CreateFloor(room);
+            CreateCompassObject(room);
+            UpdateWallDirections(room);
 
             // Kiểm tra dữ liệu đầu vào phòng
             if (room.wallLines == null || room.wallLines.Count == 0)
                 continue;
             Debug.Log("==== LIST WALLLINES cua phong " + rooms.IndexOf(room) + " ====");
             foreach (var l in room.wallLines)
-                Debug.Log($"LIST WALLLINES cua phong:{l.type}: {l.start} -> {l.end}");
+                Debug.Log($"[LIST] WALLLINES cua phong:{l.type}: {l.start} -> {l.end}");
 
             // Lấy chiều cao tường cho phòng này
             float roomWallHeight = GetRoomHeight(room);
@@ -73,8 +87,19 @@ public class Model3D : MonoBehaviour
                 {
                     CreateWindowSegment(line, roomWallHeight);
                 }
+                GameObject wallObject = CreateWallSegment(line, roomWallHeight);
+
+                if (wallObject != null)
+                {
+                    Debug.Log($"[tessttesst] WallObject name: {wallObject.name}, Panel cha: {wallObject.transform.parent.name}");
+                }
             }
 
+            Vector2 center = Vector2.zero;
+            foreach (var p in room.checkpoints)
+                center += p;
+            center /= room.checkpoints.Count;
+            Debug.Log($"[Room {rooms.IndexOf(room)}] Center of floor: {center}, Compass: {room.Compass}");
         }
     }
 
@@ -189,7 +214,6 @@ public class Model3D : MonoBehaviour
 
         return windowObj;
     }
-
 
     // Lấy chiều cao của phòng từ room.heights
     private float GetRoomHeight(Room room)
@@ -449,4 +473,95 @@ public class Model3D : MonoBehaviour
 
         mf.mesh = mesh;
     }
+
+    private void CreateCompassObject(Room room)
+    {
+        if (room.Compass == Vector2.zero)
+        {
+            Debug.LogWarning($"[Room {RoomStorage.rooms.IndexOf(room)}] Compass chua thiet lap!");
+            return;
+        }
+
+        Vector3 compassPosition = new Vector3(room.Compass.x, 0.5f, room.Compass.y);
+        GameObject compassObject = Instantiate(compassPrefab, compassPosition, Quaternion.Euler(0, room.headingCompass, 0));
+        // Gán Layer
+        SetLayerRecursively(compassObject, LayerMask.NameToLayer("PreviewModel"));
+
+        if (modelHolder != null)
+            compassObject.transform.SetParent(modelHolder.transform, true);
+        else
+            Debug.LogWarning("Khong tim thay Model3DHolder trong scene!");
+
+        Debug.Log($"[Compass] Room {RoomStorage.rooms.IndexOf(room)} → Position: {compassPosition}, Parent: {(compassObject.transform.parent != null ? compassObject.transform.parent.name : "null")}");
+    }
+
+    private void UpdateWallDirections(Room room)
+    {
+        foreach (WallLine line in room.wallLines)
+        {
+            Vector3 dir = (line.end - line.start).normalized;
+
+            // Góc so với trục Z (Bắc)
+            float angleToNorth = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+
+            // Cộng với góc chuẩn la bàn
+            float realWorldAngle = (angleToNorth + room.headingCompass + 360f) % 360f;
+
+            // (tuỳ chọn) gán vào line nếu bạn muốn lưu
+            // line.directionAngle = realWorldAngle;
+
+            // Gợi ý hướng chữ
+            string directionLabel = AngleToDirectionLabel(realWorldAngle);
+
+            Debug.Log($"[list][WallDir] {line.start} → {line.end} = {realWorldAngle:0.0}° ({directionLabel})");
+        }
+    }
+
+    private string AngleToDirectionLabel(float degree)
+    {
+        if (degree < 0) degree += 360;
+
+        if ((degree >= 0 && degree < 7.5f) || degree >= 352.5f) return "Bắc";
+        if (degree < 22.5f) return "Bắc";
+        if (degree < 37.5f) return "Đông Bắc";
+        if (degree < 52.5f) return "Đông Bắc";
+        if (degree < 67.5f) return "Đông Bắc";
+        if (degree < 82.5f) return "Đông";
+        if (degree < 97.5f) return "Đông";
+        if (degree < 112.5f) return "Đông";
+        if (degree < 127.5f) return "Đông Nam";
+        if (degree < 142.5f) return "Đông Nam";
+        if (degree < 157.5f) return "Đông Nam";
+        if (degree < 172.5f) return "Nam";
+        if (degree < 187.5f) return "Nam";
+        if (degree < 202.5f) return "Nam";
+        if (degree < 217.5f) return "Tây Nam";
+        if (degree < 232.5f) return "Tây Nam";
+        if (degree < 247.5f) return "Tây Nam";
+        if (degree < 262.5f) return "Tây";
+        if (degree < 277.5f) return "Tây";
+        if (degree < 292.5f) return "Tây";
+        if (degree < 307.5f) return "Tây Bắc";
+        if (degree < 322.5f) return "Tây Bắc";
+        if (degree < 337.5f) return "Tây Bắc";
+        return "Bắc";
+    }
+
+    void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label)
+    {
+        GameObject textObj = new GameObject("DirLabel");
+        textObj.transform.SetParent(wallObject.transform);
+        textObj.transform.position = midPoint + Vector3.up * 1.1f; // cao hơn tường một chút
+
+        TextMesh text = textObj.AddComponent<TextMesh>();
+        text.text = label;
+        text.characterSize = 0.2f;
+        text.fontSize = 48;
+        text.color = Color.red;
+        text.alignment = TextAlignment.Center;
+
+        // (Tuỳ chọn) Luôn hướng ra phía camera
+        textObj.transform.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
+    }
+
 }

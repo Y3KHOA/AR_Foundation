@@ -24,6 +24,6 @@
 //        this.groundId = groundId;
 //        this.groundName = groundName;
 //        this.imageName = imageName;
-//        this.kindOfGround = kindOfGround;
+//        this.kindOfGround = kindOfGround; 
 //    }
 //}

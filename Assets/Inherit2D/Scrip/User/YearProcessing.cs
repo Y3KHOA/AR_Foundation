@@ -6,6 +6,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// This class handles the year input from the user, calculates their zodiac sign based on the input year,
+/// </summary>
 public class YearProcessing : MonoBehaviour
 {
     [Header("Input canvas")]
@@ -49,7 +52,7 @@ public class YearProcessing : MonoBehaviour
     {
         //Caculate year old user
         string yearText = yearInputField.text;
-        if(yearText.Trim() == "")
+        if (yearText.Trim() == "")
         {
             return;
         }

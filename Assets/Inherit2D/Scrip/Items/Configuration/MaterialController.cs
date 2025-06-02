@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý các vật liệu được sử dụng trong trò chơi, cho phép tải, hiển thị và kiểm soát các thuộc tính của vật liệu.
+/// </summary>
 public class MaterialController : MonoBehaviour
 {
     public static MaterialController instance;
@@ -24,7 +27,7 @@ public class MaterialController : MonoBehaviour
 
     private void Start()
     {
-        loadData= LoadData.instance;
+        loadData = LoadData.instance;
         gridLayoutGroup = GetComponent<GridLayoutGroup>();
         rectTransform = GetComponent<RectTransform>();
 

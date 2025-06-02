@@ -1,6 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// Lớp này tạo và quản lý lưới hiển thị quanh camera trong chế độ 2D.
+/// </summary>
 public class GridGenerator2 : MonoBehaviour
 {
     [Header("Grid Settings")]

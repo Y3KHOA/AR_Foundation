@@ -15,6 +15,15 @@ public class CompassManager : MonoBehaviour
     private float currentHeading = 0f;
     private Queue<float> headingHistory = new Queue<float>();
     private const int smoothWindowSize = 5;
+    public static CompassManager Instance;
+    void Awake()
+    {
+        Instance = this;
+    }
+    public float GetCurrentHeading()
+    {
+        return currentHeading;
+    }
 
     void Start()
     {

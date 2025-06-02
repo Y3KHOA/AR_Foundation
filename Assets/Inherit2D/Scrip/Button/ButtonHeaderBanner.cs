@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý biểu ngữ tiêu đề nút trong trò chơi, cho phép người dùng mở cài đặt cấu hình cho vật phẩm hoặc mặt đất.
+/// </summary>
 public class ButtonHeaderBanner : MonoBehaviour
 {
     [Header("Configuration")]
@@ -16,28 +19,28 @@ public class ButtonHeaderBanner : MonoBehaviour
 
     public void OpenConfigOnClick()
     {
-        if(!gameManager.guiCanvasManager.configCanvas.activeSelf && gameManager.itemIndex != null)
+        if (!gameManager.guiCanvasManager.configCanvas.activeSelf && gameManager.itemIndex != null)
         {
             gameManager.guiCanvasManager.configCanvas.SetActive(true);
-            if(gameManager.itemIndex.item.CompareKindOfItem("Kết cấu"))
+            if (gameManager.itemIndex.item.CompareKindOfItem("Kết cấu"))
             {
                 configuation.groundConfigCanvas.gameObject.SetActive(true);
                 configuation.itemConfigCanvas.gameObject.SetActive(false);
                 LoadInfomationGround();
-            }   
+            }
             else
             {
                 configuation.itemConfigCanvas.gameObject.SetActive(true);
                 configuation.groundConfigCanvas.gameObject.SetActive(false);
                 LoadInfomationItem();
-            }    
-        }    
-        else if(gameManager.guiCanvasManager.configCanvas.activeSelf)
+            }
+        }
+        else if (gameManager.guiCanvasManager.configCanvas.activeSelf)
         {
             gameManager.guiCanvasManager.configCanvas.SetActive(false);
             gameManager.guiCanvasManager.colorPickerCanvas.SetActive(false);
-        }    
-    }    
+        }
+    }
 
     private void LoadInfomationItem()
     {
@@ -57,7 +60,7 @@ public class ButtonHeaderBanner : MonoBehaviour
 
         //Load checkbox
         configurationButtonGroup.UpdateInfomationCheckButton(itemCreated);
-    }    
+    }
 
     private void LoadInfomationGround()
     {
@@ -77,6 +80,6 @@ public class ButtonHeaderBanner : MonoBehaviour
         }
 
         //Load checkbox
-       configurationButtonGroup.UpdateInfomationCheckButton(itemCreated);
-    }    
+        configurationButtonGroup.UpdateInfomationCheckButton(itemCreated);
+    }
 }

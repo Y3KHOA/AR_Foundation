@@ -627,7 +627,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 36889955}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 529780661}
+        m_TargetAssemblyTypeName: UndoRedoController, Assembly-CSharp
+        m_MethodName: RedoOnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &36889955
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5153,6 +5165,8 @@ GameObject:
   - component: {fileID: 529780658}
   - component: {fileID: 529780659}
   - component: {fileID: 529780660}
+  - component: {fileID: 529780661}
+  - component: {fileID: 529780662}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -5278,7 +5292,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   btnExportPDF: {fileID: 1174245843}
-  checkpointManager: {fileID: 667801197}
   SuccessPanel: {fileID: 1741639704}
   ErrorPanel: {fileID: 308492679}
   unit: m
@@ -5294,6 +5307,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84a8fdce197c9ab43be8381632429a25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &529780661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529780653}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19b4c0d81c8a524dabbbbe97323a84a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &529780662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 529780653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 075853d761de21a4b897325f08e5cd8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  checkpointManager: {fileID: 667801197}
+  drawingTool: {fileID: 667801198}
+  checkpointPrefab: {fileID: 58537293016028928, guid: 75f382403ca6d1a45a5e7aa7c6f31205,
+    type: 3}
+  parentTransform: {fileID: 667801196}
+  undoStates: []
 --- !u!1 &535618588
 GameObject:
   m_ObjectHideFlags: 0
@@ -12341,7 +12384,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1182118740}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 529780662}
+        m_TargetAssemblyTypeName: UndoController, Assembly-CSharp
+        m_MethodName: OnUndoButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1182118740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13204,6 +13259,7 @@ GameObject:
   - component: {fileID: 1285148374}
   - component: {fileID: 1285148375}
   - component: {fileID: 1285148376}
+  - component: {fileID: 1285148377}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -13294,6 +13350,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   contentPanel1: {fileID: 1031031292}
   contentPanel2: {fileID: 1031031292}
+--- !u!114 &1285148377
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1285148370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c19b4c0d81c8a524dabbbbe97323a84a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1292089500
 GameObject:
   m_ObjectHideFlags: 0

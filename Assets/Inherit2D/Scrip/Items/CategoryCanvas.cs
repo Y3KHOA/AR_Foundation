@@ -2,6 +2,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý giao diện người dùng bật lên trong trò chơi, cho phép hiển thị tin nhắn hoặc thông báo.
+/// </summary>
 public class CategoryCanvas : MonoBehaviour
 {
     [Header("Border")]
@@ -39,7 +42,7 @@ public class CategoryCanvas : MonoBehaviour
         }
 
         textMeshProUGUI.text = category.categoryName + " (" + category.numberOfItem + ")";
-    }    
+    }
 
     public void LoadItemOnClick()
     {
@@ -48,7 +51,7 @@ public class CategoryCanvas : MonoBehaviour
         unselectedBorder.gameObject.SetActive(false);
         foreach (CategoryCanvas categoryCanvas in categoryController.categoryCanvasList)
         {
-            if(categoryCanvas != this)
+            if (categoryCanvas != this)
             {
                 categoryCanvas.unselectedBorder.SetActive(true);
 

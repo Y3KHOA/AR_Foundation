@@ -2,6 +2,9 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Lớp này xử lý chuyển động của một vật phẩm trong trò chơi. Nó cho phép người dùng kéo và thả vật phẩm, cập nhật vị trí của vật phẩm dựa trên các điểm kích thước của vật phẩm.
+/// </summary>
 public class MoveButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     private GameManager gameManager;

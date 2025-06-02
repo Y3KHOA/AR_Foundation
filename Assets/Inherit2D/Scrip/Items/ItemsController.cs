@@ -9,6 +9,9 @@ using TMPro;
 using System.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
+/// <summary>
+/// Lớp này quản lý các mục trong trò chơi, bao gồm việc tải, hiển thị và lọc các mục dựa trên loại của chúng.
+/// </summary>
 public class ItemsController : MonoBehaviour
 {
     public static ItemsController instance;
@@ -139,16 +142,16 @@ public class ItemsController : MonoBehaviour
             itemCanvas.LoadData();
             itemCanvasList.Add(itemCanvas);
 
-            if(!itemCanvas.item.CompareKindOfItem("Thao tác"))
+            if (!itemCanvas.item.CompareKindOfItem("Thao tác"))
             {
                 foreach (string kind in itemCanvas.item.kindsOfItem)
                 {
                     categoryList.FirstOrDefault(x => x.categoryName == kind).CountNumberOfItem();
                 }
-            }    
+            }
         }
-    }  
-    
+    }
+
     private void ControlFontSize()
     {
         float minFont = float.MaxValue;

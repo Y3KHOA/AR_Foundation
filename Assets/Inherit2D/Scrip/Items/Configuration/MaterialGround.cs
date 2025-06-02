@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// Lớp đại diện cho vật liệu mặt đất trong trò chơi.
+/// </summary>
 public class MaterialGround : MonoBehaviour
 {
     public string nameMaterial;
@@ -9,7 +12,7 @@ public class MaterialGround : MonoBehaviour
     {
         nameMaterial = "";
         image = "";
-    }    
+    }
 
     public MaterialGround(string nameMaterial, string image)
     {

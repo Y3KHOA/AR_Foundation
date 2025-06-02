@@ -24,7 +24,7 @@
 //        {
 //            groundImage.sprite = sprite;
 //        }
-//        else
+//        else 
 //        {
 //            Debug.LogError($"Failed to load image '{imageName}'");
 //            groundImage.sprite = null;

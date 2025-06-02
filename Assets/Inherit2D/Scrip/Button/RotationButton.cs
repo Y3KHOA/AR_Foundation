@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// Lớp này xử lý việc xoay một vật phẩm trong trò chơi. Nó cho phép người dùng xoay vật phẩm bằng cách nhấp và kéo, cập nhật vị trí và kích thước của vật phẩm dựa trên khoảng cách camera.
+/// </summary>
 public class RotationButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     private GameManager gameManager;
@@ -89,7 +92,7 @@ public class RotationButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
                 itemCreated.sizePointManager.edgeLengthTextObjects[i].transform.Rotate(0, 180, 0);
             }
         }
-    }    
+    }
 
     public void AdjustSizePointToCamera()
     {

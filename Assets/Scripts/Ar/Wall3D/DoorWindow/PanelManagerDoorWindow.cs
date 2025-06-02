@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này xử lý biểu ngữ tiêu đề nút trong trò chơi, cho phép người dùng mở cài đặt cấu hình cho vật phẩm hoặc mặt đất.
+/// </summary>
 public class PanelManagerDoorWindow : MonoBehaviour
 {
     public BtnController btnController; // Drag vào từ Inspector
@@ -103,8 +106,8 @@ public class PanelManagerDoorWindow : MonoBehaviour
     }
 
     public bool MeasureMode
-        {
-            get => measureMode;
-            set => measureMode = value;
-        }
+    {
+        get => measureMode;
+        set => measureMode = value;
+    }
 }

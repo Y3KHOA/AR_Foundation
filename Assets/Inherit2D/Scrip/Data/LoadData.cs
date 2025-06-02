@@ -3,6 +3,9 @@ using System.Xml.Linq;
 using System;
 using UnityEngine;
 
+/// <summary>
+/// Lớp này chịu trách nhiệm tải dữ liệu từ các tệp XML nằm trong thư mục Tài nguyên.
+/// </summary>
 public class LoadData : MonoBehaviour
 {
     public static LoadData instance;

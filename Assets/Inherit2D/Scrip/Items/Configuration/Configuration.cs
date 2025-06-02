@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using static UnityEngine.Rendering.DebugUI;
 
+/// <summary>
+/// Lớp cấu hình chứa các tham chiếu đến nhiều sự kiện và khung cấu hình khác nhau.
+/// </summary>
 public class Configuration : MonoBehaviour
 {
     public static Configuration instance;

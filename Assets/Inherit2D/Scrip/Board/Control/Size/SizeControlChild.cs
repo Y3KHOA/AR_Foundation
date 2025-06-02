@@ -39,7 +39,7 @@
 //    // Xử lý kéo
 //    public void OnDrag(PointerEventData eventData)
 //    {
-//        if (isDragging)
+//        if (isDragging) 
 //        {
 //            Vector3 mousePosition;
 //            RectTransformUtility.ScreenPointToWorldPointInRectangle(

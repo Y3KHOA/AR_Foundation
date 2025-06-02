@@ -287,4 +287,26 @@ public class DrawingTool : MonoBehaviour
         textPool.Add(newText);
         return newText;
     }
+    public void ClearAllLines()
+    {
+        // Ẩn tất cả các line đang dùng
+        foreach (var lr in lines)
+        {
+            if (lr != null)
+                lr.gameObject.SetActive(false);
+        }
+        lines.Clear();
+
+        // Ẩn tất cả text đang dùng
+        foreach (var tmp in distanceTexts)
+        {
+            if (tmp != null)
+                tmp.gameObject.SetActive(false);
+        }
+        distanceTexts.Clear();
+
+        // Xoá dữ liệu wallLines nếu cần
+        wallLines.Clear();
+    }
+
 }

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Lớp này tạo ra một lưới động trong không gian 2D, cho phép các ô vuông được tạo ra và di chuyển theo vị trí của camera.
+/// </summary>
 public class CameraController : MonoBehaviour
 {
     public static CameraController instance;
@@ -30,9 +33,9 @@ public class CameraController : MonoBehaviour
     private float zoomLerpSpeed = 10f;
     private Vector2 lastTouchPosition;
     private bool isDragging = false;
-    private float minVerticalAngle = -90f; // 🔹 Giới hạn thấp nhất
-    private float maxVerticalAngle = 90f;  // 🔹 Giới hạn cao nhất
-    private float currentVerticalAngle = 0f; // 🔹 Theo dõi góc hiện tại
+    private float minVerticalAngle = -90f; // Giới hạn thấp nhất
+    private float maxVerticalAngle = 90f;  // Giới hạn cao nhất
+    private float currentVerticalAngle = 0f; // Theo dõi góc hiện tại
 
     private void Awake()
     {
@@ -67,15 +70,15 @@ public class CameraController : MonoBehaviour
         if (!justZoomed && !isZooming && Input.GetMouseButton(0) && gameManager.guiCanvasManager.isOnWordSpace && !gameManager.hasItem && !gameManager.GetDrawingStatus())
         {
             CaculateSpeed();
-            if(!gameManager.isOn3DView)
+            if (!gameManager.isOn3DView)
             {
                 HandleMouseMovement();
-            }    
+            }
             else
             {
                 HandleTouchRotation3D();
                 HandleTouchMovement3D();
-            }    
+            }
         }
     }
 
@@ -154,24 +157,24 @@ public class CameraController : MonoBehaviour
             }
             else if (touch.phase == TouchPhase.Moved && isDragging)
             {
-                Vector2 delta = touch.deltaPosition * 0.02f; // 🔹 Giảm tốc độ xoay
+                Vector2 delta = touch.deltaPosition * 0.02f; // Giảm tốc độ xoay
 
                 float rotationX = delta.x * moveSpeed * Time.deltaTime;
                 float rotationY = -delta.y * moveSpeed * Time.deltaTime;
 
-                // 🔹 Xoay quanh trục Y (ngang) không giới hạn
+                // Xoay quanh trục Y (ngang) không giới hạn
                 mainCamera.transform.Rotate(Vector3.up, rotationX, Space.World);
 
-                // 🔹 Lấy góc hiện tại của camera
+                // Lấy góc hiện tại của camera
                 float newVerticalAngle = currentVerticalAngle + rotationY;
 
-                // 🔹 Clamp trong khoảng min-max
+                // Clamp trong khoảng min-max
                 newVerticalAngle = Mathf.Clamp(newVerticalAngle, minVerticalAngle, maxVerticalAngle);
 
-                // 🔹 Áp dụng xoay mới (giữ nguyên trục X & Z)
+                // Áp dụng xoay mới (giữ nguyên trục X & Z)
                 mainCamera.transform.localRotation = Quaternion.Euler(newVerticalAngle, mainCamera.transform.eulerAngles.y, 0);
 
-                // 🔹 Cập nhật góc hiện tại
+                // Cập nhật góc hiện tại
                 currentVerticalAngle = newVerticalAngle;
             }
             else if (touch.phase == TouchPhase.Ended)
@@ -188,17 +191,17 @@ public class CameraController : MonoBehaviour
             Touch touch0 = Input.GetTouch(0);
             Touch touch1 = Input.GetTouch(1);
 
-            // 🔹 Lấy trung bình deltaPosition của cả hai ngón tay
+            // Lấy trung bình deltaPosition của cả hai ngón tay
             Vector2 avgDelta = (touch0.deltaPosition + touch1.deltaPosition) / 2;
 
-            // 🔹 Chuyển đổi sang Vector3 để di chuyển trong không gian 3D
+            // Chuyển đổi sang Vector3 để di chuyển trong không gian 3D
             Vector3 moveDirection = -mainCamera.transform.right * avgDelta.x + -mainCamera.transform.up * avgDelta.y;
             moveDirection *= moveSpeed * Time.deltaTime * 0.5f;
 
-            // 🔹 Cập nhật vị trí camera
+            // Cập nhật vị trí camera
             Vector3 targetPosition = mainCamera.transform.position + moveDirection;
 
-            // 🔹 Clamp vị trí nếu cần (giới hạn phạm vi di chuyển)
+            // Clamp vị trí nếu cần (giới hạn phạm vi di chuyển)
             targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
             targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
 

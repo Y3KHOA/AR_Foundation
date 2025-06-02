@@ -9,6 +9,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này quản lý việc chọn và khởi tạo các đối tượng trong không gian làm việc của trò chơi.
+/// </summary>
 public class ItemHasChosen : MonoBehaviour
 {
     [Header("Item")]
@@ -21,8 +24,8 @@ public class ItemHasChosen : MonoBehaviour
 
     [Header("Color")]
     private Color normalColor;
-    [SerializeField]private Color errorColor;
-    [SerializeField]private Color succesColor;
+    [SerializeField] private Color errorColor;
+    [SerializeField] private Color succesColor;
 
     //Components
     private const string kindGroundString = "Kết cấu";
@@ -37,9 +40,9 @@ public class ItemHasChosen : MonoBehaviour
     private void Start()
     {
         gameManager = GameManager.instance;
- 
+
         //Components
-        rectTransform = GetComponent<RectTransform>(); 
+        rectTransform = GetComponent<RectTransform>();
 
         //Color
         image = GetComponent<Image>();
@@ -54,7 +57,7 @@ public class ItemHasChosen : MonoBehaviour
             //{
             //    return;
             //}
-            
+
             //Điều chỉnh vị trí chuột
             SetMousePosition();
             SetPosition();
@@ -78,7 +81,7 @@ public class ItemHasChosen : MonoBehaviour
         //2D
         gameManager.numberOfItemsCreated++;
         ItemCreated itemCreated = Instantiate(itemCreatedPrefab, gameManager.createdItems2DParent.transform).GetComponent<ItemCreated>();
-        itemCreated.itemId = gameManager.numberOfItemsCreated;   
+        itemCreated.itemId = gameManager.numberOfItemsCreated;
         itemCreated.item = itemChosen.DeepCopy(itemChosen);
         if (itemChosen.CompareKindOfItem(kindGroundString))
         {
@@ -96,7 +99,7 @@ public class ItemHasChosen : MonoBehaviour
         itemCreated.sizePointManager.EnableEdgeText(false);
         gameManager.createdItems2DList.Add(itemCreated);
 
-        if(itemChosen.CompareKindOfItem(kindGroundString)) gameManager.createdGroudList.Add(itemCreated);
+        if (itemChosen.CompareKindOfItem(kindGroundString)) gameManager.createdGroudList.Add(itemCreated);
 
         //3D
         Vector3 pos = new Vector3(mousePosition.x, mousePosition.y, -6 * itemCreated.item.distance);
@@ -115,7 +118,7 @@ public class ItemHasChosen : MonoBehaviour
 
         //
         gameManager.hasItem = false;
-    }    
+    }
 
     public void SetMousePosition()
     {
@@ -129,7 +132,7 @@ public class ItemHasChosen : MonoBehaviour
     }
 
     public void SetPosition()
-    {  
+    {
         if (!itemChosen.CompareKindOfItem(kindWallHangings))
         {
             gameObject.transform.position = mousePosition;
@@ -170,7 +173,7 @@ public class ItemHasChosen : MonoBehaviour
             gameObject.transform.position = nearestCollider.ClosestPoint(mouseWorldPosition);
             gameObject.transform.rotation = Quaternion.Euler(nearestCollider.transform.eulerAngles);
         }
-    }    
+    }
 
     public void CancelChosenItem()
     {
@@ -179,5 +182,5 @@ public class ItemHasChosen : MonoBehaviour
             gameManager.itemHasChosen.itemChosen = null;
             gameManager.itemHasChosen.gameObject.SetActive(false);
         }
-    }    
+    }
 }

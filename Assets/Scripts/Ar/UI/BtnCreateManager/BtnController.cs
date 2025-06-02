@@ -59,6 +59,8 @@ public class BtnController : MonoBehaviour
     private bool measureRoom = false;
     private bool isMeasuringDoorHeight = false;
     private bool isMeasuringWindowHeight = false;
+    
+    public GameObject compassLabelPrefab; // TextMesh hoặc mũi tên để hiển thị hướng
 
 
     void Start()
@@ -646,7 +648,7 @@ public class BtnController : MonoBehaviour
                         targetRoom.wallLines.Add(new WallLine(firstDoorBasePoint.transform.position, secondDoorBasePoint.transform.position, LineType.Door, 0f, heightDoor));
                         targetRoom.wallLines.Add(new WallLine(secondDoorBasePoint.transform.position, targetWall.end, LineType.Wall, 0f, heightValue));
                     }
-                    
+
                     targetRoom.wallLines = targetRoom.wallLines
                         .Where(l => Vector3.Distance(l.start, l.end) > epsilon)
                         .ToList();
@@ -1225,4 +1227,5 @@ public class BtnController : MonoBehaviour
 
         return -1;
     }
+
 }

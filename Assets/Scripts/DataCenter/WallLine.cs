@@ -35,35 +35,13 @@ public class Room
     public List<Vector2> checkpoints = new List<Vector2>();
     public List<WallLine> wallLines = new List<WallLine>();
     public List<float> heights = new List<float>();
-    
+
+    public Vector2 Compass= new Vector2();
+    public float headingCompass; // hướng thực địa của phòng (theo la bàn)
+
     public float area;
     public float ceilingArea;
     public float perimeter;
-
-    /// <summary>
-    /// Sinh các đoạn tường từ polygon
-    /// </summary>
-    private List<WallLine> GenerateWallsFromPolygon(List<Vector2> polygon)
-    {
-        List<WallLine> result = new List<WallLine>();
-        if (polygon == null || polygon.Count < 2) return result;
-
-        bool closed = Vector2.Distance(polygon[0], polygon[^1]) < 0.01f;
-        int count = closed ? polygon.Count - 1 : polygon.Count;
-
-        for (int i = 0; i < count; i++)
-        {
-            Vector2 p1 = polygon[i];
-            Vector2 p2 = polygon[(i + 1) % polygon.Count];
-
-            Vector3 start = new Vector3(p1.x, 0, p1.y);
-            Vector3 end = new Vector3(p2.x, 0, p2.y);
-
-            result.Add(new WallLine(start, end, LineType.Wall));
-        }
-
-        return result;
-    }
 }
 
 /// <summary>

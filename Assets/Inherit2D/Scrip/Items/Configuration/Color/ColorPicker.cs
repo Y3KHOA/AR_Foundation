@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
+/// <summary>
+/// Lớp này đại diện cho một bộ chọn màu trong trò chơi, cho phép người dùng chọn màu sắc cho các vật phẩm.
+/// </summary>
 public class ColorPicker : MonoBehaviour
 {
     public Image image;
@@ -49,5 +52,5 @@ public class ColorPicker : MonoBehaviour
         startColor.a = 0;
         colorController.alphaMaterial.SetColor("_GradientStartColor", startColor);
         colorController.alphaMaterial.SetColor("_GradientEndColor", newColor);
-    }       
+    }
 }
