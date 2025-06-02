@@ -25,29 +25,10 @@ public class CompassRoomManager : MonoBehaviour
         // In ra hướng và vị trí hiện tại đã lưu
         Debug.Log($"[Room Info] Compass Heading: {currentRoom.headingCompass:0.0}, Position: {currentRoom.Compass}");
 
-        // Tìm trung tâm phòng để đặt nhãn
-        Vector3 center = GetRoomCenter(currentRoom);
-
         // Tạo nhãn hoặc mũi tên hướng
         CreateCompassLabel(heading);
     }
-    private Vector3 GetRoomCenter(Room room)
-    {
-        if (room.checkpoints == null || room.checkpoints.Count == 0)
-            return Vector3.zero;
-
-        float sumX = 0, sumY = 0;
-        foreach (var pt in room.checkpoints)
-        {
-            sumX += pt.x;
-            sumY += pt.y;
-        }
-
-        float centerX = sumX / room.checkpoints.Count;
-        float centerZ = sumY / room.checkpoints.Count;
-        return new Vector3(centerX, 0, centerZ);
-    }
-
+    
     private void CreateCompassLabel(float heading)
     {
         if (compassLabelPrefab == null)
@@ -154,15 +135,7 @@ public class CompassRoomManager : MonoBehaviour
         t = Mathf.Clamp01(t);
         return a + ab * t;
     }
-
-
-    private string GetCompassDirectionName(float heading)
-    {
-        string[] dirs = { "Bắc", "Đông Bắc", "Đông", "Đông Nam", "Nam", "Tây Nam", "Tây", "Tây Bắc" };
-        int index = Mathf.RoundToInt(heading / 45f) % 8;
-        return dirs[index];
-    }
-
+    
     void SetLayerRecursively(GameObject obj, int layer)
     {
         obj.layer = layer;
