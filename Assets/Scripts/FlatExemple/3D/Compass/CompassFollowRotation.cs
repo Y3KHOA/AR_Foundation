@@ -11,6 +11,9 @@ public class CompassFollowRotation : MonoBehaviour
 
     private Room currentRoom;
 
+    private bool hasSetInitialOffset = false;
+    private float initialOffsetAngle = 0f;
+
     void Start()
     {
         List<Room> rooms = RoomStorage.rooms;
@@ -38,8 +41,20 @@ public class CompassFollowRotation : MonoBehaviour
             float realWorldAngle = (angleToNorth + currentRoom.headingCompass + 360f) % 360f;
 
             float yRotation = NormalizeAngle(roomModel.eulerAngles.y);
-            yRotation = realWorldAngle;
-            compassImage.rectTransform.rotation = Quaternion.Euler(0f, 0f, yRotation);
+            // Debug.Log("Y rotation: " + yRotation);
+
+            if (!hasSetInitialOffset)
+            {
+                // Lưu offset ban đầu giữa yRotation và realWorldAngle
+                initialOffsetAngle = yRotation - realWorldAngle;
+                hasSetInitialOffset = true;
+            }
+
+            // Tính lại góc xoay cho kim la bàn mỗi frame
+            float compassAngle = yRotation - initialOffsetAngle;
+            Debug.Log("Z rotation: " + yRotation);
+
+            compassImage.rectTransform.rotation = Quaternion.Euler(0f, 0f, compassAngle);
 
             string label = AngleToDirectionLabel(realWorldAngle);
             compassText.text = $"{realWorldAngle:F1}° ({label})";
