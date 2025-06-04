@@ -219,17 +219,6 @@ public class SizePointManager : MonoBehaviour
         //Cập nhật vị trí mới cho điểm được chọn
         sizePointList[index].transform.position = newPosition;
 
-        //Phân biệt loại điểm để xử lý phù hợp
-        // if (sizePointList[index].pointType == SizePointType.Corner)
-        // {
-        //     UpdateMidPointsFromCorners();
-        // }
-        // else if (sizePointList[index].pointType == SizePointType.Midpoint)
-        // {
-        //     UpdateCornersFromMidpoint(index, newPosition);
-        //     UpdateMidPointsFromCorners();
-        // }
-
         //Vẽ lại hình   
         UpdateLineRenderer();
 
@@ -238,7 +227,41 @@ public class SizePointManager : MonoBehaviour
         {
             sizePointList[i].transform.position = new Vector3(sizePointList[i].transform.position.x, sizePointList[i].transform.position.y, -4f);
         }
+        // Đồng bộ lại Room.checkpoints và wallLines
+        UpdateRoomDataFromSizePoints();
+    }
 
+    public void UpdateRoomDataFromSizePoints()
+    {
+        if (currentRoom == null) return;
+
+        currentRoom.checkpoints.Clear();
+        currentRoom.wallLines.Clear();
+
+        foreach (var point in sizePointList)
+        {
+            var pos = point.transform.position;
+            currentRoom.checkpoints.Add(new Vector2(pos.x, pos.y));
+        }
+
+        int count = currentRoom.checkpoints.Count;
+        for (int i = 0; i < count; i++)
+        {
+            Vector2 start = currentRoom.checkpoints[i];
+            Vector2 end = currentRoom.checkpoints[(i + 1) % count];
+
+            WallLine wall = new WallLine(
+                new Vector3(start.x, 0f, start.y),
+                new Vector3(end.x, 0f, end.y),
+                LineType.Wall
+            );
+            currentRoom.wallLines.Add(wall);
+        }
+
+        // RoomStorage.rooms.RemoveAll(r => r == currentRoom);
+        // RoomStorage.rooms.Add(currentRoom);
+
+        Debug.Log($"[UpdateRoom] Sau khi kéo điểm: {count} checkpoint, {count} wallLines.");
     }
 
     public List<SizePointEditor> GetSizePoints()
@@ -388,32 +411,21 @@ public class SizePointManager : MonoBehaviour
     private void DrawEdgeLines(Vector3[] corners)
     {
         int edgeCount = corners.Length - 1; // Số cạnh của đa giác
-        Debug.Log("edgeCount: " + edgeCount);
 
-        //Khởi tạo đủ số lượng LineRenderer cho mỗi cạnh
         while (edgeLineRenderers.Count < edgeCount)
         {
             GameObject edgeLineObject = Instantiate(edgeLineRendererPrefab, edgeLineParent.transform);
             LineRenderer edgeLine = edgeLineObject.GetComponent<LineRenderer>();
             edgeLineRenderers.Add(edgeLine);
         }
-        Debug.Log("edgeLineRenderers.Count: " + edgeLineRenderers.Count);
 
-        //Tạo đủ icon và đường mở rộng
         while (iconObjects.Count < edgeCount * 2)
         {
             iconObjects.Add(CreateCircleIcon());
             extensionLineList.Add(CreateExtensionLine());
         }
-        // Reset Room data tạm thời
-        if (currentRoom == null)
-        {
-            currentRoom = new Room();
-        }
-        currentRoom.checkpoints.Clear();
-        currentRoom.wallLines.Clear();
 
-        // Vẽ tất cả các cạnh của đa giác
+        // 🔹 Vẽ tất cả các cạnh của đa giác
         for (int i = 0; i < edgeCount; i++)
         {
             Vector3 start = corners[i];
@@ -440,7 +452,7 @@ public class SizePointManager : MonoBehaviour
             iconObjects[i * 2].transform.localPosition = adjustedStart;
             iconObjects[i * 2 + 1].transform.localPosition = adjustedEnd;
 
-            // Vị trí & xoay đường mở rộng
+            // Cập nhật vị trí đường mở rộng
             Vector3 avgStart = (start + newStart) / 2f;
             Vector3 avgEnd = (end + newEnd) / 2f;
 
@@ -453,55 +465,11 @@ public class SizePointManager : MonoBehaviour
             // Tính góc quay cho icon và đường mở rộng
             float angle = Mathf.Atan2(edgeDirection.y, edgeDirection.x) * Mathf.Rad2Deg;
 
-            //Dùng hướng cạnh để tính góc xoay, đảm bảo icon và đường mở rộng quay đúng theo hướng cạnh.
             iconObjects[i * 2].transform.rotation = edgeLineParent.transform.rotation * Quaternion.AngleAxis(angle + 180, Vector3.forward);
             iconObjects[i * 2 + 1].transform.rotation = edgeLineParent.transform.rotation * Quaternion.AngleAxis(angle, Vector3.forward);
 
             extensionLineList[i * 2].transform.rotation = edgeLineParent.transform.rotation * Quaternion.AngleAxis(angle, Vector3.forward);
             extensionLineList[i * 2 + 1].transform.rotation = edgeLineParent.transform.rotation * Quaternion.AngleAxis(angle + 180, Vector3.forward);
-
-            // Thêm đoạn tường
-            //         WallLine wall = new WallLine(adjustedStart, adjustedEnd, currentLineType);
-            //         wallLines.Add(wall);
-            //         newRoom.wallLines.Add(wall);
-            //     }
-
-            //         // Lưu checkpoint từ corners
-            // foreach (Vector3 corner in corners)
-            // {
-            //     newRoom.checkpoints.Add(new Vector2(corner.x, corner.y));
-            // }
-            // Thêm đoạn tường
-            // WallLine wall = new WallLine(start, end, currentLineType);
-            // wallLines.Add(wall);
-            // newRoom.wallLines.Add(wall);
-        }
-
-        // Lưu checkpoint từ corners
-        foreach (GameObject corner in iconObjects)
-        {
-            Vector3 pos = corner.transform.position;
-            currentRoom.checkpoints.Add(new Vector2(pos.x, pos.y));
-        }
-        // Tạo wallLines từ checkpoint
-        for (int i = 0; i < iconObjects.Count; i++)
-        {
-            Vector3 p1 = iconObjects[i].transform.position;
-            Vector3 p2 = (i == iconObjects.Count - 1)
-                ? iconObjects[0].transform.position
-                : iconObjects[i + 1].transform.position;
-
-            WallLine wall = new WallLine(p1, p2, currentLineType);
-            currentRoom.wallLines.Add(wall);
-        }
-
-        Debug.Log("Room saved with " + currentRoom.checkpoints.Count + " points and " + currentRoom.wallLines.Count + " lines.");
-
-        // Lưu vào RoomStorage
-        if (!RoomStorage.rooms.Contains(currentRoom))
-        {
-            RoomStorage.rooms.Clear(); // chỉ cần clear 1 lần đầu
-            RoomStorage.rooms.Add(currentRoom);
         }
     }
 
@@ -600,6 +568,7 @@ public class SizePointManager : MonoBehaviour
             return;
         }
 
+        // Xóa điểm cũ
         if (sizePointList.Count != 0)
         {
             foreach (SizePointEditor go in sizePointList)
@@ -611,6 +580,7 @@ public class SizePointManager : MonoBehaviour
 
         int numPoints = lineRenderer.positionCount;
 
+        // Tạo lại size point từ line
         for (int i = 0; i < numPoints - 1; i++)
         {
             //Trung điểm
@@ -642,6 +612,41 @@ public class SizePointManager : MonoBehaviour
                     sizePointList[i].gameObject.SetActive(false);
             }
         }
+
+        if (currentRoom == null)
+        {
+            currentRoom = new Room();
+            RoomStorage.rooms.Add(currentRoom);
+        }
+
+        // Xóa dữ liệu cũ trong phòng
+        // currentRoom.checkpoints.Clear();
+        // currentRoom.wallLines.Clear();
+
+        // // Lưu toàn bộ điểm vào checkpoint
+        // foreach (var point in sizePointList)
+        // {
+        //     Vector3 pos = point.transform.position;
+        //     currentRoom.checkpoints.Add(new Vector2(pos.x, pos.y));
+        //     Debug.Log($"Corner pos: ({pos})");
+        // }
+
+        // // Tạo các đoạn wallLine từ điểm
+        // int count = currentRoom.checkpoints.Count;
+        // for (int i = 0; i < count; i++)
+        // {
+        //     Vector2 start = currentRoom.checkpoints[i];
+        //     Vector2 end = currentRoom.checkpoints[(i + 1) % count];
+
+        //     WallLine wall = new WallLine(
+        //         new Vector3(start.x, 0f, start.y),
+        //         new Vector3(end.x, 0f, end.y),
+        //         LineType.Wall
+        //     );
+        //     currentRoom.wallLines.Add(wall);
+        // }
+
+        // Debug.Log($"[Room Saved] {currentRoom.checkpoints.Count} điểm, {currentRoom.wallLines.Count} đoạn tường.");
     }
 
     /// <summary>

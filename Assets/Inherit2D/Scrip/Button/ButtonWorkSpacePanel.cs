@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Lớp này quản lý bảng điều khiển không gian làm việc để chuyển đổi giữa chế độ xem 2D và 3D trong trò chơi.
@@ -25,38 +26,30 @@ public class ButtonWorkSpacePanel : MonoBehaviour
 
     public void TurnOn3DView()
     {
-        if (!gameManager.isOn3DView)
+        float defaultWallHeight = 1.0f;
+
+        // Giả sử bạn đang thao tác trên Room đầu tiên, hoặc có biến `currentRoom`
+        foreach (Room room in RoomStorage.rooms)
         {
-            gameManager.guiCanvasManager.boardCanvas.SetActive(false);
-            for (int i = 0; i < canvasList.Count; i++)
+            foreach (WallLine wall in room.wallLines)
             {
-                canvasList[i].gameObject.SetActive(false);
+                if (wall.type == LineType.Wall)
+                {
+                    wall.distanceHeight = 0f;         // bắt đầu từ mặt đất
+                    wall.Height = defaultWallHeight;  // chiều cao tường
+                }
+                // Door và Window giữ nguyên height/distanceHeight
             }
-            gameManager.guiCanvasManager.view3dCanvas.SetActive(true);
-            gameManager.isOn3DView = true;
-            gameManager.hasItem = false;
 
-            //Button
-            button3D.image.sprite = sprite2D;
-        }
-        else
-        {
-            //Camrera
-            Camera.main.transform.position = new Vector3(0, 0, -150);
-            Camera.main.transform.rotation = new Quaternion(0, 0, 0, 0);
-            Camera.main.orthographicSize = 80;
-
-            gameManager.guiCanvasManager.boardCanvas.SetActive(true);
-            for (int i = 0; i < canvasList.Count; i++)
+            // Optional: Nếu muốn, bạn cũng có thể clear danh sách `heights` cũ và add lại
+            room.heights.Clear();
+            for (int i = 0; i < room.wallLines.Count; i++)
             {
-                canvasList[i].gameObject.SetActive(true);
+                room.heights.Add(room.wallLines[i].Height);
             }
-            gameManager.guiCanvasManager.view3dCanvas.SetActive(false);
-            gameManager.isOn3DView = false;
-            gameManager.guiCanvasManager.view3dCanvas.transform.eulerAngles = Vector3.zero;
-
-            //Button
-            button3D.image.sprite = sprite3D;
         }
+
+        // Chuyển scene
+        SceneManager.LoadScene("FlatExampleScene");
     }
 }

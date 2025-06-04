@@ -18,6 +18,8 @@ public class CompassFollowRotation : MonoBehaviour
     {
         List<Room> rooms = RoomStorage.rooms;
 
+        UpdateWallDirections(rooms[0]);
+
         if (rooms == null || rooms.Count == 0)
         {
             Debug.LogWarning("Không có Room nào trong RoomStorage.");
@@ -54,10 +56,14 @@ public class CompassFollowRotation : MonoBehaviour
             float compassAngle = yRotation - initialOffsetAngle;
             Debug.Log("Z rotation: " + yRotation);
 
-            compassImage.rectTransform.rotation = Quaternion.Euler(0f, 0f, compassAngle);
+            compassImage.rectTransform.rotation = Quaternion.Euler(0f, 0f, -compassAngle);
 
-            string label = AngleToDirectionLabel(realWorldAngle);
-            compassText.text = $"{realWorldAngle:F1}° ({label})";
+            // Lấy góc hiển thị hiện tại
+            // float currentZ = compassImage.rectTransform.rotation.eulerAngles.z;
+            float normalized = (360f - compassAngle + 360f) % 360f;  // Đảo lại vì UI Z ngược
+
+            string label = AngleToDirectionLabel(normalized);
+            compassText.text = $"{normalized:F1}° ({label})";
         }
         else
         {
@@ -81,7 +87,7 @@ public class CompassFollowRotation : MonoBehaviour
         {
             Vector3 wallDir = (wall.end - wall.start).normalized;
             wallDir.y = 0;
-            float dot = Vector3.Dot(wallDir, cameraForward);  // Cosine góc giữa hướng tường và camera
+            float dot = Vector3.Dot(-wallDir, cameraForward);  // Cosine góc giữa hướng tường và camera
 
             if (dot > maxDot)
             {
@@ -111,7 +117,7 @@ public class CompassFollowRotation : MonoBehaviour
             // Gợi ý hướng chữ
             string directionLabel = AngleToDirectionLabel(realWorldAngle);
 
-            Debug.Log($"[list][WallDir] {line.start} → {line.end} = {realWorldAngle:0.0}° ({directionLabel})");
+            Debug.Log($"[list][WallDir] 2 {line.start} → {line.end} = {realWorldAngle:0.0}° ({directionLabel})");
         }
     }
 

@@ -95,6 +95,7 @@ public class ItemHasChosen : MonoBehaviour
         itemCreated.sizePointManager.item = itemCreated.item;
         itemCreated.sizePointManager.DrawOutline(itemCreated.item);
         itemCreated.sizePointManager.CreateSizePoints();
+        // itemCreated.sizePointManager.UpdateRoomDataFromSizePoints();
         itemCreated.sizePointManager.EnableSizePoint(false);
         itemCreated.sizePointManager.EnableEdgeText(false);
         gameManager.createdItems2DList.Add(itemCreated);
