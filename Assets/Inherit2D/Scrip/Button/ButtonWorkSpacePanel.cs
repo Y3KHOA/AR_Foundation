@@ -19,6 +19,8 @@ public class ButtonWorkSpacePanel : MonoBehaviour
     [Header("Canvas")]
     public List<GameObject> canvasList;
 
+    public GameObject panel3DView;
+
     private void Start()
     {
         gameManager = GameManager.instance;
@@ -26,30 +28,13 @@ public class ButtonWorkSpacePanel : MonoBehaviour
 
     public void TurnOn3DView()
     {
-        float defaultWallHeight = 1.0f;
-
-        // Giả sử bạn đang thao tác trên Room đầu tiên, hoặc có biến `currentRoom`
-        foreach (Room room in RoomStorage.rooms)
+        if (panel3DView != null)
         {
-            foreach (WallLine wall in room.wallLines)
-            {
-                if (wall.type == LineType.Wall)
-                {
-                    wall.distanceHeight = 0f;         // bắt đầu từ mặt đất
-                    wall.Height = defaultWallHeight;  // chiều cao tường
-                }
-                // Door và Window giữ nguyên height/distanceHeight
-            }
-
-            // Optional: Nếu muốn, bạn cũng có thể clear danh sách `heights` cũ và add lại
-            room.heights.Clear();
-            for (int i = 0; i < room.wallLines.Count; i++)
-            {
-                room.heights.Add(room.wallLines[i].Height);
-            }
+            panel3DView.SetActive(true);
         }
-
-        // Chuyển scene
-        SceneManager.LoadScene("FlatExampleScene");
+        else
+        {
+            Debug.LogWarning("panel3DView chưa được gán trong Inspector!");
+        }
     }
 }

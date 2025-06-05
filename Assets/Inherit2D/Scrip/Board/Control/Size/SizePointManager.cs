@@ -647,6 +647,7 @@ public class SizePointManager : MonoBehaviour
         // }
 
         // Debug.Log($"[Room Saved] {currentRoom.checkpoints.Count} điểm, {currentRoom.wallLines.Count} đoạn tường.");
+        UpdateRoomDataFromSizePoints();
     }
 
     /// <summary>
