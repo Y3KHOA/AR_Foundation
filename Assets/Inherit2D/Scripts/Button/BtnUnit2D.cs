@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro; // Import TextMeshPro
+using System.Collections.Generic;
 
 public class BtnUnit2D : MonoBehaviour
 {
@@ -46,11 +47,17 @@ public class BtnUnit2D : MonoBehaviour
         Debug.Log($"Giá trị nhập vào: {heightValue} {selectedUnit}, giá trị sau khi chuyển đổi: {convertedHeight}");
 
         // Lưu vào Room
-        Room newRoom = new Room();
-        // newRoom.heights.Add(convertedHeight); // Hoặc newRoom.height = convertedHeight nếu dùng 1 giá trị
-        for (int i = 0; i < newRoom.checkpoints.Count; i++)
-            newRoom.heights.Add(convertedHeight);
-        RoomStorage.rooms.Add(newRoom);
+        List<Room> newRoom = RoomStorage.rooms;
+        foreach (Room room in newRoom)
+        {
+            room.heights.Clear(); // Xoá cũ nếu đã từng gán
+            for (int i = 0; i < room.checkpoints.Count; i++)
+            {
+                room.heights.Add(convertedHeight);
+            }
+
+            Debug.Log($"Gán chiều cao {convertedHeight} cho Room có {room.checkpoints.Count} điểm.");
+        }
 
         // Chuyển sang scene FlatExampleScene
         SceneManager.LoadScene("FlatExampleScene");

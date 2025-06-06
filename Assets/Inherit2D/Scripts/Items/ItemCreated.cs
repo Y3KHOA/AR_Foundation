@@ -183,6 +183,9 @@ public class ItemCreated : MonoBehaviour
                             gameManager.itemCreatedOldPosition = transform.position;
                             gameManager.itemCreatedOldRotation = transform.rotation.eulerAngles;
                         }
+
+                        // Cập nhật Room tại đây
+                        sizePointManager.UpdateRoomDataFromSizePoints();
                     }
                 }
             }

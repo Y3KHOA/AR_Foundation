@@ -13,6 +13,7 @@ public class CompassFollowRotation : MonoBehaviour
 
     private bool hasSetInitialOffset = false;
     private float initialOffsetAngle = 0f;
+    private Quaternion originalRotation;
 
     void Start()
     {
@@ -28,6 +29,7 @@ public class CompassFollowRotation : MonoBehaviour
 
         // Giả sử roomModel ứng với phòng đầu tiên — có thể thay đổi logic này nếu cần
         currentRoom = rooms[0];
+        originalRotation = compassImage.rectTransform.rotation;
     }
 
     void Update()
@@ -56,7 +58,7 @@ public class CompassFollowRotation : MonoBehaviour
             float compassAngle = yRotation - initialOffsetAngle;
             Debug.Log("Z rotation: " + yRotation);
 
-            compassImage.rectTransform.rotation = Quaternion.Euler(0f, 0f, -compassAngle);
+            compassImage.rectTransform.rotation = originalRotation * Quaternion.Euler(0f, 0f, -compassAngle);
 
             // Lấy góc hiển thị hiện tại
             // float currentZ = compassImage.rectTransform.rotation.eulerAngles.z;

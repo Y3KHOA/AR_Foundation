@@ -41,6 +41,10 @@ public class MoveButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         itemCreated.isMoving = false;
         itemCreated.hasItem = false;
         gameManager.hasItem = false;
+
+        // Cập nhật lại Room trong storage
+        itemCreated.sizePointManager.UpdateRoomDataFromSizePoints();
+        Debug.Log($"[MoveButton] Đã cập nhật room sau khi kéo thả.");
     }
 
     public void UpdatePosition()
@@ -77,7 +81,8 @@ public class MoveButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             float scaleFactor = cameraSize / screenHeight;
             scaleFactor = Mathf.Clamp(scaleFactor, minSize, maxSize);
 
-            rectTransform.sizeDelta = new Vector2(50, 50) * scaleFactor * temp;
+            // rectTransform.sizeDelta = new Vector2(50, 50) * scaleFactor * temp;
+            rectTransform.sizeDelta = new Vector2(400, 400) * scaleFactor * temp;
         }
     }
 }

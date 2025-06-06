@@ -64,6 +64,10 @@ public class RotationButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
         isPressing = false;
         itemCreated.isRotate = false;
         gameManager.hasItem = false;
+
+        // Cập nhật lại Room trong storage
+        itemCreated.sizePointManager.UpdateRoomDataFromSizePoints();
+        Debug.Log($"[MoveButton] Đã cập nhật room sau khi kéo thả.");
     }
 
     public void UpdatePosition()
@@ -115,7 +119,8 @@ public class RotationButton : MonoBehaviour, IPointerDownHandler, IPointerUpHand
             float scaleFactor = cameraSize / screenHeight;
             scaleFactor = Mathf.Clamp(scaleFactor, minSize, maxSize);
 
-            rectTransform.sizeDelta = new Vector2(50, 50) * scaleFactor * temp;
+            // rectTransform.sizeDelta = new Vector2(50, 50) * scaleFactor * temp;
+            rectTransform.sizeDelta = new Vector2(400, 400) * scaleFactor * temp;
         }
     }
 }
