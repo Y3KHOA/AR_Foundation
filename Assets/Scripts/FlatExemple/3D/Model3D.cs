@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using LibTessDotNet;
 using System.Linq;
+using TMPro;
 
 public class Model3D : MonoBehaviour
 {
@@ -35,9 +36,20 @@ public class Model3D : MonoBehaviour
                 Debug.Log($"[Room {rooms.IndexOf(room)}] Compass = {room.Compass}, Heading = {room.headingCompass}");
             }
 
+            // === XÓA các đoạn tường ảo (start ≈ end) ===
+            room.wallLines.RemoveAll(w =>
+            {
+                bool isZeroLength = Vector3.Distance(w.start, w.end) < 0.01f;
+                if (isZeroLength)
+                    Debug.LogWarning($"[REMOVE] Doan {w.type} do dai ≈ 0: {w.start} → {w.end}");
+                return isZeroLength;
+            });
+
             // Vẽ sàn trước để không bị các phần khác che khuất
             CreateFloor(room);
+            // Vẽ Tọa độ đã check
             CreateCompassObject(room);
+            // Tính toán các hướng dựa trên hướng chuẩn.
             UpdateWallDirections(room);
 
             // Kiểm tra dữ liệu đầu vào phòng
@@ -77,7 +89,7 @@ public class Model3D : MonoBehaviour
                         continue;
                     }
 
-                    CreateWallSegment(line, roomWallHeight);
+                    CreateWallSegment(line, roomWallHeight, room.headingCompass); ;
                 }
                 else if (line.type == LineType.Door)
                 {
@@ -86,12 +98,6 @@ public class Model3D : MonoBehaviour
                 else if (line.type == LineType.Window)
                 {
                     CreateWindowSegment(line, roomWallHeight);
-                }
-                GameObject wallObject = CreateWallSegment(line, roomWallHeight);
-
-                if (wallObject != null)
-                {
-                    Debug.Log($"[tessttesst] WallObject name: {wallObject.name}, Panel cha: {wallObject.transform.parent.name}");
                 }
             }
 
@@ -104,9 +110,9 @@ public class Model3D : MonoBehaviour
     }
 
     // Hàm vẽ phần tường thông thường
-    private GameObject CreateWallSegment(WallLine line, float roomHeight)
+    private GameObject CreateWallSegment(WallLine line, float roomHeight, float headingCompass)
     {
-        // Kiểm tra nếu có Door/Window nào trùng hoàn toàn đoạn này
+        // Kiểm tra nếu có Door/Window trùng
         bool isOverlapWithDoorOrWindow = RoomStorage.rooms
             .SelectMany(r => r.wallLines)
             .Any(l =>
@@ -118,22 +124,38 @@ public class Model3D : MonoBehaviour
             );
         if (isOverlapWithDoorOrWindow)
         {
-            // Vẽ cửa thay vì tường
-            Debug.Log($"[SKIP WALL] Doan nay trung voi cua hoac cua so: {line.start} -> {line.end}");
+            Debug.Log($"[SKIP WALL] Trùng cửa/cửa sổ: {line.start} -> {line.end}");
             return CreateDoorSegment(line, roomHeight);
         }
-        Vector3 start = line.start;
-        Vector3 end = line.end;
 
-        float baseY = 0f; // Tường luôn bắt đầu từ mặt sàn
-        float height = roomHeight; // Sử dụng chiều cao từ room.heights
+        // Tạo tường
+        Vector3 base1 = new Vector3(line.start.x, 0f, line.start.z);
+        Vector3 base2 = new Vector3(line.end.x, 0f, line.end.z);
+        Vector3 top1 = base1 + Vector3.up * roomHeight;
+        Vector3 top2 = base2 + Vector3.up * roomHeight;
 
-        Vector3 base1 = new Vector3(start.x, baseY, start.z);
-        Vector3 base2 = new Vector3(end.x, baseY, end.z);
-        Vector3 top1 = base1 + Vector3.up * height;
-        Vector3 top2 = base2 + Vector3.up * height;
+        GameObject wallObj = CreateWall(base1, base2, top1, top2);
 
-        return CreateWall(base1, base2, top1, top2);
+        // Tính hướng tường
+        Vector3 dir = (line.end - line.start).normalized;
+        float angleToNorth = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+        float realWorldAngle = (angleToNorth + headingCompass + 360f) % 360f;
+        string directionLabel = AngleToDirectionLabel(realWorldAngle);
+
+        // Chỉ hiển thị nhãn nếu tường dài hơn 20cm (0.2m)
+        float wallLength = Vector3.Distance(line.start, line.end);
+        if (wallLength >= 0.2f)
+        {
+            Vector3 midPoint = (line.start + line.end) / 2f;
+            Vector3 direction = line.end - line.start;
+            AddDirectionLabel(wallObj, midPoint, directionLabel, direction, realWorldAngle);
+        }
+        else
+        {
+            Debug.Log($"[NO LABEL] Wall too short ({wallLength:F2}m): {line.start} → {line.end}");
+        }
+
+        return wallObj;
     }
 
     // Hàm vẽ cửa và phần tường phía trên cửa (nếu có)
@@ -547,21 +569,43 @@ public class Model3D : MonoBehaviour
         return "Bắc";
     }
 
-    void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label)
+    // void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label)
+    void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label, Vector3 directionVector, float realWorldAngle)
     {
         GameObject textObj = new GameObject("DirLabel");
         textObj.transform.SetParent(wallObject.transform);
-        textObj.transform.position = midPoint + Vector3.up * 1.1f; // cao hơn tường một chút
+        textObj.transform.position = midPoint + Vector3.up * 0.7f; // cao hơn tường một chút
+        // Gán Layer
+        SetLayerRecursively(textObj, LayerMask.NameToLayer("PreviewModel"));
 
-        TextMesh text = textObj.AddComponent<TextMesh>();
-        text.text = label;
-        text.characterSize = 0.2f;
-        text.fontSize = 48;
+        // Thay vì TextMesh, dùng TextMeshPro
+        TextMeshPro text = textObj.AddComponent<TextMeshPro>();
+        text.text = $"{realWorldAngle:0.0}°: {label}";
+        text.fontSize = 1.5f;
         text.color = Color.red;
-        text.alignment = TextAlignment.Center;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = false;
 
-        // (Tuỳ chọn) Luôn hướng ra phía camera
-        textObj.transform.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
+        // Tuỳ chọn: Thêm outline và/hoặc bóng để dễ nhìn
+        text.fontStyle = FontStyles.Bold;
+        text.outlineWidth = 0.2f;
+        text.outlineColor = Color.black;
+
+        // Hướng chữ chạy song song với tường
+        Vector3 right = directionVector.normalized; // chạy dọc theo tường
+        if (right.sqrMagnitude < 0.001f) right = Vector3.right;
+
+        Vector3 up = Vector3.up;
+        Vector3 forward = Vector3.Cross(up, right); // mặt chữ hướng ra ngoài
+
+        // Kiểm tra nếu forward đang hướng vào trong (camera phía trước)
+        // if (Vector3.Dot(forward, Camera.main.transform.position - midPoint) < 0)
+        // {
+        //     forward = forward; // đảo lại để quay ra ngoài
+        // }
+
+        // Gán rotation
+        textObj.transform.rotation = Quaternion.LookRotation(forward, up);
     }
 
 }

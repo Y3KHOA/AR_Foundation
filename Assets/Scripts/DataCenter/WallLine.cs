@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 /// <summary>
 /// Một đoạn đường thẳng đại diện cho tường, cửa hoặc cửa sổ
@@ -26,22 +27,34 @@ public class WallLine
     }
 }
 
-/// <summary>
+/// <summary> 
 /// Một phòng hoặc khu vực được xác định bởi đa giác và các đoạn tường tương ứng
 /// </summary>
 [System.Serializable]
 public class Room
 {
+    public string ID { get; private set; }  // ID chỉ đọc từ bên ngoài
+
     public List<Vector2> checkpoints = new List<Vector2>();
     public List<WallLine> wallLines = new List<WallLine>();
     public List<float> heights = new List<float>();
 
-    public Vector2 Compass= new Vector2();
+    public Vector2 Compass = new Vector2();
     public float headingCompass; // hướng thực địa của phòng (theo la bàn)
 
     public float area;
     public float ceilingArea;
     public float perimeter;
+
+    public Room()
+    {
+        ID = GenerateID(); // Tự tạo ID khi khởi tạo
+    }
+
+    private string GenerateID()
+    {
+        return Guid.NewGuid().ToString(); // ID ngẫu nhiên toàn cục (UUID)
+    }
 }
 
 /// <summary>

@@ -29,6 +29,8 @@ public class ButtonManager : MonoBehaviour
         panel3D.SetActive(false);
         panelInfo.SetActive(false);
 
+        Draw2D.gameObject.SetActive(false);
+
         if (ButtonOk.IsOkButtonShown)
         {
             previewTexture.SetActive(true);

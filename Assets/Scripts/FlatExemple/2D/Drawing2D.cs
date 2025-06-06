@@ -8,6 +8,7 @@ public class Drawing2D : MonoBehaviour
     public GameObject linePrefab;
     public GameObject distanceTextPrefab;
     public GameObject auxiliaryLinePrefab; // Line phụ
+    public Transform modelRoot;
 
     private List<LineRenderer> linePool = new List<LineRenderer>(); // Object Pooling
     private List<TextMeshPro> textPool = new List<TextMeshPro>();
@@ -18,7 +19,7 @@ public class Drawing2D : MonoBehaviour
 
     private float auxiliaryLineLength = 0.1f; // Độ dài line phụ (10cm)
 
-    public void DrawLineAndDistance(Vector3 start, Vector3 end)
+    public void DrawLineAndDistance(Vector3 start, Vector3 end, Transform modelRoot)
     {
         if (linePrefab == null || distanceTextPrefab == null || auxiliaryLinePrefab == null)
         {
@@ -128,6 +129,7 @@ public class Drawing2D : MonoBehaviour
         }
 
         GameObject lineObj = Instantiate(linePrefab);
+        lineObj.transform.SetParent(modelRoot); // ← Gắn vào modelRoot
         LineRenderer newLine = lineObj.GetComponent<LineRenderer>();
         linePool.Add(newLine);
         return newLine;
@@ -143,6 +145,7 @@ public class Drawing2D : MonoBehaviour
             }
         }
         GameObject auxObj = Instantiate(auxiliaryLinePrefab);
+        auxObj.transform.SetParent(modelRoot);
         LineRenderer newAuxLine = auxObj.GetComponent<LineRenderer>();
 
         newAuxLine.gameObject.SetActive(true); // Đảm bảo nó được hiển thị
@@ -170,6 +173,7 @@ public class Drawing2D : MonoBehaviour
         }
 
         GameObject textObj = Instantiate(distanceTextPrefab);
+        textObj.transform.SetParent(modelRoot);
         TextMeshPro newText = textObj.GetComponent<TextMeshPro>();
 
         // Bật MeshRenderer nếu bị tắt
