@@ -58,7 +58,8 @@ public class CompassFollowRotation : MonoBehaviour
             float compassAngle = yRotation - initialOffsetAngle;
             Debug.Log("Z rotation: " + yRotation);
 
-            compassImage.rectTransform.rotation = originalRotation * Quaternion.Euler(0f, 0f, -compassAngle);
+            // compassImage.rectTransform.rotation = originalRotation * Quaternion.Euler(0f, 0f, -compassAngle);
+            compassImage.rectTransform.localRotation = Quaternion.AngleAxis(-compassAngle, Vector3.forward);
 
             // Lấy góc hiển thị hiện tại
             // float currentZ = compassImage.rectTransform.rotation.eulerAngles.z;
