@@ -1,48 +1,41 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class BtnChoose : MonoBehaviour
 {
-    public Button btnDraw;
-    public Button btnByCam;
-    public GameObject ObjectByCam; // GameObject sẽ hiện khi nhấn ByCam
+    public Button button1;
+    public Button button2;
+
+    public GameObject panel1;
+    public GameObject panel2;
+    public GameObject panelCore;
 
     void Start()
     {
-        // Gán sự kiện khi nhấn nút
-        if (btnDraw != null)
-            btnDraw.onClick.AddListener(OnDrawClicked);
+        if (button1 != null)
+            button1.onClick.AddListener(OnButton1Clicked);
 
-        if (btnByCam != null)
-            btnByCam.onClick.AddListener(OnByCamClicked);
+        if (button2 != null)
+            button2.onClick.AddListener(OnButton2Clicked);
 
-        // Ẩn ObjectByCam lúc đầu
-        if (ObjectByCam != null)
-            ObjectByCam.SetActive(false);
+        // Ẩn cả hai panel lúc đầu (hoặc tùy ý set cái nào hiện)
+        if (panel1 != null) panel1.SetActive(false);
+        if (panel2 != null) panel2.SetActive(false);
     }
 
-    void OnDrawClicked()
+    void OnButton1Clicked()
     {
-        Debug.Log("Nhấn Draw - Chuyển scene DraftingScene");
-        SceneManager.LoadScene("SampleScene"); // Chuyển scene
+        if (panel1 != null) panel1.SetActive(true);
+        if (panel2 != null) panel2.SetActive(false);
+
+        if (panelCore != null) panelCore.SetActive(false);
     }
 
-    void OnByCamClicked()
+    void OnButton2Clicked()
     {
-        Debug.Log("Nhấn ByCam - Hiện ObjectByCam và ẩn 2 button");
-
-        if (ObjectByCam != null)
-            ObjectByCam.SetActive(true); // Hiện ObjectByCam
-
-        if (btnDraw != null)
-        {
-            btnDraw.gameObject.SetActive(false); // Ẩn nút Draw
-        }
-
-        if (btnByCam != null)
-        {
-            btnByCam.gameObject.SetActive(false); // Ẩn nút ByCam
-        }
+        if (panel2 != null) panel2.SetActive(true);
+        if (panel1 != null) panel1.SetActive(false);
+        
+        if (panelCore != null) panelCore.SetActive(false);
     }
 }

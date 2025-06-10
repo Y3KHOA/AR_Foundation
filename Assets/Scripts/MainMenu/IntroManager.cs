@@ -7,7 +7,7 @@ using System.Collections;
 public class IntroManager : MonoBehaviour
 {
     public VideoPlayer videoPlayer; 
-    public string nextSceneName = "SceneArchive"; 
+    public string nextSceneName = "SceneAbout"; 
 
     private bool videoStarted = false; // Biến kiểm tra xem video đã bắt đầu chưa
     private float videoStartTimeout = 2f; // Thời gian tối đa để video bắt đầu (3 giây)
