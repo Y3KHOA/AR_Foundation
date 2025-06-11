@@ -31,7 +31,7 @@ public class UserProfileFetcher : MonoBehaviour
 
         UnityWebRequest request = UnityWebRequest.Get(url);
         request.SetRequestHeader("Authorization", "Bearer " + token);
-        request.SetRequestHeader("Content-Type", "application/json");
+        request.SetRequestHeader("Content-Type", "application/json"); 
 
         yield return request.SendWebRequest();
 
