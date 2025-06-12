@@ -42,10 +42,6 @@ public class Room
     public Vector2 Compass = new Vector2();
     public float headingCompass; // hướng thực địa của phòng (theo la bàn)
 
-    public float area;
-    public float ceilingArea;
-    public float perimeter;
-
     public Room()
     {
         ID = GenerateID(); // Tự tạo ID khi khởi tạo
@@ -54,6 +50,11 @@ public class Room
     private string GenerateID()
     {
         return Guid.NewGuid().ToString(); // ID ngẫu nhiên toàn cục (UUID)
+    }
+    
+    public void SetID(string newID)
+    {
+        ID = newID;
     }
 }
 
