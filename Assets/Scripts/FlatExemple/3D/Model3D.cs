@@ -148,7 +148,7 @@ public class Model3D : MonoBehaviour
         {
             Vector3 midPoint = (line.start + line.end) / 2f;
             Vector3 direction = line.end - line.start;
-            AddDirectionLabel(wallObj, midPoint, directionLabel, direction, realWorldAngle);
+            AddDirectionLabel(wallObj, midPoint, directionLabel, direction, realWorldAngle, roomHeight);
         }
         else
         {
@@ -570,11 +570,11 @@ public class Model3D : MonoBehaviour
     }
 
     // void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label)
-    void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label, Vector3 directionVector, float realWorldAngle)
+    void AddDirectionLabel(GameObject wallObject, Vector3 midPoint, string label, Vector3 directionVector, float realWorldAngle, float roomHeight)
     {
         GameObject textObj = new GameObject("DirLabel");
         textObj.transform.SetParent(wallObject.transform);
-        textObj.transform.position = midPoint + Vector3.up * 0.7f; // cao hơn tường một chút
+        textObj.transform.position = midPoint + Vector3.up * (roomHeight + 0.3f); // cao hơn tường một chút
         // Gán Layer
         SetLayerRecursively(textObj, LayerMask.NameToLayer("PreviewModel"));
 

@@ -20,6 +20,17 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- ĐĂNG KÝ URI SCHEME xheroscan://auth/... -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Tùy chọn host, ở đây dùng auth -->
+                <data android:scheme="xheroscan" android:host="auth" />
+            </intent-filter>
+
             <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
         </activity>
         <!--Used when Application Entry is set to GameActivity, otherwise remove this activity block-->

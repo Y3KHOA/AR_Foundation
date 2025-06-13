@@ -133,7 +133,7 @@ public class PdfExporter
             float angleStart = Mathf.Atan2(p2.y - p1.y, p2.x - p1.x) * Mathf.Rad2Deg;
 
             cb.Arc(p1.x - radius, p1.y - radius, p1.x + radius, p1.y + radius,
-                   -angleStart, -90);
+                    -angleStart, -90);
             cb.Stroke();
         }
 

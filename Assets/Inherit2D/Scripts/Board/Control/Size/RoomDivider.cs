@@ -33,6 +33,10 @@ public class RoomDivider : MonoBehaviour
         mainCamera = Camera.main;
         lineRenderer.useWorldSpace = true; // Đảm bảo LineRenderer sử dụng World Space
         lineRenderer.gameObject.SetActive(false);
+
+        // Giảm độ dày line
+        // lineRenderer.startWidth = 0.01f;
+        // lineRenderer.endWidth = 0.01f;
     }
 
     private void Update()
@@ -139,11 +143,11 @@ public class RoomDivider : MonoBehaviour
     {
         isDrawing = false;
 
-        if(firstWallIndex == -1 || lastWallIndex == -1)
+        if (firstWallIndex == -1 || lastWallIndex == -1)
         {
             ResetData();
             return;
-        }  
+        }
         CheckWallIntersections();
         ProcessLineSegments();
 
@@ -394,7 +398,7 @@ public class RoomDivider : MonoBehaviour
         newItem.item = item;
 
         List<Vector3> localPoints = new List<Vector3>();
-        for(int i = 0; i < corners.Count; i++) 
+        for (int i = 0; i < corners.Count; i++)
         {
             Vector3 vector3 = newItemObj.transform.InverseTransformPoint(corners[i]);
             vector3.z = 0;
@@ -409,7 +413,7 @@ public class RoomDivider : MonoBehaviour
         newItem.sizePointManager.EnableEdgeText(false);
         gameManager.createdItems2DList.Add(newItem);
     }
-    
+
     private void ResetData()
     {
         points = new List<Vector3>();

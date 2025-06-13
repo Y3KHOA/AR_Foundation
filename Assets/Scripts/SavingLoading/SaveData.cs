@@ -6,21 +6,30 @@ using UnityEngine;
 public class SaveData
 {
     public string timestamp;
-    public float area;
-    public float perimeter;
-    public float ceiling;
     public List<SavedPath> paths = new List<SavedPath>();
+}
+
+[Serializable]
+public class SavedWallLine
+{
+    public Vector3 start;
+    public Vector3 end;
+    public LineType type;
+    public float distanceHeight;
+    public float Height;
 }
 
 [Serializable]
 public class SavedPath
 {
+    public string roomID;
+    
     public List<Vector2Serializable> points;
     public List<float> heights;
 
-    public float area;       // diện tích mặt đáy
-    public float perimeter;  // chu vi (tổng chiều dài các cạnh)
-    public float ceiling;  // diện tích mặt trần
+    public List<SavedWallLine> wallLines;
+    public Vector2Serializable compass;
+    public float headingCompass;
 }
 
 [Serializable]

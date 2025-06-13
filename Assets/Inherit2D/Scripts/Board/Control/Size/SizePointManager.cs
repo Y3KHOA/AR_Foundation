@@ -56,8 +56,8 @@ public class SizePointManager : MonoBehaviour
     [HideInInspector] public List<Vector3> oldSizePointPos = new List<Vector3>();
 
     //Width
-    private float groundWidth = 0.8f;
-    private float itemWidth = 0.4f;
+    private float groundWidth = 0.2f;
+    private float itemWidth = 0.1f;
     private float offsetDistance = -3.2f;
 
     public LineType currentLineType = LineType.Wall;
@@ -255,7 +255,7 @@ public class SizePointManager : MonoBehaviour
             );
             currentRoom.wallLines.Add(wall);
         }
-        
+
         RoomStorage.UpdateOrAddRoom(currentRoom);
 
         Debug.Log($"[UpdateRoom] Sau khi kéo điểm: {count} checkpoint, {count} wallLines.");

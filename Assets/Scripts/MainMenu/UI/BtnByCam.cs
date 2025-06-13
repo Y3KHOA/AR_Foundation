@@ -50,11 +50,11 @@ public class btnByCam : MonoBehaviour
     {
         Debug.Log("Nhấn Enter - Ẩn các button và hiển thị unit");
 
-        if (btnEnter != null)
-            btnEnter.gameObject.SetActive(false); // Ẩn nút Enter
+        // if (btnEnter != null)
+        //     btnEnter.gameObject.SetActive(false); // Ẩn nút Enter
 
-        if (btnMeasure != null)
-            btnMeasure.gameObject.SetActive(false); // Ẩn nút Measure
+        // if (btnMeasure != null)
+        //     btnMeasure.gameObject.SetActive(false); // Ẩn nút Measure
 
         if (unit != null)
             unit.SetActive(true); // Hiện GameObject unit
