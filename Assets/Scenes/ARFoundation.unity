@@ -795,9 +795,11 @@ GameObject:
   - component: {fileID: 114138097}
   - component: {fileID: 114138096}
   - component: {fileID: 114138101}
+  - component: {fileID: 114138105}
   - component: {fileID: 114138100}
   - component: {fileID: 114138102}
   - component: {fileID: 114138103}
+  - component: {fileID: 114138104}
   m_Layer: 0
   m_Name: AR Session Origin
   m_TagString: Untagged
@@ -931,6 +933,39 @@ MonoBehaviour:
     type: 3}
   lines: []
   distanceTexts: []
+--- !u!114 &114138104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114138095}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc4f33754442f124cb4d3679ffa65497, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raycastManager: {fileID: 114138101}
+  planeManager: {fileID: 114138097}
+  anchorManager: {fileID: 114138105}
+  ghostPrefab: {fileID: 0}
+  placedPrefab: {fileID: 165585583}
+--- !u!114 &114138105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114138095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <trackablesChanged>k__BackingField:
+    m_PersistentCalls:
+      m_Calls: []
+  m_AnchorPrefab: {fileID: 0}
 --- !u!1 &121118558
 GameObject:
   m_ObjectHideFlags: 0
@@ -1197,6 +1232,7 @@ MonoBehaviour:
   AreaValue: 0
   PerimeterValue: 0
   CeilingValue: 0
+  anchorManager: {fileID: 114138105}
   currentLineType: 0
   segmentWallLines: []
   rooms: []

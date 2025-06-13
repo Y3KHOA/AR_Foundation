@@ -19,6 +19,8 @@ public class LineManager : MonoBehaviour
 
     private string measurementUnit = "m"; // Đơn vị đo lường
 
+    private List<(GameObject anchor, LineRenderer line)> anchoredLines = new List<(GameObject, LineRenderer)>();
+
     void Start()
     {
         // Lấy đơn vị đã lưu từ MainMenu
@@ -34,7 +36,7 @@ public class LineManager : MonoBehaviour
         Debug.Log("Da cap nhat don vi: " + unit);
     }
 
-    public void DrawLineAndDistance(Vector3 start, Vector3 end)
+    public void DrawLineAndDistance(Vector3 start, Vector3 end, GameObject startAnchor = null, GameObject endAnchor = null)
     {
         if (linePrefab == null || distanceTextPrefab == null)
         {
@@ -61,6 +63,24 @@ public class LineManager : MonoBehaviour
         // Lưu vào cả distanceTexts và textPool để đảm bảo nó không mất
         distanceTexts.Add(textMesh);
         if (!textPool.Contains(textMesh)) textPool.Add(textMesh);
+
+        if (startAnchor != null && endAnchor != null)
+        {
+            anchoredLines.Add((startAnchor, line));
+            anchoredLines.Add((endAnchor, line));
+        }
+    }
+
+    void Update()
+    {
+        foreach (var (anchor, line) in anchoredLines)
+        {
+            if (anchor != null && line != null)
+            {
+                line.SetPosition(0, line.GetPosition(0));
+                line.SetPosition(1, line.GetPosition(1));
+            }
+        }
     }
 
     public void UpdateLinesAndDistances(List<GameObject> checkpoints)
