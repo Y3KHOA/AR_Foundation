@@ -19,6 +19,7 @@ public class UIController : MonoBehaviour
     public GameObject objectByCamera;
     public GameObject objectUnit;
     public GameObject objectPanelRecords;
+    public GameObject objectPanelLoadFile;
     public GameObject objecHome;
 
     [Header("Panels")]
@@ -49,6 +50,7 @@ public class UIController : MonoBehaviour
         objectByCamera.SetActive(false);
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
+        objectPanelLoadFile.SetActive(false);
     }
 
     public void OnCancelPressed()
@@ -71,6 +73,7 @@ public class UIController : MonoBehaviour
         objectByCamera.SetActive(false);
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
+        objectPanelLoadFile.SetActive(false);
     }
 
     // Tuỳ chọn: mở/đóng panel giới thiệu
