@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public static class CellingCalculator
+public static class PerimeterCalculator
 {
     public static GameObject DistanceTextPrefab { get; set; }
 
     /// <summary>
     /// Tính chu vi của một đa giác khép kín = tổng độ dài các cạnh nối liên tiếp giữa các điểm
     /// </summary>
-    public static float CalculateCelling(List<Vector3> points)
+    public static float CalculatePerimeter(List<Vector3> points)
     {
         if (points == null || points.Count < 2)
             return 0f;
@@ -29,10 +29,10 @@ public static class CellingCalculator
     /// <summary>
     /// Hiển thị chu vi đã tính dưới dạng text tại vị trí chỉ định.
     /// </summary>
-    public static void ShowCellingText(Vector3 position, float rawPerimeter)
+    public static void ShowPerimeterText(Vector3 position, float rawPerimeter)
     {
         string unit = PlayerPrefs.GetString("SelectedUnit", "m");
-        float converted = ConvertCellingToUnit(rawPerimeter, unit);
+        float converted = ConvertPerimeterToUnit(rawPerimeter, unit);
 
         if (DistanceTextPrefab != null)
         {
@@ -54,7 +54,7 @@ public static class CellingCalculator
     /// <summary>
     /// Chuyển đổi chu vi từ mét sang đơn vị được chọn (cm, inch, ft).
     /// </summary>
-    private static float ConvertCellingToUnit(float perimeter, string unit)
+    private static float ConvertPerimeterToUnit(float perimeter, string unit)
     {
         switch (unit)
         {

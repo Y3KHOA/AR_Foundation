@@ -6,7 +6,7 @@ public class RoomInfoCalculator : MonoBehaviour
 {
     [Header("TextMeshPro để hiển thị")]
     public TextMeshProUGUI textArea;
-    public TextMeshProUGUI textCelling;
+    public TextMeshProUGUI textPerimeter;
     public TextMeshProUGUI textHeight;
     public TextMeshProUGUI textVolume;
 
@@ -27,14 +27,14 @@ public class RoomInfoCalculator : MonoBehaviour
         }
 
         float area = AreaCalculator.CalculateArea(basePoints);
-        float celling = CellingCalculator.CalculateCelling(basePoints);
+        float perimeter = PerimeterCalculator.CalculatePerimeter(basePoints);
         float averageHeight = GetAverageHeight(room.heights);
         float volume = VolumeCalculator.CalculateVolume(basePoints, averageHeight);
 
         // Ghi ra debug log
         Debug.Log($"Room ID: {room.ID}");
         Debug.Log($"Area: {area:F2} m²");
-        Debug.Log($"Celling: {celling:F2} m");
+        Debug.Log($"Perimeter: {perimeter:F2} m");
         Debug.Log($"Height Average: {averageHeight:F2} m");
         Debug.Log($"Volume: {volume:F2} m³");
 
@@ -42,8 +42,8 @@ public class RoomInfoCalculator : MonoBehaviour
         if (textArea != null)
             textArea.text = $"{area:F2} m²";
 
-        if (textCelling != null)
-            textCelling.text = $"{celling:F2} m";
+        if (textPerimeter != null)
+            textPerimeter.text = $"{perimeter:F2} m";
 
         if (textHeight != null)
             textHeight.text = $"{averageHeight:F2} m";

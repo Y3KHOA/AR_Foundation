@@ -993,9 +993,13 @@ public class BtnController : MonoBehaviour
         GameObject newBasePoint = Instantiate(pointPrefab, anchor.transform);
     newBasePoint.transform.localPosition = Vector3.zero; // Snap to anchor
 
-    GameObject newHeightPoint = referenceHeightPoint != null
-        ? Instantiate(pointPrefab, anchor.transform.position + new Vector3(0, referenceHeightPoint.transform.position.y - anchor.transform.position.y, 0), Quaternion.identity)
-        : Instantiate(pointPrefab, anchor.transform.position + new Vector3(0, heightValue, 0), Quaternion.identity);
+    Vector3 localOffset = referenceHeightPoint != null
+    ? new Vector3(0, referenceHeightPoint.transform.position.y - anchor.transform.position.y, 0)
+    : new Vector3(0, heightValue, 0);
+
+    // Tạo newHeightPoint dưới cùng anchor
+    GameObject newHeightPoint = Instantiate(pointPrefab, anchor.transform);
+    newHeightPoint.transform.localPosition = localOffset;
 
     currentBasePoints.Add(newBasePoint);
     currentHeightPoints.Add(newHeightPoint);
@@ -1151,10 +1155,10 @@ public class BtnController : MonoBehaviour
             List<Vector3> basePositions = GetBasePoints();
             List<Vector3> heightPositions = GetHeightPoints();
 
-            roomBuilder.SetRoomData(basePositions, heightPositions); // Truyền dữ liệu vào RoomModelBuilder
-            roomBuilder.BuildWalls(); // Gọi vẽ vật liệu
+            roomBuilder.SetAnchorParent(anchor.transform); // ⬅️ Gắn anchor làm cha
+            roomBuilder.SetRoomData(basePositions, heightPositions);
+            roomBuilder.BuildWalls(); // Vẽ mesh và bám vào anchor
         }
-
     }
 
     GameObject GetOrCreatePoint(List<GameObject> points, Vector3 position)

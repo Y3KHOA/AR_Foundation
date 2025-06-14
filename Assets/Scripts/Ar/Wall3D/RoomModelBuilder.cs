@@ -7,6 +7,13 @@ public class RoomModelBuilder : MonoBehaviour
     private List<Vector3> basePoints = new List<Vector3>();
     private List<Vector3> heightPoints = new List<Vector3>();
 
+    private Transform anchorParent;
+
+    public void SetAnchorParent(Transform anchor)
+    {
+        anchorParent = anchor;
+    }
+
     // Nhận dữ liệu đo từ BtnController
     public void SetRoomData(List<Vector3> basePts, List<Vector3> heightPts)
     {
@@ -43,7 +50,9 @@ public class RoomModelBuilder : MonoBehaviour
     {
         GameObject wall = new GameObject("Wall");
         wall.layer = LayerMask.NameToLayer("Default");
-        wall.transform.SetParent(transform);
+
+        // Gắn wall vào anchor nếu có
+        wall.transform.SetParent(anchorParent != null ? anchorParent : transform);
 
         MeshFilter meshFilter = wall.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = wall.AddComponent<MeshRenderer>();
@@ -52,10 +61,21 @@ public class RoomModelBuilder : MonoBehaviour
         Mesh mesh = new Mesh();
 
         // Tạo 2 mặt: trước và sau
+        // Vector3[] vertices = {
+        // p1, p2, p3, p4,  // Mặt trước
+        // p3, p4, p1, p2   // Mặt sau (đảo ngược thứ tự)
+        // };
+
         Vector3[] vertices = {
-        p1, p2, p3, p4,  // Mặt trước
-        p3, p4, p1, p2   // Mặt sau (đảo ngược thứ tự)
-    };
+        wall.transform.InverseTransformPoint(p1),
+        wall.transform.InverseTransformPoint(p2),
+        wall.transform.InverseTransformPoint(p3),
+        wall.transform.InverseTransformPoint(p4),
+        wall.transform.InverseTransformPoint(p3),
+        wall.transform.InverseTransformPoint(p4),
+        wall.transform.InverseTransformPoint(p1),
+        wall.transform.InverseTransformPoint(p2)
+        };
 
         int[] triangles = {
         0, 2, 1, 2, 3, 1,  // Mặt trước
