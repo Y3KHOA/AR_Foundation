@@ -1034,6 +1034,11 @@ public class BtnController : MonoBehaviour
         // Kiểm tra nếu Pn gần P1, tự động khép kín đường
         if (count > 2 && Vector3.Distance(newBasePoint.transform.position, currentBasePoints[0].transform.position) < closeThreshold)
         {
+            // Snap Pn về đúng P1
+            newBasePoint.transform.position = currentBasePoints[0].transform.position;
+            newHeightPoint.transform.position = currentHeightPoints[0].transform.position;
+
+            // Vẽ đoạn nối chốt vòng
             lineManager.DrawLineAndDistance(newBasePoint.transform.position, currentBasePoints[0].transform.position, newBasePoint, currentBasePoints[0]);
             lineManager.DrawLineAndDistance(newHeightPoint.transform.position, currentHeightPoints[0].transform.position, newHeightPoint, currentHeightPoints[0]);
 
@@ -1155,7 +1160,7 @@ public class BtnController : MonoBehaviour
             List<Vector3> basePositions = GetBasePoints();
             List<Vector3> heightPositions = GetHeightPoints();
 
-            roomBuilder.SetAnchorParent(anchor.transform); // ⬅️ Gắn anchor làm cha
+            roomBuilder.SetAnchorParent(anchor.transform); // Gắn anchor làm cha
             roomBuilder.SetRoomData(basePositions, heightPositions);
             roomBuilder.BuildWalls(); // Vẽ mesh và bám vào anchor
         }
