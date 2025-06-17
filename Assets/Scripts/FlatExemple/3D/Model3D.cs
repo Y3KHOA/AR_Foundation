@@ -690,5 +690,4 @@ public class Model3D : MonoBehaviour
         Debug.Log($"[Heading] Tuong chuan: {refWall.start} to {refWall.end}");
         Debug.Log($"[Heading] Huong mong muon: {desiredDirection}, final headingCompass = {finalHeading:0.0}");
     }
-
 }
