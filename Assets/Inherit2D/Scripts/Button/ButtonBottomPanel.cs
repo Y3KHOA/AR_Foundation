@@ -110,7 +110,7 @@ public class ButtonBottomPanel : MonoBehaviour
                                     Room room = RoomStorage.rooms.Find(r => r.ID == roomId);
                                     if (room != null)
                                     {
-                                        pAction.roomBackup = new Room(room); // 👈 Backup lại vào pAction
+                                        pAction.roomBackup = new Room(room); // Backup lại vào pAction
                                         RoomStorage.rooms.Remove(room);
                                         Debug.Log($"[Undo] Xoá Room ID = {roomId}");
                                     }

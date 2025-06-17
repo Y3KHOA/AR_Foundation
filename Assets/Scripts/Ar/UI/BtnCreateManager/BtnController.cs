@@ -1043,6 +1043,7 @@ public class BtnController : MonoBehaviour
             lineManager.DrawLineAndDistance(newHeightPoint.transform.position, currentHeightPoints[0].transform.position, newHeightPoint, currentHeightPoints[0]);
 
             flag = 1; // Đánh dấu đã khép kín đường
+            PanelManagerDoorWindow.Instance.IsClicked = true;
 
             // Tính diện tích giữa các mặt đáy và mặt trên
             float baseArea = AreaCalculator.CalculateArea(GetBasePoints());

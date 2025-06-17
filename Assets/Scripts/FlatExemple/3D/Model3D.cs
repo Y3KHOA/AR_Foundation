@@ -581,7 +581,7 @@ public class Model3D : MonoBehaviour
     {
         GameObject textObj = new GameObject("DirLabel");
         textObj.transform.SetParent(wallObject.transform);
-        textObj.transform.position = midPoint + Vector3.up * (roomHeight + 0.1f); // cao hơn tường một chút
+        textObj.transform.position = midPoint + Vector3.up * (roomHeight + 0.3f); // cao hơn tường một chút
         // Gán Layer
         SetLayerRecursively(textObj, LayerMask.NameToLayer("PreviewModel"));
 
