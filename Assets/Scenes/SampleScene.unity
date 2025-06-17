@@ -4055,7 +4055,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellSize: 1
-  viewRange: 20
+  viewRange: 50
   backgroundMaterial: {fileID: 2100000, guid: 1f460ec805d2c194582a500e606ab8a5, type: 2}
 --- !u!4 &299958736
 Transform:
@@ -10729,7 +10729,7 @@ Camera:
   far clip plane: 170
   field of view: 60
   orthographic: 1
-  orthographic size: 9
+  orthographic size: 12
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -10774,8 +10774,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 0.8
   zoomSpeed: 3
-  minScale: 10
-  maxScale: 400
+  minScale: 5
+  maxScale: 40
   minX: -250
   maxX: 250
   minY: -250
@@ -21882,6 +21882,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2445023121719796973, guid: 22cf6489bcada71488c79509945587aa,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -94.66501
       objectReference: {fileID: 0}
     - target: {fileID: 3968083391658664775, guid: 22cf6489bcada71488c79509945587aa,
         type: 3}

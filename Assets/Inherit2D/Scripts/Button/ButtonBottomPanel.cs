@@ -104,12 +104,26 @@ public class ButtonBottomPanel : MonoBehaviour
                                 int index = gameManager.createdItems2DList.Count - 1;
                                 ItemCreated itemIndex = gameManager.createdItems2DList[index];
 
-                                //Redo
+                                // THÊM BƯỚC BACKUP ROOM TRƯỚC KHI XÓA
+                                if (ItemRoomMapper.ItemIdToRoomId.TryGetValue(itemIndex.itemId, out string roomId))
+                                {
+                                    Room room = RoomStorage.rooms.Find(r => r.ID == roomId);
+                                    if (room != null)
+                                    {
+                                        pAction.roomBackup = new Room(room); // 👈 Backup lại vào pAction
+                                        RoomStorage.rooms.Remove(room);
+                                        Debug.Log($"[Undo] Xoá Room ID = {roomId}");
+                                    }
+
+                                    ItemRoomMapper.ItemIdToRoomId.Remove(itemIndex.itemId);
+                                }
+
+                                // Redo
                                 ItemCreated itemRedo = Instantiate(itemIndex, gameManager.redoItemsParent.transform);
                                 itemRedo.gameObject.SetActive(false);
                                 gameManager.redoItemsList.Add(itemRedo);
 
-                                //Undo
+                                // Undo
                                 Destroy(itemIndex.gameObject);
                                 gameManager.createdItems2DList.RemoveAt(index);
                             }
@@ -134,11 +148,25 @@ public class ButtonBottomPanel : MonoBehaviour
                             item.sizePointManager.EnableSizePoint(false);
                             item.transform.position = pAction.position;
                             item.transform.rotation = pAction.rotation;
-
                             gameManager.createdItems2DList.Add(item);
+
+                            // Phục hồi Room từ action.roomBackup
+                            if (pAction.roomBackup != null)
+                            {
+                                Room restoredRoom = new Room(pAction.roomBackup); // Clone lại nếu cần tránh reference cũ
+                                RoomStorage.rooms.Add(restoredRoom);
+                                ItemRoomMapper.ItemIdToRoomId[item.itemId] = restoredRoom.ID;
+                                item.sizePointManager.SetCurrentRoom(restoredRoom); // gán lại Room cho SizePointManager
+                                Debug.Log($"[Undo] Khôi phục Room ID = {restoredRoom.ID}");
+                            }
+                            else
+                            {
+                                Debug.LogWarning("[Undo] Không có roomBackup trong PreviousAction để khôi phục!");
+                            }
+
                             gameManager.deleteItems2DList.RemoveAt(indexD);
-                            //Destroy(item.item3DIndex.gameObject);
                             Destroy(itemD.gameObject);
+
                             break;
                         }
                     case "Move":
@@ -154,6 +182,9 @@ public class ButtonBottomPanel : MonoBehaviour
 
                                 pAction.position = pos;
                                 pAction.rotation.eulerAngles = rot;
+
+                                // Cập nhật lại Room
+                                item.sizePointManager.UpdateRoomDataFromSizePoints();
                             }
                             break;
                         }
@@ -220,6 +251,9 @@ public class ButtonBottomPanel : MonoBehaviour
                                 }
 
                                 item.sizePointManager.UpdateLineRenderer();
+
+                                // Cập nhật lại Room
+                                item.sizePointManager.UpdateRoomDataFromSizePoints();
                             }
 
                             //config.UpdateInfomationItem();
@@ -253,23 +287,62 @@ public class ButtonBottomPanel : MonoBehaviour
                 {
                     case "Create":
                         {
-                            //Item created
-                            if (gameManager.redoItemsList.Count > 0)
+                            Debug.Log("hello i'm here!");
+                            int itemId = pAction.itemId;
+
+                            // Tìm trong redoItemsList
+                            ItemCreated itemBackup = gameManager.redoItemsList.Find(x => x.itemId == itemId);
+                            if (itemBackup == null)
                             {
-                                int itemId = pAction.itemId;
-                                ItemCreated itemIndex = gameManager.redoItemsList.Find(x => x.itemId == itemId);
-                                itemIndex.gameObject.SetActive(true);
-                                itemIndex.sizePointManager.item = itemIndex.item;
-                                itemIndex.sizePointManager.EnableSizePoint(false);
-                                if (itemIndex.item.CompareKindOfItem(kindGroundString))
-                                {
-                                    pAction.position.z = -0.5f;
-                                }
-                                itemIndex.transform.position = pAction.position;
-                                itemIndex.transform.SetParent(gameManager.createdItems2DParent.transform);
-                                gameManager.createdItems2DList.Add(itemIndex);
-                                gameManager.redoItemsList.Remove(gameManager.redoItemsList.Find(x => x.itemId == itemId));
+                                Debug.LogWarning($"[Redo-Create] Không tìm thấy itemId = {itemId} trong redoItemsList");
+                                break;
                             }
+
+                            gameManager.redoItemsList.Remove(itemBackup);
+
+                            // Clone lại item
+                            gameManager.numberOfItemsCreated++;
+                            ItemCreated item = Instantiate(itemBackup, gameManager.createdItems2DParent.transform);
+                            item.hasItem = false;
+                            item.gameObject.SetActive(true);
+                            item.sizePointManager.EnableSizePoint(false);
+                            item.transform.position = pAction.position;
+                            item.transform.rotation = pAction.rotation;
+                            gameManager.createdItems2DList.Add(item);
+
+                            // Gán lại Room nếu có backup
+                            if (pAction.roomBackup != null)
+                            {
+                                Room restoredRoom = new Room(pAction.roomBackup);
+                                if (restoredRoom != null)
+                                {
+                                    RoomStorage.rooms.Add(restoredRoom);
+                                    item.itemId = itemId;
+
+                                    ItemRoomMapper.ItemIdToRoomId[item.itemId] = restoredRoom.ID;
+
+                                    if (item.sizePointManager != null)
+                                    {
+                                        item.sizePointManager.SetCurrentRoom(restoredRoom);
+                                        item.sizePointManager.UpdateRoomDataFromSizePoints();
+                                    }
+                                    else
+                                    {
+                                        Debug.LogError($"[Redo] item.sizePointManager null với itemId = {item.itemId}");
+                                    }
+
+                                    Debug.Log($"[Redo] Khôi phục Room ID = {restoredRoom.ID}");
+                                }
+                                else
+                                {
+                                    Debug.LogError("[Redo] Lỗi khi clone Room từ roomBackup");
+                                }
+                            }
+                            else
+                            {
+                                Debug.LogError("[Redo] roomBackup null");
+                            }
+
                             break;
                         }
                     case "Delete":
@@ -285,6 +358,19 @@ public class ButtonBottomPanel : MonoBehaviour
                                 itemIndex.transform.SetParent(gameManager.deleteItems2DParent.transform);
                                 itemIndex.gameObject.SetActive(false);
 
+                                // Xoá Room nếu có ánh xạ
+                                if (ItemRoomMapper.ItemIdToRoomId.TryGetValue(itemId, out string roomId))
+                                {
+                                    Room room = RoomStorage.rooms.Find(r => r.ID == roomId);
+                                    if (room != null)
+                                    {
+                                        RoomStorage.rooms.Remove(room);
+                                        Debug.Log($"[Redo] Xoá Room ID = {roomId}");
+                                    }
+
+                                    ItemRoomMapper.ItemIdToRoomId.Remove(itemId);
+                                }
+        
                                 ItemCreated itemCreated = gameManager.createdItems2DList.Find(x => x.itemId == itemId);
                                 gameManager.createdItems2DList.Remove(itemCreated);
                                 Destroy(itemCreated.gameObject);
@@ -305,6 +391,9 @@ public class ButtonBottomPanel : MonoBehaviour
 
                                 pAction.position = pos;
                                 pAction.rotation.eulerAngles = rot;
+                                
+                                // Cập nhật lại Room
+                                item.sizePointManager.UpdateRoomDataFromSizePoints();
                             }
                             break;
                         }
@@ -372,6 +461,9 @@ public class ButtonBottomPanel : MonoBehaviour
                                 }
 
                                 item.sizePointManager.UpdateLineRenderer();
+                                
+                                // Cập nhật lại Room
+                                item.sizePointManager.UpdateRoomDataFromSizePoints();
                             }
 
                             //config.UpdateInfomationItem();
@@ -393,25 +485,62 @@ public class ButtonBottomPanel : MonoBehaviour
             ItemCreated item = gameManager.createdItems2DList.Find(x => x.itemId == gameManager.itemIndex.itemId);
             if (item != null)
             {
-                //Xóa khỏi danh sách item
+                // 1. Xóa khỏi danh sách item
                 gameManager.createdItems2DList.Remove(item);
 
-                //Thêm vào danh sách item đã xóa
-                ItemCreated itemD = Instantiate(item, gameManager.deleteItems2DParent.transform);
-                itemD.gameObject.SetActive(false);
-                gameManager.deleteItems2DList.Add(itemD);
+                // 2. Lưu bản sao bị xóa
+                if (item != null && item.gameObject != null)
+                {
+                    // Tạo bản sao và ẩn đi
+                    ItemCreated itemD = Instantiate(item, gameManager.deleteItems2DParent.transform);
+                    itemD.gameObject.SetActive(false);
+                    gameManager.deleteItems2DList.Add(itemD);
+                }
 
-                //Thêm vào lịch sử thao tác
+                // 3. Lưu vào Undo
                 PreviousAction action = new PreviousAction();
                 action.itemId = item.itemId;
                 action.action = "Delete";
                 action.position = item.transform.position;
                 action.rotation = item.transform.rotation;
+                
+                // Bắt buộc cập nhật dữ liệu Room trước khi sao chép
+                item.sizePointManager.UpdateRoomDataFromSizePoints();
+
+                Room currentRoom = item.sizePointManager.CurrentRoom;
+                if (currentRoom != null)
+                {
+                    action.roomBackup = new Room(currentRoom); // Clone snapshot
+                }
+                else
+                {
+                    Debug.LogWarning("[BackupRoom] CurrentRoom null khi xóa");
+                }
+
                 gameManager.undoActionList.previousActions.Add(action);
 
-                //Xóa gameobject
+
+                // 4. Xoá Room trong RoomStorage (theo ánh xạ ID)
+                if (ItemRoomMapper.ItemIdToRoomId.TryGetValue(item.itemId, out string roomId))
+                {
+                    Room room = RoomStorage.rooms.Find(r => r.ID == roomId);
+                    if (room != null)
+                    {
+                        RoomStorage.rooms.Remove(room);
+                    }
+
+                    ItemRoomMapper.ItemIdToRoomId.Remove(item.itemId);
+
+                    Debug.Log($"[Delete] Đã xóa Room ID = {roomId} từ storage và file.");
+                }
+                if (!ItemRoomMapper.ItemIdToRoomId.ContainsKey(item.itemId))
+            {
+                Debug.LogWarning($"[Delete] Không tìm thấy ánh xạ itemId = {item.itemId} trong ItemRoomMapper!");
+            }
+                // 5. Xoá item trên scene
                 Destroy(item.gameObject);
             }
+
             gameManager.itemIndex = null;
         }
     }

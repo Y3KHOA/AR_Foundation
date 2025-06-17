@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 /// <summary>
 /// Một đoạn đường thẳng đại diện cho tường, cửa hoặc cửa sổ
@@ -24,6 +25,15 @@ public class WallLine
         this.type = type;
         this.distanceHeight = baseHeight;
         this.Height = windowHeight;
+    }
+    // Constructor clone
+    public WallLine(WallLine other)
+    {
+        this.start = other.start;
+        this.end = other.end;
+        this.type = other.type;
+        this.distanceHeight = other.distanceHeight ;
+        this.Height = other.Height ;
     }
 }
 
@@ -51,10 +61,22 @@ public class Room
     {
         return Guid.NewGuid().ToString(); // ID ngẫu nhiên toàn cục (UUID)
     }
-    
+
     public void SetID(string newID)
     {
         ID = newID;
+    }
+
+    // Constructor clone
+    public Room(Room other)
+    {
+        ID = other.ID;
+        headingCompass = other.headingCompass;
+        Compass = other.Compass;
+
+        checkpoints = new List<Vector2>(other.checkpoints);
+        wallLines = new List<WallLine>(other.wallLines.Select(w => new WallLine(w))); // clone từng wall
+        heights = new List<float>(other.heights);
     }
 }
 
