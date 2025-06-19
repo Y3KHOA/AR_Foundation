@@ -664,7 +664,7 @@ public class Model3D : MonoBehaviour
     {
         WallLine refWall = FindNearestWall(referencePoint, room.wallLines);
 
-        if (refWall == null)
+        if (refWall == null) 
         {
             Debug.LogWarning("[Heading] Khong tim thay tuong chuan!");
             return;
