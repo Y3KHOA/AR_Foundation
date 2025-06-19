@@ -17,7 +17,8 @@ public class PreviousAction
     public Quaternion rotation;
     public ColorPicker colorPicker;
     public Texture texture;
-    public List<Vector3> sizePointPosList;
+    public List<Vector3> sizePointPosList;    
+    public Room roomBackup;
 }
 
 [Serializable]

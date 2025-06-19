@@ -45,12 +45,19 @@ public class Model3D : MonoBehaviour
                 return isZeroLength;
             });
 
+            // Thiết lập hướng chuẩn dựa trên tường gần mốc ===
+            Vector3 compassWorld = new Vector3(room.Compass.x, 0f, room.Compass.y);
+            float desiredDirection = room.headingCompass; // Tường gần mốc 
+            SetHeadingBasedOnNearestWall(room, compassWorld, desiredDirection);
+
+            Debug.Log("[Heading] Huong thuc dia: " + room.headingCompass);
+
             // Vẽ sàn trước để không bị các phần khác che khuất
             CreateFloor(room);
             // Vẽ Tọa độ đã check
             CreateCompassObject(room);
             // Tính toán các hướng dựa trên hướng chuẩn.
-            UpdateWallDirections(room);
+            // UpdateWallDirections(room);
 
             // Kiểm tra dữ liệu đầu vào phòng
             if (room.wallLines == null || room.wallLines.Count == 0)
@@ -138,8 +145,8 @@ public class Model3D : MonoBehaviour
 
         // Tính hướng tường
         Vector3 dir = (line.end - line.start).normalized;
-        float angleToNorth = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
-        float realWorldAngle = (angleToNorth + headingCompass + 360f) % 360f;
+        float angleLocal = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
+        float realWorldAngle = (angleLocal + headingCompass + 360f) % 360f;
         string directionLabel = AngleToDirectionLabel(realWorldAngle);
 
         // Chỉ hiển thị nhãn nếu tường dài hơn 20cm (0.2m)
@@ -158,7 +165,7 @@ public class Model3D : MonoBehaviour
         return wallObj;
     }
 
-    // Hàm vẽ cửa và phần tường phía trên cửa (nếu có)
+    // Hàm vẽ cửa và phần tường phía trên cửa
     private GameObject CreateDoorSegment(WallLine line, float roomHeight)
     {
         Vector3 start = line.start;
@@ -535,7 +542,7 @@ public class Model3D : MonoBehaviour
             // Gợi ý hướng chữ
             string directionLabel = AngleToDirectionLabel(realWorldAngle);
 
-            Debug.Log($"[list][WallDir] {line.start} → {line.end} = {realWorldAngle:0.0}° ({directionLabel})");
+            Debug.Log($"[Heading][WallDir] {line.start} → {line.end} = {realWorldAngle:0.0}° ({directionLabel})");
         }
     }
 
@@ -608,4 +615,79 @@ public class Model3D : MonoBehaviour
         textObj.transform.rotation = Quaternion.LookRotation(forward, up);
     }
 
+    private WallLine FindNearestWall(Vector3 referencePoint, List<WallLine> walls)
+    {
+        const float PRIORITY_RADIUS = 0.3f;
+
+        WallLine closestWall = null;
+        float minDist = float.MaxValue;
+
+        foreach (var wall in walls)
+        {
+            // Tính khoảng cách chính xác nhất từ điểm đến đoạn tường
+            float dist = DistancePointToLineSegment(referencePoint, wall.start, wall.end);
+
+            if (dist <= PRIORITY_RADIUS)
+            {
+                Debug.Log($"[Heading] tim thay tuong gan Compass: {wall.start} to {wall.end}, dist = {dist:0.00}");
+                return wall;
+            }
+
+            if (dist < minDist)
+            {
+                minDist = dist;
+                closestWall = wall;
+            }
+        }
+
+        Debug.Log($"[Heading] Khong co tuong nao gan Compass. tuong gan nhat: {closestWall?.start} to {closestWall?.end}, dist = {minDist:0.00}");
+        return closestWall;
+    }
+
+    // Hàm hỗ trợ tính khoảng cách từ điểm tới đoạn thẳng
+    private float DistancePointToLineSegment(Vector3 point, Vector3 start, Vector3 end)
+    {
+        Vector3 lineDir = end - start;
+        float lineLengthSquared = lineDir.sqrMagnitude;
+
+        if (lineLengthSquared == 0.0f)
+            return Vector3.Distance(point, start); // Đoạn thẳng chiều dài = 0
+
+        float t = Vector3.Dot(point - start, lineDir) / lineLengthSquared;
+        t = Mathf.Clamp01(t);
+
+        Vector3 projection = start + t * lineDir;
+        return Vector3.Distance(point, projection);
+    }
+
+    private void SetHeadingBasedOnNearestWall(Room room, Vector3 referencePoint, float desiredDirection)
+    {
+        WallLine refWall = FindNearestWall(referencePoint, room.wallLines);
+
+        if (refWall == null) 
+        {
+            Debug.LogWarning("[Heading] Khong tim thay tuong chuan!");
+            return;
+        }
+
+        Vector3 dirCandidate = (refWall.end - refWall.start).normalized;
+        float angleToNorthCandidate = Mathf.Atan2(dirCandidate.x, dirCandidate.z) * Mathf.Rad2Deg;
+        float headingCandidate = (desiredDirection - angleToNorthCandidate + 360f) % 360f;
+
+        // Kiểm tra chiều ngược lại để tránh bị sai chiều
+        Vector3 dirReverse = (refWall.start - refWall.end).normalized;
+        float angleToNorthReverse = Mathf.Atan2(dirReverse.x, dirReverse.z) * Mathf.Rad2Deg;
+        float headingReverse = (desiredDirection - angleToNorthReverse + 360f) % 360f;
+
+        // Chọn góc nào gần góc gốc ban đầu nhất (để đảm bảo chiều đúng)
+        float diffCandidate = Mathf.Abs(Mathf.DeltaAngle(room.headingCompass, headingCandidate));
+        float diffReverse = Mathf.Abs(Mathf.DeltaAngle(room.headingCompass, headingReverse));
+
+        float finalHeading = diffCandidate <= diffReverse ? headingCandidate : headingReverse;
+
+        room.headingCompass = finalHeading;
+
+        Debug.Log($"[Heading] Tuong chuan: {refWall.start} to {refWall.end}");
+        Debug.Log($"[Heading] Huong mong muon: {desiredDirection}, final headingCompass = {finalHeading:0.0}");
+    }
 }

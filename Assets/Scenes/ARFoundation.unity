@@ -779,7 +779,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 150}
+  m_AnchoredPosition: {x: 0, y: 200}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &114138095
@@ -795,9 +795,11 @@ GameObject:
   - component: {fileID: 114138097}
   - component: {fileID: 114138096}
   - component: {fileID: 114138101}
+  - component: {fileID: 114138105}
   - component: {fileID: 114138100}
   - component: {fileID: 114138102}
   - component: {fileID: 114138103}
+  - component: {fileID: 114138104}
   m_Layer: 0
   m_Name: AR Session Origin
   m_TagString: Untagged
@@ -931,6 +933,39 @@ MonoBehaviour:
     type: 3}
   lines: []
   distanceTexts: []
+--- !u!114 &114138104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114138095}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc4f33754442f124cb4d3679ffa65497, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raycastManager: {fileID: 114138101}
+  planeManager: {fileID: 114138097}
+  anchorManager: {fileID: 114138105}
+  ghostPrefab: {fileID: 0}
+  placedPrefab: {fileID: 165585583}
+--- !u!114 &114138105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 114138095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 728ad7fae8e460a4ba41265c7308d757, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <trackablesChanged>k__BackingField:
+    m_PersistentCalls:
+      m_Calls: []
+  m_AnchorPrefab: {fileID: 0}
 --- !u!1 &121118558
 GameObject:
   m_ObjectHideFlags: 0
@@ -1197,6 +1232,7 @@ MonoBehaviour:
   AreaValue: 0
   PerimeterValue: 0
   CeilingValue: 0
+  anchorManager: {fileID: 114138105}
   currentLineType: 0
   segmentWallLines: []
   rooms: []
@@ -1255,7 +1291,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77cb8a717db122342a9165433cb6e213, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  compassLabelPrefab: {fileID: 29184227775121210, guid: e49cce2cc3663de4c84ee49fefa52ea3,
+  compassLabelPrefab: {fileID: 7478814756364031717, guid: 9c6032bc7284a5146a9b61081bf3c510,
     type: 3}
   compassLabelPrefab2: {fileID: 5799946041853088979, guid: 5db92bd8ebeb0c0408ae31571bfba585,
     type: 3}
@@ -4669,7 +4705,7 @@ Transform:
   m_GameObject: {fileID: 1476777884}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1431.2952, y: 1482.8917, z: 17239.986}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6502,7 +6538,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad1add00fe209d447aae300fae06542b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roomMaterial: {fileID: 2100000, guid: e2fefd99798be2d428a022c822154633, type: 2}
+  roomMaterial: {fileID: 2100000, guid: f882abab69df447438e35100ff0f49cc, type: 2}
   btnController: {fileID: 165585589}
 --- !u!114 &2126378732
 MonoBehaviour:

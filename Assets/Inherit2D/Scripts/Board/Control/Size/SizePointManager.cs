@@ -68,6 +68,12 @@ public class SizePointManager : MonoBehaviour
     private float verticalOffset = -1f;
     private float inwardOffset = 1f;
     private Room currentRoom;
+    public Room CurrentRoom => currentRoom;
+
+    public void SetCurrentRoom(Room room)
+    {
+        currentRoom = room;
+    }
 
     public void Start()
     {
@@ -614,6 +620,15 @@ public class SizePointManager : MonoBehaviour
         {
             currentRoom = new Room();
             RoomStorage.rooms.Add(currentRoom);
+
+            // Ánh xạ itemId → roomId
+            ItemCreated owner = GetComponentInParent<ItemCreated>();
+            if (owner != null)
+            {
+                ItemRoomMapper.ItemIdToRoomId[owner.itemId] = currentRoom.ID;
+                Debug.Log($"[Mapping] itemId = {owner.itemId} ánh xạ RoomID = {currentRoom.ID}");
+            }
+
         }
 
         // Xóa dữ liệu cũ trong phòng

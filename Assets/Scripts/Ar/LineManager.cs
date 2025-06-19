@@ -19,6 +19,10 @@ public class LineManager : MonoBehaviour
 
     private string measurementUnit = "m"; // Đơn vị đo lường
 
+    // private List<(GameObject anchor, LineRenderer line)> anchoredLines = new List<(GameObject, LineRenderer)>();
+    private List<(GameObject startAnchor, GameObject endAnchor, LineRenderer line)> anchoredLines = new List<(GameObject, GameObject, LineRenderer)>();
+
+
     void Start()
     {
         // Lấy đơn vị đã lưu từ MainMenu
@@ -34,7 +38,7 @@ public class LineManager : MonoBehaviour
         Debug.Log("Da cap nhat don vi: " + unit);
     }
 
-    public void DrawLineAndDistance(Vector3 start, Vector3 end)
+    public void DrawLineAndDistance(Vector3 start, Vector3 end, GameObject startAnchor = null, GameObject endAnchor = null)
     {
         if (linePrefab == null || distanceTextPrefab == null)
         {
@@ -61,8 +65,34 @@ public class LineManager : MonoBehaviour
         // Lưu vào cả distanceTexts và textPool để đảm bảo nó không mất
         distanceTexts.Add(textMesh);
         if (!textPool.Contains(textMesh)) textPool.Add(textMesh);
+
+        if (startAnchor != null && endAnchor != null)
+        {
+            anchoredLines.Add((startAnchor, endAnchor, line));
+        }
     }
 
+    void Update()
+    {
+        foreach (var (startAnchor, endAnchor, line) in anchoredLines)
+        {
+            if (startAnchor != null && endAnchor != null && line != null)
+            {
+                line.SetPosition(0, startAnchor.transform.position);
+                line.SetPosition(1, endAnchor.transform.position);
+
+                // Optional: cập nhật lại text nếu bạn muốn text nằm giữa 2 anchor
+                int index = lines.IndexOf(line);
+                if (index >= 0 && index < distanceTexts.Count)
+                {
+                    float distance = ConvertDistance(Vector3.Distance(startAnchor.transform.position, endAnchor.transform.position));
+                    distanceTexts[index].text = $"{distance:F2} {measurementUnit}";
+                    distanceTexts[index].transform.position = (startAnchor.transform.position + endAnchor.transform.position) / 2;
+                }
+            }
+        }
+    }
+    
     public void UpdateLinesAndDistances(List<GameObject> checkpoints)
     {
         int pointCount = checkpoints.Count;
