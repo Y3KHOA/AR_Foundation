@@ -22,6 +22,12 @@ public class UIController : MonoBehaviour
     public GameObject objectPanelLoadFile;
     public GameObject objecHome;
 
+    [Header("Objects Panel")]
+    public GameObject objecAbout;
+    public GameObject objecCreate;
+    public GameObject objecCloud;
+    public GameObject objecSearch;
+
     [Header("Panels")]
     public GameObject panelAbout;
 
@@ -42,7 +48,7 @@ public class UIController : MonoBehaviour
         buttonCancel.SetActive(true);
 
         // Tùy chọn: mở các object khác khi bắt đầu
-        // panelHome.SetActive(false);
+        panelHome.SetActive(true);
         objectStart.SetActive(true);
         objectDraw.SetActive(false);
         objectCreateNew.SetActive(false);
@@ -51,6 +57,11 @@ public class UIController : MonoBehaviour
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
+
+        objecAbout.SetActive(false);
+        objecCreate.SetActive(false);
+        objecCloud.SetActive(false);
+        objecSearch.SetActive(false);
     }
 
     public void OnCancelPressed()
@@ -66,6 +77,24 @@ public class UIController : MonoBehaviour
 
         // Ẩn toàn bộ các object hoạt động
         panelHome.SetActive(true);
+        objectStart.SetActive(false);
+        objectDraw.SetActive(false);
+        objectCreateNew.SetActive(false);
+        objectMyDrawing.SetActive(false);
+        objectByCamera.SetActive(false);
+        objectUnit.SetActive(false);
+        objectPanelRecords.SetActive(false);
+        objectPanelLoadFile.SetActive(false);
+    }
+    
+    public void ResetUIToInitialState2()
+    {
+        // Reset các button
+        buttonStart.SetActive(true);
+        buttonCancel.SetActive(false);
+
+        // Ẩn toàn bộ các object hoạt động
+        panelHome.SetActive(false);
         objectStart.SetActive(false);
         objectDraw.SetActive(false);
         objectCreateNew.SetActive(false);

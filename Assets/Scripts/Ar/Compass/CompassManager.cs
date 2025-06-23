@@ -30,9 +30,27 @@ public class CompassManager : MonoBehaviour
         if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
         {
             Permission.RequestUserPermission(Permission.FineLocation);
+            StartCoroutine(WaitForPermission());
         }
-        StartCoroutine(InitializeAfterDelay());
+        else
+        {
+            StartCoroutine(InitializeAfterDelay());
+        }
     }
+
+    private IEnumerator WaitForPermission()
+    {
+        // Đợi cho user bấm Allow hoặc Deny
+        while (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
+        {
+            yield return null; // đợi 1 frame
+        }
+
+        // Nếu user bấm Allow thì reload
+        Debug.Log("Permission granted — reload scene now.");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+    }
+
     private IEnumerator InitializeAfterDelay()
     {
         if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
