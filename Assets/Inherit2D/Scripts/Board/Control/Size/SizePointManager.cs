@@ -56,7 +56,7 @@ public class SizePointManager : MonoBehaviour
     [HideInInspector] public List<Vector3> oldSizePointPos = new List<Vector3>();
 
     //Width
-    private float groundWidth = 0.2f;
+    private float groundWidth = 0.05f;
     private float itemWidth = 0.1f;
     private float offsetDistance = -3.2f;
 

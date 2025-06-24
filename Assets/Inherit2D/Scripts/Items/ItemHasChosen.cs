@@ -72,7 +72,7 @@ public class ItemHasChosen : MonoBehaviour
         gameManager.hasItem = true;
 
         // Đặt kích thước width và height bằng cách sử dụng sizeDelta
-        rectTransform.sizeDelta = new Vector2(item.length, item.width) * 10;
+        rectTransform.sizeDelta = new Vector2(item.length, item.width) * 10f;
     }
 
     //Khởi tạo đối tượng

@@ -47,7 +47,7 @@ public class CompassManager : MonoBehaviour
         }
 
         // Nếu user bấm Allow thì reload
-        Debug.Log("Permission granted — reload scene now.");
+        Debug.Log("[Compass] Permission granted — reload scene now.");
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 
@@ -63,17 +63,22 @@ public class CompassManager : MonoBehaviour
             // Nếu vẫn chưa được cấp, thoát
             if (!Permission.HasUserAuthorizedPermission(Permission.FineLocation))
             {
-                Debug.LogError("Permission denied for FineLocation.");
+                Debug.LogError("[Compass] Permission denied for FineLocation.");
                 yield break;
             }
         }
 
         if (!Input.location.isEnabledByUser)
         {
-            Debug.LogError("Location services are not enabled by the user.");
+            Debug.LogError("[Compass] Location services are not enabled by the user.");
             yield break;
         }
 
+        Debug.Log("[Compass] Stopping location (if running)...");
+        Input.location.Stop();
+        yield return new WaitForSeconds(0.5f);
+
+        Debug.Log("[Compass] Starting location...");
         Input.location.Start();
 
         int maxWait = 20;
@@ -85,31 +90,31 @@ public class CompassManager : MonoBehaviour
 
         if (Input.location.status != LocationServiceStatus.Running)
         {
-            Debug.LogError("Location service failed to start.");
+            Debug.LogError("[Compass] Location service failed to start.");
             yield break;
         }
 
         // Bây giờ mới bật compass
         Input.compass.enabled = true;
 
-        Debug.Log("Compass enabled.");
+        Debug.Log("[Compass] Compass enabled.");
 
         // Đợi dữ liệu compass cập nhật
         int compassWait = 10;
         while (Input.compass.timestamp == 0 && compassWait > 0)
         {
-            Debug.Log("Waiting for compass to be ready...");
+            Debug.Log("[Compass] Waiting for compass to be ready...");
             yield return new WaitForSeconds(1);
             compassWait--;
         }
 
         if (Input.compass.timestamp == 0)
         {
-            Debug.LogError("Compass failed to initialize (timestamp = 0).");
+            Debug.LogError("[Compass] Compass failed to initialize (timestamp = 0).");
             yield break;
         }
 
-        Debug.Log("Compass and location initialized successfully.");
+        Debug.Log("[Compass] Compass and location initialized successfully.");
     }
 
     void Update()
