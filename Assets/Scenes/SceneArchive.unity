@@ -1543,9 +1543,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b1f04a4bdda2f14cb92f03bcf8f4ad1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  btnDraw: {fileID: 1614325248}
-  btnByCam: {fileID: 654724080}
-  ObjectByCam: {fileID: 197417808}
+  button1: {fileID: 0}
+  button2: {fileID: 0}
+  panel1: {fileID: 0}
+  panel2: {fileID: 0}
+  panelCore: {fileID: 0}
 --- !u!1 &127733905
 GameObject:
   m_ObjectHideFlags: 0
@@ -11971,9 +11973,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b1f04a4bdda2f14cb92f03bcf8f4ad1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  btnDraw: {fileID: 1055403518}
-  btnByCam: {fileID: 1620107410}
-  ObjectByCam: {fileID: 593078077}
+  button1: {fileID: 0}
+  button2: {fileID: 0}
+  panel1: {fileID: 0}
+  panel2: {fileID: 0}
+  panelCore: {fileID: 0}
 --- !u!1 &1276273547
 GameObject:
   m_ObjectHideFlags: 0
@@ -16655,6 +16659,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SuccessPanel: {fileID: 1348731591}
   ErrorPanel: {fileID: 915923856}
+  PanelSaveFile: {fileID: 0}
+  PnaelView: {fileID: 0}
+  PanelLoadFile: {fileID: 0}
 --- !u!1 &1736230129
 GameObject:
   m_ObjectHideFlags: 0
@@ -18991,6 +18998,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SuccessPanel: {fileID: 343538794}
   ErrorPanel: {fileID: 892978105}
+  PanelSaveFile: {fileID: 0}
+  PnaelView: {fileID: 0}
+  PanelLoadFile: {fileID: 0}
 --- !u!114 &1950185474
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -100,7 +100,7 @@ public class CameraController : MonoBehaviour
                 float currentTouchDelta = (touch0.position - touch1.position).magnitude;
                 float previousTouchDelta = ((touch0.position - touch0.deltaPosition) - (touch1.position - touch1.deltaPosition)).magnitude;
 
-                float deltaMagnitudeDiff = previousTouchDelta - currentTouchDelta;
+                float deltaMagnitudeDiff = currentTouchDelta - previousTouchDelta;
                 smoothDeltaMagnitudeDiff = Mathf.Lerp(smoothDeltaMagnitudeDiff, deltaMagnitudeDiff, Time.deltaTime * zoomLerpSpeed);
 
                 currentZoom -= smoothDeltaMagnitudeDiff * zoomSpeed * Time.deltaTime;
