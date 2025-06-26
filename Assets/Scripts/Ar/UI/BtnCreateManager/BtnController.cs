@@ -66,7 +66,6 @@ public class BtnController : MonoBehaviour
     
     public GameObject compassLabelPrefab; // TextMesh hoặc mũi tên để hiển thị hướng
 
-
     void Start()
     {
         // Lấy đơn vị đo từ bộ nhớ
