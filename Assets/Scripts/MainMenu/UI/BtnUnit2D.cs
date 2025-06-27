@@ -9,6 +9,8 @@ public class BtnUnit2D : MonoBehaviour
     public Button btnEnter;
     public TMP_InputField heightInput; // Sử dụng TMP_InputField
     public TMP_Dropdown unitDropdown; // Dropdown để chọn đơn vị
+    
+    public GameObject ErrorPanel; // Panel thông báo lỗi
 
     void Start()
     {
@@ -26,12 +28,28 @@ public class BtnUnit2D : MonoBehaviour
 
     public void OnBtnUnitClicked()
     {
-        // Kiểm tra input có hợp lệ không
-        if (!float.TryParse(heightInput.text, out float heightValue))
+        string inputText = heightInput.text.Trim();
+
+        // Nếu chứa dấu chấm (.), báo lỗi vì chỉ chấp nhận dấu phẩy (,)
+        if (inputText.Contains("."))
         {
-            Debug.LogError("Value invalid!");
+            Debug.LogWarning("Chỉ chấp nhận định dạng với dấu phẩy (,) thay vì dấu chấm (.)");
+            ErrorPanel.SetActive(true);
             return;
         }
+
+        // Thử chuyển dấu phẩy thành dấu chấm tạm thời để có thể parse
+        string normalizedInput = inputText.Replace(',', '.');
+
+        // Kiểm tra parse thành số và số đó phải dương
+        if (!float.TryParse(normalizedInput, out float heightValue) || heightValue <= 0)
+        {
+            Debug.LogWarning("Giá trị không hợp lệ: phải là số dương và không chứa chữ");
+            ErrorPanel.SetActive(true);
+            return;
+        }
+
+        ErrorPanel.SetActive(false); // Ẩn panel lỗi nếu hợp lệ
 
         // Lấy đơn vị từ Dropdown
         string selectedUnit = unitDropdown.options[unitDropdown.value].text;
@@ -41,27 +59,27 @@ public class BtnUnit2D : MonoBehaviour
 
         // Lưu chiều cao đã chuyển đổi vào PlayerPrefs
         PlayerPrefs.SetFloat("HeightValue", convertedHeight);
-        PlayerPrefs.SetString("SelectedUnit", selectedUnit); // Bạn có thể vẫn lưu đơn vị này nếu cần
+        PlayerPrefs.SetString("SelectedUnit", selectedUnit);
         PlayerPrefs.Save();
 
-        Debug.Log($"Giá trị nhập vào: {heightValue} {selectedUnit}, giá trị sau khi chuyển đổi: {convertedHeight}");
+        Debug.Log($"Giá trị nhập vào: {inputText} {selectedUnit}, giá trị sau khi chuyển đổi: {convertedHeight}");
 
-        // Lưu vào Room
+        // Gán chiều cao cho các Room hiện có
         List<Room> newRoom = RoomStorage.rooms;
         foreach (Room room in newRoom)
         {
-            room.heights.Clear(); // Xoá cũ nếu đã từng gán
+            room.heights.Clear();
             for (int i = 0; i < room.checkpoints.Count; i++)
             {
                 room.heights.Add(convertedHeight);
             }
-
             Debug.Log($"Gán chiều cao {convertedHeight} cho Room có {room.checkpoints.Count} điểm.");
         }
 
-        // Chuyển sang scene FlatExampleScene
+        // Chuyển scene
         SceneManager.LoadScene("FlatExampleScene");
     }
+
 
     // Hàm chuyển đổi chiều cao theo đơn vị
     float ConvertHeightToUnit(float height, string unit)
