@@ -60,22 +60,22 @@ public class Item
     }
 
     // Phương thức sao chép
-    public Item DeepCopy(Item item)
+    public Item DeepCopy()
     {
         return new Item(
-            item.itemId,
-            item.itemName,
-            item.imageName,
-            item.kindsOfItem,
-            item.width.ToString(),
-            item.height.ToString(),
-            item.length.ToString(),
-            item.distance.ToString(),
-            item.edgeLengthList,
-            item.directionOfEdges,
-            item.colorPicker,
-            new List<string>(item.goodDirection),
-            new List<string>(item.badDirection)
+            this.itemId,
+            this.itemName,
+            this.imageName,
+            new List<string>(this.kindsOfItem),
+            this.width.ToString(),
+            this.height.ToString(),
+            this.length.ToString(),
+            this.distance.ToString(),
+            new List<float>(this.edgeLengthList),
+            new List<Vector3>(this.directionOfEdges),
+            this.colorPicker,
+            new List<string>(this.goodDirection),
+            new List<string>(this.badDirection)
         );
     }
 

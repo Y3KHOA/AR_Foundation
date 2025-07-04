@@ -91,7 +91,7 @@ public class GroundConfigCanvas : MonoBehaviour
             UpdateInfomationItem();
             if (inputConfig.valueTemp != temp.ToString())
             {
-                //UpdateSize();
+                UpdateSize();
             }
         }
     }
@@ -112,5 +112,25 @@ public class GroundConfigCanvas : MonoBehaviour
         configuration.itemCreated.sizePointManager.DrawOutline(configuration.itemCreated.item);
         configuration.itemCreated.sizePointManager.CreateSizePoints();
         configuration.itemCreated.sizePointManager.UpdateAreaText();
+
+        ShowCurrentItemDataToInputs();
+    }
+
+    private void ShowCurrentItemDataToInputs()
+    {
+        if (configuration?.itemCreated?.item == null) return;
+
+        // Tên item
+        groundNameInput.inputField.text = configuration.itemCreated.item.itemName;
+
+        // Các cạnh
+        for (int i = 0; i < inputSizeList.Count; i++)
+        {
+            if (i < configuration.itemCreated.item.edgeLengthList.Count)
+            {
+                inputSizeList[i].inputField.text = configuration.itemCreated.item.edgeLengthList[i].ToString("F2");
+                inputSizeList[i].valueTemp = inputSizeList[i].inputField.text;
+            }
+        }
     }
 }

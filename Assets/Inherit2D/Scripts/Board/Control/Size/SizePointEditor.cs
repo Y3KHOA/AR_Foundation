@@ -48,11 +48,7 @@ public class SizePointEditor : MonoBehaviour, IPointerDownHandler, IPointerUpHan
             {
                 if (gameManager.itemIndex.item.CompareKindOfItem(kindGroundString))
                 {
-                    temp = 2;
-                }
-                else
-                {
-                    temp = 1.5f;
+                    temp = 0.7f;
                 }
             }
             float screenHeight = Screen.height;

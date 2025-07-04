@@ -81,7 +81,7 @@ public class ItemCanvas : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             gameManager.hasItem = true;
             isVerticalDrag = false;
-            tempItem = item;
+            tempItem = item.DeepCopy();
 
             if (gameManager.itemIndex != null)
             {

@@ -183,7 +183,7 @@ public class LoadData : MonoBehaviour
                 MaterialGround m = new MaterialGround();
                 m.nameMaterial = material.Element("name")?.Value;
                 m.image = material.Element("image")?.Value;
-                materialsList.Add(m);
+                materialsList.Add(m); 
 
             }
             return materialsList;
