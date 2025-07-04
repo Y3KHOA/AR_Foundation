@@ -21,6 +21,8 @@ public class ButtonHeaderBanner : MonoBehaviour
     {
         if (!gameManager.guiCanvasManager.configCanvas.activeSelf && gameManager.itemIndex != null)
         {
+            gameManager.itemIndex.CloneItemForConfig();
+
             gameManager.guiCanvasManager.configCanvas.SetActive(true);
             if (gameManager.itemIndex.item.CompareKindOfItem("Kết cấu"))
             {
@@ -40,23 +42,23 @@ public class ButtonHeaderBanner : MonoBehaviour
             gameManager.guiCanvasManager.configCanvas.SetActive(false);
             gameManager.guiCanvasManager.colorPickerCanvas.SetActive(false);
         }
-    }
+    } 
 
     private void LoadInfomationItem()
     {
         ItemCreated itemCreated = gameManager.itemIndex;
-        configuation.itemCreated = itemCreated;
+        var temp = itemCreated.tempItem; // Dùng dữ liệu tạm
 
-        configuation.itemConfigCanvas.itemNameInput.inputField.text = itemCreated.item.itemName;
-        configuation.itemConfigCanvas.lengthInput.inputField.text = itemCreated.item.length.ToString();
-        configuation.itemConfigCanvas.widthInput.inputField.text = itemCreated.item.width.ToString();
-        configuation.itemConfigCanvas.heightInput.inputField.text = itemCreated.item.height.ToString();
+        configuation.itemConfigCanvas.itemNameInput.inputField.text = temp.itemName;
+        configuation.itemConfigCanvas.lengthInput.inputField.text = temp.length.ToString();
+        configuation.itemConfigCanvas.widthInput.inputField.text = temp.width.ToString();
+        configuation.itemConfigCanvas.heightInput.inputField.text = temp.height.ToString();
 
         //
-        configuation.itemConfigCanvas.itemNameInput.valueTemp = itemCreated.item.itemName;
-        configuation.itemConfigCanvas.lengthInput.valueTemp = itemCreated.item.length.ToString();
-        configuation.itemConfigCanvas.widthInput.valueTemp = itemCreated.item.width.ToString();
-        configuation.itemConfigCanvas.heightInput.valueTemp = itemCreated.item.height.ToString();
+        configuation.itemConfigCanvas.itemNameInput.valueTemp = temp.itemName;
+        configuation.itemConfigCanvas.lengthInput.valueTemp = temp.length.ToString();
+        configuation.itemConfigCanvas.widthInput.valueTemp = temp.width.ToString();
+        configuation.itemConfigCanvas.heightInput.valueTemp = temp.height.ToString();
 
         //Load checkbox
         configurationButtonGroup.UpdateInfomationCheckButton(itemCreated);

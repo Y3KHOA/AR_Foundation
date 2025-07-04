@@ -82,7 +82,7 @@ public class ItemHasChosen : MonoBehaviour
         gameManager.numberOfItemsCreated++;
         ItemCreated itemCreated = Instantiate(itemCreatedPrefab, gameManager.createdItems2DParent.transform).GetComponent<ItemCreated>();
         itemCreated.itemId = gameManager.numberOfItemsCreated;
-        itemCreated.item = itemChosen.DeepCopy(itemChosen);
+        itemCreated.item = itemChosen.DeepCopy();
         if (itemChosen.CompareKindOfItem(kindGroundString))
         {
             itemCreated.rectTransform.localPosition = itemCreated.transform.parent.InverseTransformPoint(new Vector3(rectTransform.position.x, rectTransform.position.y, -0.5f));
