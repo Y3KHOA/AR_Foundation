@@ -137,36 +137,36 @@ public class SizePointManager : MonoBehaviour
         corners[4] = corners[0];
 
         //Nếu không phải "ground" thì tính chiều dài và chiều rộng
-        // if (!item.CompareKindOfItem(kindGroundString))
-        // {
-        //     item.length = (float)Math.Round(Vector3.Distance(corners[0], corners[1]) / 10, 2);
-        //     item.width = (float)Math.Round(Vector3.Distance(corners[1], corners[2]) / 10, 2);
+        if (!item.CompareKindOfItem(kindGroundString))
+        {
+            item.length = (float)Math.Round(Vector3.Distance(corners[0], corners[1]) / 10, 2);
+            item.width = (float)Math.Round(Vector3.Distance(corners[1], corners[2]) / 10, 2);
 
-        //     gameManager.guiCanvasManager.infomationItemCanvas.UpdateInfomation(item);
-        // }
-        //Nếu là "ground" thì có logic bị comment (có thể dùng sau)
-        // else
-        // {
-        //     // Tính lại các cạnh
-        //     float c1 = Vector3.Distance(corners[0], corners[1]) / 10f;
-        //     float c2 = Vector3.Distance(corners[1], corners[2]) / 10f;
-        //     float c3 = Vector3.Distance(corners[2], corners[3]) / 10f;
-        //     float c4 = Vector3.Distance(corners[3], corners[0]) / 10f;
+            gameManager.guiCanvasManager.infomationItemCanvas.UpdateInfomation(item);
+        }
+        // Nếu là "ground" thì có logic bị comment (có thể dùng sau)
+        else
+        {
+            // Tính lại các cạnh
+            float c1 = Vector3.Distance(corners[0], corners[1]) / 10f;
+            float c2 = Vector3.Distance(corners[1], corners[2]) / 10f;
+            float c3 = Vector3.Distance(corners[2], corners[3]) / 10f;
+            float c4 = Vector3.Distance(corners[3], corners[0]) / 10f;
 
-        //     item.edgeLengthList[0] = c1;
-        //     item.edgeLengthList[1] = c2;
-        //     item.edgeLengthList[2] = c3;
-        //     item.edgeLengthList[3] = c4;
+            item.edgeLengthList[0] = c1;
+            item.edgeLengthList[1] = c2;
+            item.edgeLengthList[2] = c3;
+            item.edgeLengthList[3] = c4;
 
-        //     //item.width = c1;
-        //     //item.height = c2;
+            //item.width = c1;
+            //item.height = c2;
 
-        //     //if (isUsingImageBackground)
-        //     //{
-        //     //    float avg = (c1 + c2 + c3 + c4) / 4;
-        //     //    backgroundMaterialTemp.SetVector("_Tiling", new Vector4(avg / 1.2f, avg / 1.2f, 0, 0));
-        //     //}
-        // }
+            //if (isUsingImageBackground)
+            //{
+            //    float avg = (c1 + c2 + c3 + c4) / 4;
+            //    backgroundMaterialTemp.SetVector("_Tiling", new Vector4(avg / 1.2f, avg / 1.2f, 0, 0));
+            //}
+        }
 
         // Vẽ nền và các thành phần phụ
         CreateBackgroundMesh(corners);
@@ -409,7 +409,7 @@ public class SizePointManager : MonoBehaviour
             Vector3 normal = transform.TransformDirection(new Vector3(-edgeDirection.y, edgeDirection.x, 0)).normalized;
 
             // Điều chỉnh khoảng cách text
-            float textOffset = 1.5f;
+            float textOffset = 1f;
             midpoint += normal * textOffset;
             midpoint.z = -1;
 
@@ -425,7 +425,7 @@ public class SizePointManager : MonoBehaviour
             textObject.transform.localScale = Vector3.one;
 
             // Đặt Font Size cố định
-            textMesh.fontSize = 70;
+            textMesh.fontSize = 35;
 
             // Nếu bạn muốn scale tự động thì bỏ clamp hoặc chỉnh công thức
             // textMesh.fontSize = Mathf.Clamp((int)(length * 3), 5, 10); // BỎ DÒNG NÀY
