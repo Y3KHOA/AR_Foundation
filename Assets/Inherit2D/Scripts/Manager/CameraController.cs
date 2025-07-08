@@ -18,10 +18,10 @@ public class CameraController : MonoBehaviour
     [Header("Clamp")]
     [SerializeField] private float minScale = 0.1f;
     [SerializeField] private float maxScale = 150f;
-    [SerializeField] private float minX = -170f;
-    [SerializeField] private float maxX = 170f;
-    [SerializeField] private float minY = -90f;
-    [SerializeField] private float maxY = 90f;
+    // [SerializeField] private float minX = -170f;
+    // [SerializeField] private float maxX = 170f;
+    // [SerializeField] private float minY = -90f;
+    // [SerializeField] private float maxY = 90f;
 
     private Camera mainCamera;
     private bool isZooming = false;
@@ -131,8 +131,8 @@ public class CameraController : MonoBehaviour
         {
             Vector3 targetPosition = mainCamera.transform.position + mouseDelta;
 
-            targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
-            targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
+            // targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
+            // targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
 
             mainCamera.transform.position = Vector3.SmoothDamp(mainCamera.transform.position, targetPosition, ref currentVelocity, 0.1f);
         }
@@ -202,8 +202,8 @@ public class CameraController : MonoBehaviour
             Vector3 targetPosition = mainCamera.transform.position + moveDirection;
 
             // Clamp vị trí nếu cần (giới hạn phạm vi di chuyển)
-            targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
-            targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
+            // targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
+            // targetPosition.y = Mathf.Clamp(targetPosition.y, minY, maxY);
 
             mainCamera.transform.position = Vector3.SmoothDamp(mainCamera.transform.position, targetPosition, ref currentVelocity, 0.1f);
         }

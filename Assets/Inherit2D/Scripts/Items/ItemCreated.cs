@@ -229,6 +229,8 @@ public class ItemCreated : MonoBehaviour
                             //Infomation Item
                             gameManager.guiCanvasManager.infomationItemCanvas.gameObject.SetActive(true);
                             gameManager.guiCanvasManager.infomationItemCanvas.UpdateInfomation(it.item);
+                            // Item showItem = it.tempItem != null ? it.tempItem : it.item;
+                            // gameManager.guiCanvasManager.infomationItemCanvas.UpdateInfomation(showItem);
 
                             //Rotation and Move
                             if (gameManager.itemIndex.item.CompareKindOfItem("Thao tác"))

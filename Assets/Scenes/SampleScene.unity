@@ -3396,7 +3396,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36.9
+  m_fontSize: 51.35
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4055,7 +4055,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellSize: 1
-  viewRange: 50
+  viewRange: 80
   backgroundMaterial: {fileID: 2100000, guid: 1f460ec805d2c194582a500e606ab8a5, type: 2}
 --- !u!4 &299958736
 Transform:
@@ -8549,6 +8549,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   panel: {fileID: 740076165}
   cancelButton: {fileID: 741643895}
+--- !u!114 &740076177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 740076165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3457befc48d5e4d44845cadb0d9d7aa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tmpInputField: {fileID: 1727188134}
 --- !u!114 &741643895 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3611231372967604888, guid: 22cf6489bcada71488c79509945587aa,
@@ -10873,8 +10886,8 @@ Camera:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 1, g: 1, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -10945,7 +10958,7 @@ MonoBehaviour:
   moveSpeed: 0.8
   zoomSpeed: 3
   minScale: 5
-  maxScale: 40
+  maxScale: 70
   minX: -250
   maxX: 250
   minY: -250
@@ -15973,7 +15986,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32.25
+  m_fontSize: 45.05
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -16948,7 +16961,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25.1
+  m_fontSize: 33.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -19252,7 +19265,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34.95
+  m_fontSize: 34.2
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -22250,6 +22263,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 740076172}
+    - targetCorrespondingSourceObject: {fileID: 1351830891958784421, guid: 22cf6489bcada71488c79509945587aa,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 740076177}
   m_SourcePrefab: {fileID: 100100000, guid: 22cf6489bcada71488c79509945587aa, type: 3}
 --- !u!1 &2050526321
 GameObject:

@@ -58,8 +58,9 @@ public class BoardTest : MonoBehaviour
                 {
                     Vector3 start = new Vector3(x * cellSize, y * cellSize, 0);
                     Vector3 end = new Vector3((x + 1) * cellSize, y * cellSize, 0);
-                    bool isBold = (y % 4 == 0);
-                    GameObject line = CreateLine(start, end, isBold);
+                    // bool isBold = (y % 4 == 0);
+                    // GameObject line = CreateLine(start, end, isBold);
+                    GameObject line = CreateLine(start, end);
                     gridLines[key] = line;
                 }
             }
@@ -76,8 +77,9 @@ public class BoardTest : MonoBehaviour
                 {
                     Vector3 start = new Vector3(x * cellSize, y * cellSize, 0);
                     Vector3 end = new Vector3(x * cellSize, (y + 1) * cellSize, 0);
-                    bool isBold = (x % 4 == 0);
-                    GameObject line = CreateLine(start, end, isBold);
+                    // bool isBold = (x % 4 == 0);
+                    // GameObject line = CreateLine(start, end, isBold);
+                    GameObject line = CreateLine(start, end);
                     gridLines[key] = line;
                 }
             }
@@ -95,7 +97,7 @@ public class BoardTest : MonoBehaviour
         }
     }
 
-    GameObject CreateLine(Vector3 start, Vector3 end, bool isBold)
+    GameObject CreateLine(Vector3 start, Vector3 end)
     {
         GameObject line = new GameObject("GridLine");
         LineRenderer lr = line.AddComponent<LineRenderer>();
@@ -105,17 +107,20 @@ public class BoardTest : MonoBehaviour
         lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.useWorldSpace = true;
 
-        float thickness = cam.orthographicSize / 200f;
-        if (isBold)
-        {
-            lr.startWidth = lr.endWidth = 0.04f;
-            lr.startColor = lr.endColor = new Color(0.2f, 0.2f, 0.2f, 1f);
-        }
-        else
-        {
-            lr.startWidth = lr.endWidth = 0.02f;
-            lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
-        }
+        // float thickness = cam.orthographicSize / 200f;
+        // if (isBold)
+        // {
+        //     lr.startWidth = lr.endWidth = 0.04f;
+        //     lr.startColor = lr.endColor = new Color(0.2f, 0.2f, 0.2f, 1f);
+        // }
+        // else
+        // {
+        //     lr.startWidth = lr.endWidth = 0.02f;
+        //     lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+        // }
+        
+        lr.startWidth = lr.endWidth = 0.02f;
+        lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
 
         return line;
     }

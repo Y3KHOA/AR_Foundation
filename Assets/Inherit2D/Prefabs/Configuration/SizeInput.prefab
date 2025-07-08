@@ -69,7 +69,8 @@ MonoBehaviour:
   m_text: "T\xEAn"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a4a05656ee07e954693f551091535cbc, type: 2}
-  m_sharedMaterial: {fileID: 525258616581486387, guid: a4a05656ee07e954693f551091535cbc, type: 2}
+  m_sharedMaterial: {fileID: 525258616581486387, guid: a4a05656ee07e954693f551091535cbc,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -225,7 +226,8 @@ MonoBehaviour:
   m_text: "\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 72f8eb72e0bd5fa45aa25d43b8f0680c, type: 2}
-  m_sharedMaterial: {fileID: -5494142893089959233, guid: 72f8eb72e0bd5fa45aa25d43b8f0680c, type: 2}
+  m_sharedMaterial: {fileID: -5494142893089959233, guid: 72f8eb72e0bd5fa45aa25d43b8f0680c,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -305,6 +307,7 @@ GameObject:
   - component: {fileID: 20818069878283891}
   - component: {fileID: 3591355347400678017}
   - component: {fileID: 8047138656580490488}
+  - component: {fileID: 2004799846055423583}
   m_Layer: 5
   m_Name: SizeInput
   m_TagString: Untagged
@@ -384,6 +387,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputField: {fileID: 1599678020022858023}
   valueTemp: 
+--- !u!114 &2004799846055423583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4149947475461502889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3457befc48d5e4d44845cadb0d9d7aa6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tmpInputField: {fileID: 1599678020022858023}
 --- !u!1 &8014084717409105705
 GameObject:
   m_ObjectHideFlags: 0
