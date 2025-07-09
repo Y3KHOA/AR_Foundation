@@ -16983,6 +16983,7 @@ GameObject:
   - component: {fileID: 637162043}
   - component: {fileID: 637162042}
   - component: {fileID: 637162048}
+  - component: {fileID: 637162049}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -17077,10 +17078,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1080, y: 1920}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -17141,6 +17142,21 @@ MonoBehaviour:
   objecCloud: {fileID: 320031899}
   objecSearch: {fileID: 1857166678}
   panelAbout: {fileID: 31493814}
+--- !u!114 &637162049
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637162040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 251b2c56c09880d44a42a1ad24195054, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  test1: 0
+  test2: 1
+  aspect: 2.0555556
 --- !u!1001 &651624550
 PrefabInstance:
   m_ObjectHideFlags: 0
