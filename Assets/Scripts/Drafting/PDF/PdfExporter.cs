@@ -143,7 +143,7 @@ public class PdfExporter
                     // Đo chiều dài tường
                     Vector2 cp1 = Convert(p1);
                     Vector2 cp2 = Convert(p2);
-                    DrawDimensionLine(cb, cp1, cp2, -30f, $"{Vector2.Distance(p1, p2):0.00}");
+                    DrawDimensionLine(cb, cp1, cp2, -30f, $"{Vector2.Distance(p1, p2):0.00m}");
 
                     // Đo chiều dày tường
                     DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
@@ -312,29 +312,58 @@ public class PdfExporter
             Vector2 cp2 = Convert(p2);
 
             float doorLength = Vector2.Distance(p1, p2);
-            string doorLabel = $"{doorLength:0.00}";
+            string doorLabel = $"{doorLength:0.00m}";
 
             DrawDimensionLine(cb, cp1, cp2, -20f, doorLabel);
         }
 
         else if (type == "window")
         {
-            cb.SetLineWidth(0.5f);
-            cb.SetRGBColorStroke(255, 0, 0); // Red
+            float DoorLineWidth = 2f;
+            cb.SetLineWidth(DoorLineWidth);
+            cb.SetRGBColorStroke(0, 0, 0); // Blue
+            cb.SetRGBColorFill(255, 255, 255); // Fill trắng
 
+            // 1) Cánh cửa
             Vector2 dir = (p2 - p1).normalized;
-            Vector2 norm = new Vector2(-dir.y, dir.x) * 50f;
+            Vector2 normal = new Vector2(-dir.y, dir.x);
 
-            Vector2 winA1 = p1 + norm;
-            Vector2 winA2 = p1 - norm;
-            Vector2 winB1 = p2 + norm;
-            Vector2 winB2 = p2 - norm;
+            float rectWidth = 0.1f; // bề dày thực tế
 
-            cb.MoveTo(winA1.x, winA1.y);
-            cb.LineTo(winA2.x, winA2.y);
-            cb.MoveTo(winB1.x, winB1.y);
-            cb.LineTo(winB2.x, winB2.y);
+            Vector2 offset = normal * (rectWidth * 0.5f);
+
+            Vector2 pa = p1 + offset;
+            Vector2 pb = p2 + offset;
+            Vector2 pc = p2 - offset;
+            Vector2 pd = p1 - offset;
+
+            Vector2 cpa = Convert(pa);
+            Vector2 cpb = Convert(pb);
+            Vector2 cpc = Convert(pc);
+            Vector2 cpd = Convert(pd);
+
+            cb.MoveTo(cpa.x, cpa.y);
+            cb.LineTo(cpb.x, cpb.y);
+            cb.LineTo(cpc.x, cpc.y);
+            cb.LineTo(cpd.x, cpd.y);
+            cb.ClosePath();
+            cb.FillStroke(); // Hoặc cb.Stroke() nếu chỉ cần viền
+
+            // === Vẽ nét giữa ===
+            cb.SetLineWidth(0.5f); // mảnh
+            cb.MoveTo(Convert(p1).x, Convert(p1).y);
+            cb.LineTo(Convert(p2).x, Convert(p2).y);
             cb.Stroke();
+
+            // === Đo kích thước ===
+            cb.SetRGBColorFill(0, 0, 0); // reset color
+            Vector2 cp1 = Convert(p1);
+            Vector2 cp2 = Convert(p2);
+
+            float doorLength = Vector2.Distance(p1, p2);
+            string doorLabel = $"{doorLength:0.00m}";
+
+            DrawDimensionLine(cb, cp1, cp2, -20f, doorLabel);
         }
 
         cb.SetRGBColorStroke(0, 0, 0); // Reset màu

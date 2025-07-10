@@ -26,7 +26,7 @@ public class PrintingManager : MonoBehaviour
 
         // byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
         byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(RoomStorage.rooms, 0.1f);
-        SavePdfToDownloads(pdfBytes, "Drawing_Tester_House.pdf");
+        SavePdfToDownloads(pdfBytes, "Bản vẽ mẫu.pdf");
     }
 
     public void SavePdfToDownloads(byte[] pdfData, string fileName)
@@ -75,6 +75,18 @@ public class PrintingManager : MonoBehaviour
             outputStream.Call("write", pdfData);
             outputStream.Call("flush");
             outputStream.Call("close");
+
+            // Mở PDF sau khi lưu
+            AndroidJavaObject intent = new AndroidJavaObject("android.content.Intent", "android.intent.action.VIEW");
+            intent.Call<AndroidJavaObject>("setDataAndType", uri, "application/pdf");
+            intent.Call<AndroidJavaObject>("addFlags", new AndroidJavaClass("android.content.Intent").GetStatic<int>("FLAG_GRANT_READ_URI_PERMISSION"));
+
+            // Hiển thị chooser "Open With"
+            AndroidJavaObject chooser = new AndroidJavaClass("android.content.Intent").CallStatic<AndroidJavaObject>(
+                "createChooser", intent, "Open PDF with..."
+            );
+
+            activity.Call("startActivity", chooser);
 
             Debug.Log("PDF saved to Downloads using MediaStore.");
             if (SuccessPanel != null)
