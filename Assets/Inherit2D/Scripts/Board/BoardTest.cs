@@ -21,7 +21,6 @@ public class BoardTest : MonoBehaviour
         background.name = "Background";
         background.GetComponent<Renderer>().material = backgroundMaterial;
         background.layer = LayerMask.NameToLayer("Background"); // optional
-
     }
 
     void Update()
