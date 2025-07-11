@@ -5,8 +5,8 @@ using UnityEngine.UI;
 public class AutoResize : MonoBehaviour
 {
     private CanvasScaler canvasScaler;
-    [SerializeField] private float test1 = 0;
-    [SerializeField] private float test2 = 1;
+    [SerializeField] private float matchValue1 = 0;
+    [SerializeField] private float matchValue2 = 1;
 
     private void Awake()
     {
@@ -28,12 +28,12 @@ public class AutoResize : MonoBehaviour
         if (aspect > 1.45f)
         {
             // Widescreen → ưu tiên chiều cao
-            canvasScaler.matchWidthOrHeight = test1;
+            canvasScaler.matchWidthOrHeight = matchValue1;
         }
         else
         {
             // Gần vuông (iPad, 4:3, 6:5) → ưu tiên chiều rộng
-            canvasScaler.matchWidthOrHeight = test2;
+            canvasScaler.matchWidthOrHeight = matchValue2;
         }
     }
 
