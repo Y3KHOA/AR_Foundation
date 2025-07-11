@@ -839,31 +839,31 @@ public class BtnController : MonoBehaviour
                     Debug.Log("insertIndex pts.Count = " + pts.Count);
                     Debug.Log("insertIndex Door = " + insertIndex);
 
-                    if (insertIndex != -1)
-                    {
-                        if (insertIndex == pts.Count - 1)
-                        {
-                            // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
-                            pts.Insert(0, doorEnd);
-                            hts.Insert(0, heightDoor);
-                            pts.Insert(0, doorStart);
-                            hts.Insert(0, heightDoor);
-                        }
-                        else
-                        {
-                            // Chèn giữa đoạn bình thường
-                            pts.Insert(insertIndex + 1, doorStart);
-                            hts.Insert(insertIndex + 1, heightDoor);
-                            pts.Insert(insertIndex + 2, doorEnd);
-                            hts.Insert(insertIndex + 2, heightDoor);
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
-                        pts.Add(doorStart); hts.Add(heightDoor);
-                        pts.Add(doorEnd); hts.Add(heightDoor);
-                    }
+                    // if (insertIndex != -1)
+                    // {
+                    //     if (insertIndex == pts.Count - 1)
+                    //     {
+                    //         // Chèn sau điểm cuối và đầu vòng (cuối danh sách → đầu)
+                    //         pts.Insert(0, doorEnd);
+                    //         hts.Insert(0, heightDoor);
+                    //         pts.Insert(0, doorStart);
+                    //         hts.Insert(0, heightDoor);
+                    //     }
+                    //     else
+                    //     {
+                    //         // Chèn giữa đoạn bình thường
+                    //         pts.Insert(insertIndex + 1, doorStart);
+                    //         hts.Insert(insertIndex + 1, heightDoor);
+                    //         pts.Insert(insertIndex + 2, doorEnd);
+                    //         hts.Insert(insertIndex + 2, heightDoor);
+                    //     }
+                    // }
+                    // else
+                    // {
+                    //     Debug.LogWarning("Không tìm thấy đoạn để chèn cửa. Thêm vào cuối.");
+                    //     pts.Add(doorStart); hts.Add(heightDoor);
+                    //     pts.Add(doorEnd); hts.Add(heightDoor);
+                    // }
 
                     // === Cập nhật lại wallLines: chia đoạn ban đầu thành 3 ===
                     WallLine lineToRemove = targetRoom.wallLines.FirstOrDefault(

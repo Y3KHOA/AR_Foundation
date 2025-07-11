@@ -9,6 +9,7 @@ public class ButtonHeaderBanner : MonoBehaviour
     [Header("Configuration")]
     public Configuration configuation;
     public ConfigurationButtonGroup configurationButtonGroup;
+    public GameObject ErrorPanel;
 
     private GameManager gameManager;
 
@@ -36,6 +37,12 @@ public class ButtonHeaderBanner : MonoBehaviour
                 configuation.groundConfigCanvas.gameObject.SetActive(false);
                 LoadInfomationItem();
             }
+        }
+        else if (!gameManager.guiCanvasManager.configCanvas.activeSelf && gameManager.itemIndex == null)
+        {
+            // Không có item nào được chọn ➜ Show ErrorPanel
+            if (ErrorPanel != null)
+                ErrorPanel.SetActive(true);
         }
         else if (gameManager.guiCanvasManager.configCanvas.activeSelf)
         {

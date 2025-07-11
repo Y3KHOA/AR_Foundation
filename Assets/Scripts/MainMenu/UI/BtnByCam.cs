@@ -75,6 +75,6 @@ public class btnByCam : MonoBehaviour
     {
         isMeasure = true;
         Debug.Log("Measure clicked - To scene ARFoundation\nMeasure =true");
-        SceneManager.LoadScene("ARFoundation"); // Chuyển scene
+        SceneManager.LoadScene("AR"); // Chuyển scene
     }
 }
