@@ -173,56 +173,56 @@ public class SizePointManager : MonoBehaviour
         UpdateAreaText();
         DrawEdgeLengthText(corners);
         DrawEdgeLines(corners);
-        AutoCheckAndFitCorners(corners);
+        // AutoCheckAndFitCorners(corners);
         if (item.CompareKindOfItem(kindGroundString)) AddLineColliders();
     }
-    private void AutoCheckAndFitCorners(Vector3[] corners)
-    {
-        if (corners == null || corners.Length == 0) return;
+    // private void AutoCheckAndFitCorners(Vector3[] corners)
+    // {
+    //     if (corners == null || corners.Length == 0) return;
 
-        Camera cam = Camera.main;
+    //     Camera cam = Camera.main;
 
-        // Tính bounds
-        Bounds bounds = new Bounds(corners[0], Vector3.zero);
-        for (int i = 1; i < corners.Length; i++)
-            bounds.Encapsulate(corners[i]);
+    //     // Tính bounds
+    //     Bounds bounds = new Bounds(corners[0], Vector3.zero);
+    //     for (int i = 1; i < corners.Length; i++)
+    //         bounds.Encapsulate(corners[i]);
 
-        float boundsWidth = bounds.size.x;
-        float boundsHeight = bounds.size.y;
+    //     float boundsWidth = bounds.size.x;
+    //     float boundsHeight = bounds.size.y;
 
-        float camHalfHeight = cam.orthographicSize;
-        float camHalfWidth = camHalfHeight * cam.aspect;
+    //     float camHalfHeight = cam.orthographicSize;
+    //     float camHalfWidth = camHalfHeight * cam.aspect;
 
-        bool needFit = false;
+    //     bool needFit = false;
 
-        if (boundsWidth / 2f > camHalfWidth || boundsHeight / 2f > camHalfHeight)
-        {
-            needFit = true;
-        }
+    //     if (boundsWidth / 2f > camHalfWidth || boundsHeight / 2f > camHalfHeight)
+    //     {
+    //         needFit = true;
+    //     }
 
-        // Bỏ qua nếu shape đang quá bé
-        float minSizeThreshold = 0.1f; // tuỳ thang đo, bạn chỉnh được
-        if (boundsWidth < minSizeThreshold && boundsHeight < minSizeThreshold)
-        {
-            needFit = false;
-        }
+    //     // Bỏ qua nếu shape đang quá bé
+    //     float minSizeThreshold = 0.1f; // tuỳ thang đo, bạn chỉnh được
+    //     if (boundsWidth < minSizeThreshold && boundsHeight < minSizeThreshold)
+    //     {
+    //         needFit = false;
+    //     }
 
-        if (needFit)
-        {
-            float requiredHalfHeight = boundsHeight / 2f;
-            float requiredHalfWidth = boundsWidth / 2f / cam.aspect;
-            float newOrthoSize = Mathf.Max(requiredHalfHeight, requiredHalfWidth) * 1.1f;
+    //     if (needFit)
+    //     {
+    //         float requiredHalfHeight = boundsHeight / 2f;
+    //         float requiredHalfWidth = boundsWidth / 2f / cam.aspect;
+    //         float newOrthoSize = Mathf.Max(requiredHalfHeight, requiredHalfWidth) * 1.1f;
 
-            newOrthoSize = Mathf.Clamp(newOrthoSize, 5f, 70f);
-            cam.orthographicSize = newOrthoSize;
+    //         newOrthoSize = Mathf.Clamp(newOrthoSize, 5f, 70f);
+    //         cam.orthographicSize = newOrthoSize;
 
-            Vector3 camPos = bounds.center;
-            camPos.z = cam.transform.position.z;
-            cam.transform.position = camPos;
+    //         Vector3 camPos = bounds.center;
+    //         camPos.z = cam.transform.position.z;
+    //         cam.transform.position = camPos;
 
-            Debug.Log($"[AutoFit] OrthoSize={newOrthoSize} | Bounds W={boundsWidth} H={boundsHeight}");
-        }
-    }
+    //         Debug.Log($"[AutoFit] OrthoSize={newOrthoSize} | Bounds W={boundsWidth} H={boundsHeight}");
+    //     }
+    // }
 
     /// <summary>
     /// Hàm UpdateMidPointsFromCorners() có mục đích tự động cập nhật vị trí các điểm giữa (midpoints) dựa trên vị trí các điểm góc (corners) trong danh sách sizePointList, theo cấu trúc hình chữ nhật (hoặc đa giác 4 cạnh mở rộng thành 8 điểm).
