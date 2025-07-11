@@ -11,7 +11,7 @@ public class MenuButtonUIEditor : Editor
         if (GUILayout.Button("Preview Data"))
         {
             var targetScript = target as MenuButtonUI;
-            MethodInfo method = typeof(MenuButtonUI).GetMethod("PreviewData", BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo method = typeof(MenuButtonUI).GetMethod("Test", BindingFlags.Instance | BindingFlags.NonPublic);
             
             if (method != null)
             {
