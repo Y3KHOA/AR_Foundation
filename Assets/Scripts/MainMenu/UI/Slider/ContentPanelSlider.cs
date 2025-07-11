@@ -46,7 +46,7 @@ public class ContentManager : MonoBehaviour
         if (useTimer)
         {
             timer = autoMoveTime;
-            InvokeRepeating("AutoMoveContent", 1f, 1f); // Invoke every second to update the timer
+            InvokeRepeating(nameof(AutoMoveContent), 1f, 1f); // Invoke every second to update the timer
         }
     }
 
@@ -138,6 +138,7 @@ public class ContentManager : MonoBehaviour
 
     void AutoMoveContent()
     {
+        Debug.Log("Update Time for move content");
         timer -= 1f; // Decrease timer every second
 
         if (timer <= 0)
