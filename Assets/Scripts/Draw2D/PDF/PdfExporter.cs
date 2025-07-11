@@ -184,6 +184,14 @@ public class PdfExporter
                         DrawSymbol(cb, Convert, start2D, end2D, wall.type.ToString().ToLower());
                     }
                 }
+                // Sau khi tính xong shift, scale, offsetX/Y:
+                float minX = offsetX;
+                float minY = offsetY;
+                float maxX = offsetX + globalSize.x * scale;
+                float maxY = offsetY + globalSize.y * scale;
+
+                // Gọi hàm vẽ lưới trục (giả sử 5 cột, 5 hàng, khoảng cách 100f)
+                DrawGridLines(cb, 100f, 100f, 6, 6, minX, minY, maxX, maxY);
             }
 
             document.Close();
@@ -397,7 +405,7 @@ public class PdfExporter
 
         void DrawArrow(Vector2 pos, Vector2 direction)
         {
-            Vector2 dir2=-direction.normalized;
+            Vector2 dir2 = -direction.normalized;
 
             Vector2 left = pos - dir2 * arrowSize + new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
             Vector2 right = pos - dir2 * arrowSize - new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
@@ -429,5 +437,55 @@ public class PdfExporter
 
         cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, midPoint.x, midPoint.y, angle);
         cb.EndText();
+    }
+    static void DrawGridLines(PdfContentByte cb, float spacingX, float spacingY, int countX, int countY,
+                    float minX, float minY, float maxX, float maxY)
+    {
+        BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
+
+        // === Vẽ trục dọc (số) ===
+        for (int i = 0; i < countX; i++)
+        {
+            float x = minX + i * spacingX;
+            cb.MoveTo(x, minY);
+            cb.LineTo(x, maxY);
+            cb.Stroke();
+
+            // Vẽ bubble
+            float bubbleRadius = 10f;  // Tùy scale
+            float labelY = maxY + bubbleRadius * 2;
+
+            cb.Circle(x, labelY, bubbleRadius);
+            cb.Stroke();
+
+            // Vẽ số bên trong bubble
+            cb.BeginText();
+            cb.SetFontAndSize(bf, 8);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, $"{i + 1}", x, labelY - 3f, 0);
+            cb.EndText();
+        }
+
+        // === Vẽ trục ngang (chữ) ===
+        for (int j = 0; j < countY; j++)
+        {
+            float y = minY + j * spacingY;
+            cb.MoveTo(minX, y);
+            cb.LineTo(maxX, y);
+            cb.Stroke();
+
+            // Vẽ bubble
+            float bubbleRadius = 10f;
+            float labelX = minX - bubbleRadius * 2;
+
+            cb.Circle(labelX, y, bubbleRadius);
+            cb.Stroke();
+
+            // Vẽ chữ bên trong bubble (A, B, C, ...)
+            char letter = (char)('A' + j);
+            cb.BeginText();
+            cb.SetFontAndSize(bf, 8);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, $"{letter}", labelX, y - 3f, 0);
+            cb.EndText();
+        }
     }
 }
