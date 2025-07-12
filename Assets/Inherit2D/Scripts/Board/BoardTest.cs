@@ -69,16 +69,8 @@ public class BoardTest : MonoBehaviour
                     GameObject line = CreateLine(start, end);
                     gridLines[key] = line;
                 }
-            }
-        }
-
-        // Vẽ hàng dọc
-        for (int x = minX; x <= maxX; x++)
-        {
-            for (int y = minY; y <= maxY; y++)
-            {
-                // string key = $"V_{x}_{y}";
-                Vector3Int key = new Vector3Int(VerticalID, x, y);
+                
+                key = new Vector3Int(VerticalID, x, y);
                 visibleLines.Add(key);
                 if (!gridLines.ContainsKey(key))
                 {
@@ -91,6 +83,26 @@ public class BoardTest : MonoBehaviour
                 }
             }
         }
+
+        // Vẽ hàng dọc
+        // for (int x = minX; x <= maxX; x++)
+        // {
+        //     for (int y = minY; y <= maxY; y++)
+        //     {
+        //         // string key = $"V_{x}_{y}";
+        //         Vector3Int key = new Vector3Int(VerticalID, x, y);
+        //         visibleLines.Add(key);
+        //         if (!gridLines.ContainsKey(key))
+        //         {
+        //             Vector3 start = new Vector3(x * cellSize, y * cellSize, 0);
+        //             Vector3 end = new Vector3(x * cellSize, (y + 1) * cellSize, 0);
+        //             // bool isBold = (x % 4 == 0);
+        //             // GameObject line = CreateLine(start, end, isBold);
+        //             GameObject line = CreateLine(start, end);
+        //             gridLines[key] = line;
+        //         }
+        //     }
+        // }
 
         // Xóa các line không còn nằm trong vùng hiển thị
         // var keys = new List<string>(gridLines.Keys);
