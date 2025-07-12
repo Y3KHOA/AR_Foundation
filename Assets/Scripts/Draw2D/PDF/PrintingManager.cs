@@ -26,7 +26,12 @@ public class PrintingManager : MonoBehaviour
 
         // byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
         byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(RoomStorage.rooms, 0.1f);
-        SavePdfToDownloads(pdfBytes, "Bản vẽ mẫu.pdf");
+        // SavePdfToDownloads(pdfBytes, "Bản vẽ mẫu.pdf");
+        // Tạo tên file theo ngày giờ: yyyyMMdd_HHmmss.pdf
+        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        string fileName = $"Room_{timestamp}.pdf";
+
+        SavePdfToDownloads(pdfBytes, fileName);
     }
 
     public void SavePdfToDownloads(byte[] pdfData, string fileName)
