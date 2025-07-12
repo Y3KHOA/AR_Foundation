@@ -12,7 +12,7 @@ public class BoardTest : MonoBehaviour
     private Camera cam;
     public Material backgroundMaterial; // Gán trong Inspector
     private GameObject background;
-    private Dictionary<string, GameObject> gridLines = new();
+    private Dictionary<Vector3Int, GameObject> gridLines = new();
     public Material test;
 
     void Start()
@@ -36,6 +36,10 @@ public class BoardTest : MonoBehaviour
         background.transform.localScale = new Vector3(width, height, 1);
     }
 
+    private const int HorizontalID = 0;
+    private const int VerticalID = 1;
+    private HashSet<Vector3Int> visibleLines = new();
+
     void UpdateGridAroundCamera()
     {
         if (cam == null || !cam.orthographic) return;
@@ -46,14 +50,15 @@ public class BoardTest : MonoBehaviour
         int minY = Mathf.FloorToInt((camPos.y - viewRange) / cellSize);
         int maxY = Mathf.CeilToInt((camPos.y + viewRange) / cellSize);
 
-        HashSet<string> visibleLines = new();
+        visibleLines.Clear();
 
         // Vẽ hàng ngang
         for (int y = minY; y <= maxY; y++)
         {
             for (int x = minX; x <= maxX; x++)
             {
-                string key = $"H_{x}_{y}";
+                // string key = $"H_{x}_{y}";
+                Vector3Int key = new Vector3Int(HorizontalID, x, y);
                 visibleLines.Add(key);
                 if (!gridLines.ContainsKey(key))
                 {
@@ -72,7 +77,8 @@ public class BoardTest : MonoBehaviour
         {
             for (int y = minY; y <= maxY; y++)
             {
-                string key = $"V_{x}_{y}";
+                // string key = $"V_{x}_{y}";
+                Vector3Int key = new Vector3Int(VerticalID, x, y);
                 visibleLines.Add(key);
                 if (!gridLines.ContainsKey(key))
                 {
@@ -87,7 +93,8 @@ public class BoardTest : MonoBehaviour
         }
 
         // Xóa các line không còn nằm trong vùng hiển thị
-        var keys = new List<string>(gridLines.Keys);
+        // var keys = new List<string>(gridLines.Keys);
+        var keys = new List<Vector3Int>(gridLines.Keys);
         foreach (var key in keys)
         {
             if (!visibleLines.Contains(key))
