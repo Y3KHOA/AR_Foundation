@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Pool;
 
 /// <summary>
 /// Lớp này tạo và quản lý lưới hiển thị quanh camera trong chế độ 2D.
@@ -12,6 +13,7 @@ public class BoardTest : MonoBehaviour
     public Material backgroundMaterial; // Gán trong Inspector
     private GameObject background;
     private Dictionary<string, GameObject> gridLines = new();
+    public Material test;
 
     void Start()
     {
@@ -29,9 +31,9 @@ public class BoardTest : MonoBehaviour
 
         float width = viewRange * 2;
         float height = viewRange * 2;
-        background.transform.position = new Vector3(cam.transform.position.x, cam.transform.position.y, 1f); // Z = 1 để nằm sau lưới
+        background.transform.position =
+            new Vector3(cam.transform.position.x, cam.transform.position.y, 1f); // Z = 1 để nằm sau lưới
         background.transform.localScale = new Vector3(width, height, 1);
-
     }
 
     void UpdateGridAroundCamera()
@@ -103,7 +105,8 @@ public class BoardTest : MonoBehaviour
         lr.positionCount = 2;
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
-        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.material = test;
+        // lr.material = new Material(Shader.Find("Sprites/Default"));
         lr.useWorldSpace = true;
 
         // float thickness = cam.orthographicSize / 200f;
@@ -117,7 +120,7 @@ public class BoardTest : MonoBehaviour
         //     lr.startWidth = lr.endWidth = 0.02f;
         //     lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
         // }
-        
+
         lr.startWidth = lr.endWidth = 0.02f;
         lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
 
