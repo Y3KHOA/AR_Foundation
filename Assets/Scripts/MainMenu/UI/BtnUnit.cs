@@ -65,7 +65,7 @@ public class BtnUnit : MonoBehaviour
     Debug.Log($"Giá trị nhập vào: {inputText} {selectedUnit}, sau khi chuyển đổi: {convertedHeight}");
 
     // Chuyển scene
-    SceneManager.LoadScene("ARFoundation");
+    SceneManager.LoadScene("AR");
 }
 
 

@@ -76,6 +76,7 @@ public class BtnUnit2D : MonoBehaviour
             Debug.Log($"Gán chiều cao {convertedHeight} cho Room có {room.checkpoints.Count} điểm.");
         }
 
+        ButtonOk.IsOkButtonShown = true;
         // Chuyển scene
         SceneManager.LoadScene("FlatExampleScene");
     }

@@ -7,7 +7,6 @@ public class ContentManager : MonoBehaviour
 {
     [Header("Content Vieport")]
     public Image contentDisplay;
-    public List<GameObject> contentPanels;
 
     [Header("Navigation Dots")]
     public GameObject dotsContainer;
@@ -26,6 +25,9 @@ public class ContentManager : MonoBehaviour
     public float swipeThreshold = 50f;
     private Vector2 touchStartPos;
 
+    public List<Sprite> imagesViewList = new();
+
+    public Image imageIcon;
     // Reference to the RectTransform of the content area
     public RectTransform contentArea;
 
@@ -44,14 +46,14 @@ public class ContentManager : MonoBehaviour
         if (useTimer)
         {
             timer = autoMoveTime;
-            InvokeRepeating("AutoMoveContent", 1f, 1f); // Invoke every second to update the timer
+            InvokeRepeating(nameof(AutoMoveContent), 1f, 1f); // Invoke every second to update the timer
         }
     }
 
     void InitializeDots()
     {
         // Create dots based on the number of content panels
-        for (int i = 0; i < contentPanels.Count; i++)
+        for (int i = 0; i < imagesViewList.Count; i++)
         {
             GameObject dot = Instantiate(dotPrefab, dotsContainer.transform);
             Image dotImage = dot.GetComponent<Image>();
@@ -110,7 +112,7 @@ public class ContentManager : MonoBehaviour
             // Check if the swipe is within the content area bounds
             if (Mathf.Abs(swipeDistance) > swipeThreshold && IsTouchInContentArea(touchStartPos))
             {
-                if (isLimitedSwipe && ((currentIndex == 0 && swipeDistance > 0) || (currentIndex == contentPanels.Count - 1 && swipeDistance < 0)))
+                if (isLimitedSwipe && ((currentIndex == 0 && swipeDistance > 0) || (currentIndex == imagesViewList.Count - 1 && swipeDistance < 0)))
                 {
                     // Limited swipe is enabled, and at the edge of content
                     return;
@@ -136,6 +138,7 @@ public class ContentManager : MonoBehaviour
 
     void AutoMoveContent()
     {
+        Debug.Log("Update Time for move content");
         timer -= 1f; // Decrease timer every second
 
         if (timer <= 0)
@@ -149,14 +152,14 @@ public class ContentManager : MonoBehaviour
 
     void NextContent()
     {
-        currentIndex = (currentIndex + 1) % contentPanels.Count;
+        currentIndex = (currentIndex + 1) % imagesViewList.Count;
         ShowContent();
         UpdateDots();
     }
 
     void PreviousContent()
     {
-        currentIndex = (currentIndex - 1 + contentPanels.Count) % contentPanels.Count;
+        currentIndex = (currentIndex - 1 + imagesViewList.Count) % imagesViewList.Count;
         ShowContent();
         UpdateDots();
     }
@@ -164,10 +167,14 @@ public class ContentManager : MonoBehaviour
     void ShowContent()
     {
         // Activate the current panel and deactivate others
-        for (int i = 0; i < contentPanels.Count; i++)
+        for (int i = 0; i < imagesViewList.Count; i++)
         {
             bool isActive = i == currentIndex;
-            contentPanels[i].SetActive(isActive);
+
+            if (isActive)
+            {
+                imageIcon.sprite = imagesViewList[i];
+            }
 
             // Update dot visibility and color based on the current active content
             Image dotImage = dotsContainer.transform.GetChild(i).GetComponent<Image>();
@@ -189,7 +196,7 @@ public class ContentManager : MonoBehaviour
 
     public void SetCurrentIndex(int newIndex)
     {
-        if (newIndex >= 0 && newIndex < contentPanels.Count)
+        if (newIndex >= 0 && newIndex < imagesViewList.Count)
         {
             currentIndex = newIndex;
             ShowContent();

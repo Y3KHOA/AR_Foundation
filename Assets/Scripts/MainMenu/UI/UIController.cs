@@ -21,6 +21,7 @@ public class UIController : MonoBehaviour
     public GameObject objectPanelRecords;
     public GameObject objectPanelLoadFile;
     public GameObject objecHome;
+    public GameObject objecbackground;
 
     [Header("Objects Panel")]
     public GameObject objecAbout;
@@ -85,6 +86,7 @@ public class UIController : MonoBehaviour
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
+        objecbackground.SetActive(false);
     }
     
     public void ResetUIToInitialState2()
