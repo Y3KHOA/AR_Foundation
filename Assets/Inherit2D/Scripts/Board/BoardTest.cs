@@ -23,6 +23,8 @@ public class BoardTest : MonoBehaviour
         background.name = "Background";
         background.GetComponent<Renderer>().material = backgroundMaterial;
         background.layer = LayerMask.NameToLayer("Background"); // optional
+
+        Init();
     }
 
     void Update()
@@ -69,7 +71,7 @@ public class BoardTest : MonoBehaviour
                     GameObject line = CreateLine(start, end);
                     gridLines[key] = line;
                 }
-                
+
                 key = new Vector3Int(VerticalID, x, y);
                 visibleLines.Add(key);
                 if (!gridLines.ContainsKey(key))
@@ -111,17 +113,75 @@ public class BoardTest : MonoBehaviour
         {
             if (!visibleLines.Contains(key))
             {
-                Destroy(gridLines[key]);
+                // Destroy(gridLines[key]);
+                ReturnItem(gridLines[key].GetComponent<LineRenderer>());
                 gridLines.Remove(key);
             }
         }
     }
 
-    GameObject CreateLine(Vector3 start, Vector3 end)
+    private Stack<LineRenderer> stacks = new();
+
+    private void Init()
+    {
+        for (int i = 0; i < maxItemCount; i++)
+        {
+            var lr = Create();
+            stacks.Push(lr);
+            lr.gameObject.SetActive(false);
+        }
+    }
+
+    private LineRenderer Get()
+    {
+        LineRenderer item = null;
+        if (stacks.Count > 0)
+        {
+            item = stacks.Pop();
+        }
+        else
+        {
+            item = Create();
+        }
+
+        item.gameObject.SetActive(true);
+        
+        return item;
+    }
+
+    private int maxItemCount = 600;
+
+    private void ReturnItem(LineRenderer lr)
+    {
+        if (stacks.Count > maxItemCount)
+        {
+            Destroy(lr.gameObject);
+        }
+        else
+        {
+            stacks.Push(lr);
+        }
+    }
+
+    private LineRenderer Create()
     {
         GameObject line = new GameObject("GridLine");
         LineRenderer lr = line.AddComponent<LineRenderer>();
         lr.positionCount = 2;
+        // lr.SetPosition(0, start);
+        // lr.SetPosition(1, end);
+        lr.material = test;
+        // lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.useWorldSpace = true;
+
+        lr.startWidth = lr.endWidth = 0.02f;
+        lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+        return lr;
+    }
+
+    GameObject CreateLine(Vector3 start, Vector3 end)
+    {
+        var lr = Get();
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
         lr.material = test;
@@ -143,6 +203,6 @@ public class BoardTest : MonoBehaviour
         lr.startWidth = lr.endWidth = 0.02f;
         lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
 
-        return line;
+        return lr.gameObject;
     }
 }
