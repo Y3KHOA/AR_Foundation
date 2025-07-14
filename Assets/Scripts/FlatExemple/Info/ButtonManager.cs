@@ -2,25 +2,31 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
 public class ButtonManager : MonoBehaviour
 {
     [Header("Buttons")]
-    public Button btnFloor;
-    public Button btn3D;
-    public Button btnInfo;
+    public ToggleButtonUI btnFloor;
+
+    public ToggleButtonUI btn3D;
+    public ToggleButtonUI btnInfo;
 
     [Header("Buttons Child")]
     public Button btnEdit;
+
     public Button btnSave;
 
     [Header("Panels")]
     public GameObject panelFloor;
+
     public GameObject panel3D;
     public GameObject panelInfo;
     public GameObject previewTexture;
     public GameObject Draw2D;
+
+    [SerializeField] private List<ToggleButtonUI> togglesButtonList = new();
 
     private void Start()
     {
@@ -38,15 +44,53 @@ public class ButtonManager : MonoBehaviour
             panel3D.SetActive(true);
             panelInfo.SetActive(false);
         }
+
+        AssignButtonEvent();
+
+        InitToggleButton();
+    }
+
+    private void AssignButtonEvent()
+    {
         // Gán sự kiện click sau khi setup UI
         if (btnFloor != null)
-            btnFloor.onClick.AddListener(() => OnButtonFloor(panelFloor));
+            btnFloor.ActiveEvent = () => OnButtonFloor(panelFloor);
         if (btnEdit != null)
             btnEdit.onClick.AddListener(() => StartCoroutine(SafeLoadScene("DraftingScene")));
         if (btn3D != null)
-            btn3D.onClick.AddListener(() => OnButton3D(panel3D));
+            btn3D.ActiveEvent = () => OnButton3D(panel3D);
         if (btnInfo != null)
-            btnInfo.onClick.AddListener(() => OnButtonInfo(panelInfo));
+            btnInfo.ActiveEvent = () => OnButtonInfo(panelInfo);
+    }
+
+    private void InitToggleButton()
+    {
+        foreach (var item in togglesButtonList)
+        {
+            item.btn.onClick.AddListener(() => { OnClickBtn(item); });
+        }
+
+        // set default button 
+        OnClickBtn(btnFloor);
+    }
+
+    private ToggleButtonUI currentButton;
+
+    private void OnClickBtn(ToggleButtonUI toggleButtonUI)
+    {
+        foreach (var item in togglesButtonList)
+        {
+            var state = item == toggleButtonUI ? ToggleButtonUI.State.Active : ToggleButtonUI.State.DeActive;
+            if (item == toggleButtonUI)
+            {
+                if (item == currentButton) break;
+                // set current button
+                currentButton = toggleButtonUI;
+                currentButton.OnActive();
+            }
+   
+            item.ChangeState(state);
+        }
     }
 
     private void OnButtonFloor(GameObject selectedPanel)
@@ -59,6 +103,7 @@ public class ButtonManager : MonoBehaviour
         btnSave.gameObject.SetActive(false);
         Draw2D.gameObject.SetActive(true);
     }
+
     private void OnButton3D(GameObject selectedPanel)
     {
         previewTexture.SetActive(true);
@@ -69,6 +114,7 @@ public class ButtonManager : MonoBehaviour
         btnSave.gameObject.SetActive(false);
         Draw2D.gameObject.SetActive(false);
     }
+
     private void OnButtonInfo(GameObject selectedPanel)
     {
         previewTexture.SetActive(false);
