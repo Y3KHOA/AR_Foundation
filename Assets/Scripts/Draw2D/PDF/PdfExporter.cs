@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections;
+using System;
 
 
 public class PdfExporter
@@ -19,12 +21,65 @@ public class PdfExporter
             document.Open();
 
             PdfContentByte cb = writer.DirectContent;
-            BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
+            BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);            
             cb.SetFontAndSize(baseFont, 10);
 
             float wallLineWidth = 2f;
             cb.SetLineWidth(wallLineWidth);
             cb.SetRGBColorStroke(0, 0, 0);
+
+            // === Vẽ chữ ĐÔNG TÂY NAM BẮC quanh trang ===
+            cb.SetFontAndSize(baseFont, 32);
+            cb.SetRGBColorFill(0, 0, 0); // màu đen
+
+            float pageCenterX = PageSize.A4.Width / 2f;
+            float pageCenterY = PageSize.A4.Height / 2f;
+
+            // === Example for N ===
+            cb.BeginText();
+            cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "N", pageCenterX, 20, 0);
+            cb.EndText();
+
+            // Arc cho N
+            float radiusN = 40f;
+            float arcXN = pageCenterX - radiusN;
+            float arcYN = 20 - radiusN;
+            cb.Arc(arcXN, arcYN, arcXN + radiusN * 2, arcYN + radiusN * 2, 0, 180);
+            cb.Stroke();
+
+            // === Example for S ===
+            cb.BeginText();
+            cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "S", pageCenterX, PageSize.A4.Height - 40, 0);
+            cb.EndText();
+
+            float radiusS = 40f;
+            float arcXS = pageCenterX - radiusS;
+            float arcYS = PageSize.A4.Height - 20 - radiusS;
+            // nửa dưới vòng cung
+            cb.Arc(arcXS, arcYS, arcXS + radiusS * 2, arcYS + radiusS * 2, 180, 180);
+            cb.Stroke();
+
+            // === Tương tự cho E (trái)
+            cb.BeginText();
+            cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "E", 40, pageCenterY, 90);
+            cb.EndText();
+
+            float radiusE = 40f;
+            float arcXE = 20 - radiusE;
+            float arcYE = pageCenterY - radiusE;
+            cb.Arc(arcXE, arcYE, arcXE + radiusE * 2, arcYE + radiusE * 2, 270, 180);
+            cb.Stroke();
+
+            // === W (phải)
+            cb.BeginText();
+            cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, "W", PageSize.A4.Width - 40, pageCenterY, 270);
+            cb.EndText();
+
+            float radiusW = 40f;
+            float arcXW = PageSize.A4.Width - 20 - radiusW;
+            float arcYW = pageCenterY - radiusW;
+            cb.Arc(arcXW, arcYW, arcXW + radiusW * 2, arcYW + radiusW * 2, 90, 180);
+            cb.Stroke();
 
             // === Tính global bounding box ===
             Vector2 globalMin = new Vector2(float.MaxValue, float.MaxValue);
@@ -40,10 +95,22 @@ public class PdfExporter
             }
 
             Vector2 globalSize = globalMax - globalMin;
-            float maxWidth = 500f, maxHeight = 700f;
-            float scale = Mathf.Min(maxWidth / globalSize.x, maxHeight / globalSize.y);
-            float offsetX = (PageSize.A4.Width - globalSize.x * scale) / 2f;
-            float offsetY = (PageSize.A4.Height - globalSize.y * scale) / 2f;
+
+            // === TRỪ RA VÙNG CHỮ ĐÔNG TÂY NAM BẮC ===
+            float compassMarginTop = 80f;    // Phần trên (S)
+            float compassMarginBottom = 100f; // Phần dưới (N)
+            float compassMarginLeft = 80f;   // Trái (E)
+            float compassMarginRight = 80f;  // Phải (W)
+
+            float availableWidth = PageSize.A4.Width - compassMarginLeft - compassMarginRight;
+            float availableHeight = PageSize.A4.Height - compassMarginTop - compassMarginBottom;
+
+            float scale = Mathf.Min(availableWidth / globalSize.x, availableHeight / globalSize.y);
+
+            // Giữ hình vẽ nằm giữa phần còn lại:
+            float offsetX = compassMarginLeft + (availableWidth - globalSize.x * scale) / 2f;
+            float offsetY = compassMarginBottom + (availableHeight - globalSize.y * scale) / 2f;
+
             Vector2 shift = -globalMin;
 
             // === Convert helper ===
@@ -191,14 +258,52 @@ public class PdfExporter
                 float maxY = offsetY + globalSize.y * scale;
 
                 // Gọi hàm vẽ lưới trục (giả sử 5 cột, 5 hàng, khoảng cách 100f)
-                DrawGridLines(cb, 100f, 100f, 6, 6, minX, minY, maxX, maxY);
+                // DrawGridLines(cb, 100f, 100f, 6, 6, minX, minY, maxX, maxY);
             }
+
+            // === Vẽ khung thông tin Room ===
+            float infoBoxWidth = 150f;
+            float infoBoxHeight = 70f;
+
+            float boxX = PageSize.A4.Width - infoBoxWidth - 20f; // Right padding
+            float boxY = 20f; // Bottom padding
+
+            // Nền
+            cb.SetLineWidth(0.5f);
+            cb.SetRGBColorStroke(0, 0, 0);
+            cb.SetRGBColorFill(255, 255, 255);
+
+            cb.Rectangle(boxX, boxY, infoBoxWidth, infoBoxHeight);
+            cb.FillStroke();
+
+            // Text
+            cb.BeginText();
+            cb.SetFontAndSize(baseFont, 10);
+            cb.SetRGBColorFill(0, 0, 0);
+
+            // Tính số liệu
+            float length = globalSize.x;
+            float width = globalSize.y;
+            float perimeter = 2 * (length + width);
+            float area = length * width;
+
+            float textX = boxX + 5f;
+            float textY = boxY + infoBoxHeight - 12f;
+            float leading = 12f; // Khoảng cách dòng
+
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Thong so ban ve:", textX, textY, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chieu dai: {length:0.00} m", textX, textY - leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chieu rong: {width:0.00} m", textX, textY - 2 * leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chu vi: {perimeter:0.00} m", textX, textY - 3 * leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Dien tich: {area:0.00} m²", textX, textY - 4 * leading, 0);
+
+            cb.EndText();
 
             document.Close();
             return memoryStream.ToArray();
         }
     }
-
+    
     static bool LineSegmentsIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, out Vector2 intersection)
     {
         intersection = Vector2.zero;
