@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class ClosePanelOnClick : MonoBehaviour
 {
     public GameObject warningPanel;
+    public Button btnExit;
 
     void Start()
     {
@@ -13,8 +14,12 @@ public class ClosePanelOnClick : MonoBehaviour
         {
             AddEventTrigger(warningPanel, EventTriggerType.PointerClick, (eventData) => ClosePanel());
         }
+        if (btnExit != null)
+        {
+            AddEventTrigger(btnExit.gameObject, EventTriggerType.PointerClick, (eventData) => ClosePanel());
+        }
     }
-        // Hàm ẩn panel cảnh báo
+    // Hàm ẩn panel cảnh báo
     public void ClosePanel()
     {
         if (warningPanel != null)
@@ -32,5 +37,5 @@ public class ClosePanelOnClick : MonoBehaviour
         EventTrigger.Entry entry = new EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(new UnityEngine.Events.UnityAction<BaseEventData>(action));
         trigger.triggers.Add(entry);
-    }
+    }    
 }
