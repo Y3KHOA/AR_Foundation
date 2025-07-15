@@ -1,44 +1,30 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System.Collections.Generic;
 
-public class WallOptions : MonoBehaviour
+public class PanelToggleController : MonoBehaviour
 {
-    [Header("Buttons")]
-    public Button btnClose;
-    public Button btnOpen;
+    [Header("Toggle Elements")]
+    public Button toggleButton;  // Button để click
+    public GameObject targetPanel; // Panel để mở/đóng
 
-    [Header("Menu Objects")]
-    public GameObject ObClose;
-    public GameObject ObOpen;
-
-    [Header("UI Text")]
-    public TextMeshProUGUI heightText;
+    private bool isPanelOpen = false;
 
     void Start()
     {
-        if (btnClose != null)
-            btnClose.onClick.AddListener(CloseOptions);
+        if (toggleButton != null)
+            toggleButton.onClick.AddListener(TogglePanel);
 
-        if (btnOpen != null)
-            btnOpen.onClick.AddListener(OpenOptions);
-
-        ObClose?.SetActive(false);
-        ObOpen?.SetActive(true);
+        if (targetPanel != null)
+            targetPanel.SetActive(false); // Ban đầu tắt panel
     }
 
-    void OpenOptions()
+    void TogglePanel()
     {
-        Debug.Log("Open Menu");
-        ObOpen?.SetActive(false);
-        ObClose?.SetActive(true);
-    }
+        if (targetPanel == null) return;
 
-    void CloseOptions()
-    {
-        Debug.Log("Close Menu");
-        ObClose?.SetActive(false);
-        ObOpen?.SetActive(true);
+        isPanelOpen = !isPanelOpen;
+        targetPanel.SetActive(isPanelOpen);
+
+        Debug.Log(isPanelOpen ? "Panel Opened" : "Panel Closed");
     }
 }

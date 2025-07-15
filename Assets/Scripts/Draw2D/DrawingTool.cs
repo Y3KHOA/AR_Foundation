@@ -28,6 +28,7 @@ public class DrawingTool : MonoBehaviour
     private TextMeshPro previewText = null; // Dùng cho khoảng cách preview
 
     private float auxiliaryLineLength = 0.1f; // Độ dài line phụ (10cm)
+    private GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển    
 
     Material GetMaterialForType(LineType type)
     {
@@ -47,8 +48,11 @@ public class DrawingTool : MonoBehaviour
 
     public void DrawLineAndDistance(Vector3 start, Vector3 end)
     {
-        GameObject go = Instantiate(linePrefab);
-        LineRenderer lr = go.GetComponent<LineRenderer>();
+        // GameObject go = Instantiate(linePrefab);
+        // LineRenderer lr = go.GetComponent<LineRenderer>();
+        LineRenderer lr = GetOrCreateLine(); // ✅ Dùng pool thay vì Instantiate
+        lr.SetPosition(0, start);
+        lr.SetPosition(1, end);
 
         // Đảm bảo LineRenderer setup chuẩn để tile texture hoạt động tốt
         lr.textureMode = LineTextureMode.Tile;
@@ -96,7 +100,9 @@ public class DrawingTool : MonoBehaviour
         Vector3 aux2End = end + perpendicular * auxiliaryLineLength / 2;
 
         // Hiển thị text khoảng cách
-        TextMeshPro textMesh = GetOrCreateText();
+        // TextMeshPro textMesh = GetOrCreateText();
+        // textMesh.text = $"{distanceInCm:F1} cm";
+        TextMeshPro textMesh = GetOrCreateText(); // Dùng pool
         textMesh.text = $"{distanceInCm:F1} cm";
 
         Vector3 textPosition = (aux1End + aux2End) / 2;
@@ -108,7 +114,6 @@ public class DrawingTool : MonoBehaviour
         // Lưu dữ liệu tường
         wallLines.Add(new WallLine(start, end, currentLineType));
     }
-
 
     public void UpdateLinesAndDistances(List<GameObject> checkpoints)
     {
@@ -131,39 +136,42 @@ public class DrawingTool : MonoBehaviour
             textPool.Add(tmp);
         }
 
-        // Cập nhật line và text
         for (int i = 0; i < pointCount; i++)
         {
             int nextIndex = (i + 1) % pointCount;
 
-            // Cập nhật vị trí line
             linePool[i].gameObject.SetActive(true);
             linePool[i].SetPosition(0, checkpoints[i].transform.position);
             linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
 
-            // Tính khoảng cách và cập nhật text
             float distanceInCm = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 100f;
             textPool[i].gameObject.SetActive(true);
             textPool[i].text = $"{distanceInCm:F1} cm";
             textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
 
-            // Debug kiểm tra
+            // Cập nhật trạng thái line khi đang chọn checkpoint
+            if (selectedCheckpoint == checkpoints[i] || selectedCheckpoint == checkpoints[nextIndex])
+            {
+                linePool[i].startWidth = linePool[i].endWidth = 0.05f; // to hơn khi thao tác
+                linePool[i].material.color = Color.blue; // màu khác biệt để dễ nhận diện
+            }
+            else
+            {
+                linePool[i].startWidth = linePool[i].endWidth = 0.02f; // mặc định
+                linePool[i].material.color = Color.black;
+            }
+
             Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInCm:F1} cm | " +
                         $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
         }
 
         // Ẩn các line và text dư thừa (nếu có)
         for (int i = pointCount; i < linePool.Count; i++)
-        {
             linePool[i].gameObject.SetActive(false);
-        }
 
         for (int i = pointCount; i < textPool.Count; i++)
-        {
             textPool[i].gameObject.SetActive(false);
-        }
     }
-
 
     public void DrawPreviewLine(Vector3 start, Vector3 end)
     {
@@ -289,24 +297,27 @@ public class DrawingTool : MonoBehaviour
     }
     public void ClearAllLines()
     {
-        // Ẩn tất cả các line đang dùng
-        foreach (var lr in lines)
-        {
-            if (lr != null)
-                lr.gameObject.SetActive(false);
-        }
-        lines.Clear();
+        foreach (var lr in linePool)
+            lr.gameObject.SetActive(false);
 
-        // Ẩn tất cả text đang dùng
-        foreach (var tmp in distanceTexts)
-        {
-            if (tmp != null)
-                tmp.gameObject.SetActive(false);
-        }
-        distanceTexts.Clear();
+        foreach (var tmp in textPool)
+            tmp.gameObject.SetActive(false);
 
-        // Xoá dữ liệu wallLines nếu cần
         wallLines.Clear();
     }
 
+    public void ResetLineAppearance()
+    {
+        foreach (LineRenderer lr in linePool)
+        {
+            lr.startWidth = lr.endWidth = 0.02f; // kích thước line mặc định
+            lr.material.color = Color.black;     // màu sắc mặc định
+        }
+
+        foreach (TextMeshPro tmp in textPool)
+        {
+            tmp.fontSize = 3f; // kích thước font mặc định
+            tmp.color = Color.black;
+        }
+    }
 }
