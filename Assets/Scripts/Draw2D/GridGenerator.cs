@@ -6,18 +6,42 @@ public class GridGenerator : MonoBehaviour
     public float cellSize = 0.5f;
     public float viewRange = 10f; // Phạm vi hiển thị lưới quanh camera
     private Camera cam;
+    public Material backgroundMaterial; // Gán trong Inspector
+    private GameObject background;
+    private Dictionary<Vector3Int, GameObject> gridLines = new();
+    public Material test;
 
-    // private Dictionary<Vector2Int, GameObject> gridLines = new();
-    private Dictionary<string, GameObject> gridLines = new();
+    private const int HorizontalID = 0;
+    private const int VerticalID = 1;
+    private HashSet<Vector3Int> visibleLines = new();
+
+    private Stack<LineRenderer> stacks = new();
+    private int maxItemCount = 600;
 
     void Start()
     {
         cam = Camera.main;
+
+        background = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        background.name = "Background";
+        background.GetComponent<Renderer>().material = backgroundMaterial;
+        background.layer = LayerMask.NameToLayer("Background");
+
+        // XZ plane nên quay Quad nằm phẳng XZ
+        background.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+        Init();
     }
 
     void Update()
     {
         UpdateGridAroundCamera();
+
+        float width = viewRange * 2;
+        float height = viewRange * 2;
+        background.transform.position =
+            new Vector3(cam.transform.position.x, -0.01f, cam.transform.position.z); // Y thấp hơn để nằm dưới lưới
+        background.transform.localScale = new Vector3(width, height, 1);
     }
 
     void UpdateGridAroundCamera()
@@ -30,14 +54,14 @@ public class GridGenerator : MonoBehaviour
         int minZ = Mathf.FloorToInt((camPos.z - viewRange) / cellSize);
         int maxZ = Mathf.CeilToInt((camPos.z + viewRange) / cellSize);
 
-        HashSet<string> visibleLines = new();
+        visibleLines.Clear();
 
-        // Vẽ hàng ngang
         for (int z = minZ; z <= maxZ; z++)
         {
-            for (int x = minX; x <= maxX; x++) // sửa từ < maxX thành <= maxX
+            for (int x = minX; x <= maxX; x++)
             {
-                string key = $"H_{x}_{z}";
+                // Hàng ngang (trục X)
+                Vector3Int key = new Vector3Int(HorizontalID, x, z);
                 visibleLines.Add(key);
                 if (!gridLines.ContainsKey(key))
                 {
@@ -46,15 +70,9 @@ public class GridGenerator : MonoBehaviour
                     GameObject line = CreateLine(start, end);
                     gridLines[key] = line;
                 }
-            }
-        }
 
-        // Vẽ hàng dọc
-        for (int x = minX; x <= maxX; x++)
-        {
-            for (int z = minZ; z <= maxZ; z++) // sửa từ < maxZ thành <= maxZ
-            {
-                string key = $"V_{x}_{z}";
+                // Hàng dọc (trục Z)
+                key = new Vector3Int(VerticalID, x, z);
                 visibleLines.Add(key);
                 if (!gridLines.ContainsKey(key))
                 {
@@ -66,43 +84,82 @@ public class GridGenerator : MonoBehaviour
             }
         }
 
-        // Xóa các line không còn nằm trong vùng hiển thị
-        var keys = new List<string>(gridLines.Keys);
+        // Xoá line không còn hiển thị
+        var keys = new List<Vector3Int>(gridLines.Keys);
         foreach (var key in keys)
         {
             if (!visibleLines.Contains(key))
             {
-                Destroy(gridLines[key]);
+                ReturnItem(gridLines[key].GetComponent<LineRenderer>());
                 gridLines.Remove(key);
             }
         }
     }
 
-    GameObject CreateLine(Vector3 start, Vector3 end)
+    void Init()
+    {
+        for (int i = 0; i < maxItemCount; i++)
+        {
+            var lr = Create();
+            stacks.Push(lr);
+            lr.gameObject.SetActive(false);
+        }
+    }
+
+    LineRenderer Get()
+    {
+        LineRenderer item = null;
+        if (stacks.Count > 0)
+        {
+            item = stacks.Pop();
+        }
+        else
+        {
+            item = Create();
+        }
+
+        item.gameObject.SetActive(true);
+        return item;
+    }
+
+    void ReturnItem(LineRenderer lr)
+    {
+        if (stacks.Count > maxItemCount)
+        {
+            Destroy(lr.gameObject);
+        }
+        else
+        {
+            lr.gameObject.SetActive(false);
+            stacks.Push(lr);
+        }
+    }
+
+    LineRenderer Create()
     {
         GameObject line = new GameObject("GridLine");
         LineRenderer lr = line.AddComponent<LineRenderer>();
         lr.positionCount = 2;
-        lr.SetPosition(0, start);
-        lr.SetPosition(1, end);
-        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.material = test;
         lr.useWorldSpace = true;
 
-        // float thickness = cam.orthographicSize / 200f;
-        // if (isBold)
-        // {
-        //     lr.startWidth = lr.endWidth = 0.04f;
-        //     lr.startColor = lr.endColor = new Color(0.2f, 0.2f, 0.2f, 1f);
-        // }
-        // else
-        // {
-        //     lr.startWidth = lr.endWidth = 0.02f;
-        //     lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
-        // }
-        
         lr.startWidth = lr.endWidth = 0.02f;
         lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
 
-        return line;
+        return lr;
+    }
+
+    GameObject CreateLine(Vector3 start, Vector3 end)
+    {
+        var lr = Get();
+        lr.SetPosition(0, start);
+        lr.SetPosition(1, end);
+        lr.material = test;
+        lr.useWorldSpace = true;
+
+        lr.startWidth = lr.endWidth = 0.02f;
+        lr.startColor = lr.endColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+        return lr.gameObject;
     }
 }

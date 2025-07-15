@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using TMPro;
+using UnityEngine.UI;
 
 public class Show2DModel : MonoBehaviour
 {
@@ -15,13 +13,26 @@ public class Show2DModel : MonoBehaviour
     public Camera sceneCamera;
     public float padding = 1.2f; // Dư lề
 
+    [Header("Buttons")]
+    public Button ButtonFloorPlan;
+    public Button Button3DView;
+    public Button ButtonInfo;
+
     void Start()
     {
-        LoadPointsFromDataTransfer();
-        FitCameraToModel();
+        LoadPointsFromRoomStorage();
+        SetupButtons();   // Gắn listener cho nút
+        FitCameraToFloorPlan(); // Mặc định mở FloorPlan
     }
 
-    void LoadPointsFromDataTransfer()
+    void SetupButtons()
+    {
+        ButtonFloorPlan.onClick.AddListener(FitCameraToFloorPlan);
+        Button3DView.onClick.AddListener(FitCameraTo3DView);
+        ButtonInfo.onClick.AddListener(FitCameraToInfo);
+    }
+
+    void LoadPointsFromRoomStorage()
     {
         List<Room> rooms = RoomStorage.rooms;
 
@@ -31,7 +42,7 @@ public class Show2DModel : MonoBehaviour
             return;
         }
 
-        modelRoot.rotation = Quaternion.Euler(0f, 0, 0);
+        modelRoot.rotation = Quaternion.identity;
 
         foreach (Room room in rooms)
         {
@@ -40,7 +51,7 @@ public class Show2DModel : MonoBehaviour
 
             for (int i = 0; i < path.Count; i++)
             {
-                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y); // Y = 0 vì hiển thị 2D
+                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y);
                 GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity, modelRoot);
                 checkpointsForRoom.Add(checkpoint);
 
@@ -50,40 +61,63 @@ public class Show2DModel : MonoBehaviour
                 }
             }
 
-            // Tự động nối kín nếu là polygon (>= 3 điểm) và hai đầu gần nhau
             if (checkpointsForRoom.Count > 2)
             {
-                Drawing2D.DrawLineAndDistance(checkpointsForRoom[^1].transform.position, checkpointsForRoom[0].transform.position, modelRoot);
+                Drawing2D.DrawLineAndDistance(
+                    checkpointsForRoom[^1].transform.position,
+                    checkpointsForRoom[0].transform.position,
+                    modelRoot
+                );
             }
+
+            Debug.Log($"[LoadPoints] Loaded Room ID: {room.ID} với {path.Count} điểm");
         }
     }
 
-    void FitCameraToModel()
+    Bounds GetModelBounds()
     {
-        if (sceneCamera == null || modelRoot == null) return;
-
-        // Tính bounding box của toàn bộ mô hình
         Bounds bounds = new Bounds(modelRoot.position, Vector3.zero);
         foreach (Transform child in modelRoot)
-        {
             bounds.Encapsulate(child.position);
-        }
+        return bounds;
+    }
 
-        // Đặt camera nhìn từ trên xuống
-        sceneCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-        sceneCamera.transform.position = new Vector3(bounds.center.x, 10f, bounds.center.z); // tạm
-
-        // Ước lượng khoảng cách camera Y cần để bao hết mô hình
+    void FitCameraToFloorPlan()
+    {
+        Bounds bounds = GetModelBounds();
         float size = Mathf.Max(bounds.size.x, bounds.size.z) * padding;
         float fovRad = sceneCamera.fieldOfView * Mathf.Deg2Rad;
         float requiredY = (size / 2f) / Mathf.Tan(fovRad / 2f);
 
-        // Gán vị trí camera
-        Vector3 newPos = sceneCamera.transform.position;
-        newPos.y = requiredY;
-        sceneCamera.transform.position = newPos;
+        sceneCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        sceneCamera.transform.position = new Vector3(bounds.center.x, requiredY, bounds.center.z);
 
-        Debug.Log($"Camera đã được đặt ở Y={requiredY:F2} để bao phủ toàn bộ mô hình");
+        Debug.Log("[Camera] Floor Plan: Top-down view");
     }
 
+    void FitCameraTo3DView()
+    {
+        Bounds bounds = GetModelBounds();
+        float size = Mathf.Max(bounds.size.x, bounds.size.z) * padding;
+        float fovRad = sceneCamera.fieldOfView * Mathf.Deg2Rad;
+        float requiredY = (size / 2f) / Mathf.Tan(fovRad / 2f);
+
+        sceneCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+        sceneCamera.transform.position = new Vector3(bounds.center.x, requiredY / 2f, bounds.center.z - 10f);
+
+        Debug.Log("[Camera] 3D View: Perspective");
+    }
+
+    void FitCameraToInfo()
+    {
+        Bounds bounds = GetModelBounds();
+        float size = Mathf.Max(bounds.size.x, bounds.size.z) * padding;
+        float fovRad = sceneCamera.fieldOfView * Mathf.Deg2Rad;
+        float requiredY = (size / 2f) / Mathf.Tan(fovRad / 2f);
+
+        sceneCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+        sceneCamera.transform.position = new Vector3(bounds.center.x, requiredY / 2f, bounds.center.z + 10f);
+
+        Debug.Log("[Camera] Info View: Perspective");
+    }
 }

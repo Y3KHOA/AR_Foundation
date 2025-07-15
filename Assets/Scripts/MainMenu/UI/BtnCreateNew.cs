@@ -50,7 +50,7 @@ public class BtnCreateNew:MonoBehaviour
     {
         isMeasure = true;
         Debug.Log("NewDrawing clicked - To scene SampleScene\nNewDrawing =true");
-        SceneManager.LoadScene("Draw2D"); // Chuyển scene
+        SceneManager.LoadScene("DraftingScene"); // Chuyển scene
     }
 
     void OnButtonRecordsClicked()

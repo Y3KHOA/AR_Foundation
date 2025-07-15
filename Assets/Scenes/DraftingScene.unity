@@ -15273,7 +15273,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &1588968308
 Light:
   m_ObjectHideFlags: 0
@@ -19409,7 +19409,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellSize: 1
-  viewRange: 20
+  viewRange: 80
+  backgroundMaterial: {fileID: 2100000, guid: 1f460ec805d2c194582a500e606ab8a5, type: 2}
+  test: {fileID: 2100000, guid: 4f0e321d584d29e4e9a17bcfd2f73caa, type: 2}
 --- !u!4 &2060100581
 Transform:
   m_ObjectHideFlags: 0

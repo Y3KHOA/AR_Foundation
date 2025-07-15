@@ -34,6 +34,9 @@ public class CheckpointManager : MonoBehaviour
     private WallLine selectedWallLineForDoor;   // đoạn tường được chọn
     private Room selectedRoomForDoor;
     private Vector3? firstDoorPoint = null;     // lưu P1
+    // Map loop checkpoint list => Room ID
+    private Dictionary<List<GameObject>, string> loopToRoomID = new Dictionary<List<GameObject>, string>();
+    private List<LoopMap> loopMappings = new List<LoopMap>();
     List<GameObject> doorPoints = new List<GameObject>();
 
     void Start()
@@ -151,6 +154,15 @@ public class CheckpointManager : MonoBehaviour
     {
         if (selectedCheckpoint != null) return; // Nếu đã chọn điểm, không cần đặt mới
 
+        // === Nếu đang định thêm Door/Window nhưng chưa có loop kín ===
+        if ((currentLineType == LineType.Door || currentLineType == LineType.Window) && !isClosedLoop)
+        {
+            Debug.Log("[CheckpointManager] Không thể thêm cửa/cửa sổ vì mạch chưa khép kín!");
+
+            ShowIncompleteLoopPopup();
+            return;
+        }
+
         if (currentLineType == LineType.Door || currentLineType == LineType.Window)
         {
             // Nếu đang chọn Door/Window: không thêm checkpoint mới như tường
@@ -188,12 +200,20 @@ public class CheckpointManager : MonoBehaviour
                 newRoom.wallLines.Add(wall);
             }
 
+            // Khi loop đóng
+            isClosedLoop = true;
             RoomStorage.rooms.Add(newRoom);
             Debug.Log("Đã lưu Room với " + newRoom.checkpoints.Count + " điểm và " + newRoom.wallLines.Count + " cạnh.");
 
-            allCheckpoints.Add(new List<GameObject>(currentCheckpoints));
+
+            // === Ánh xạ List<GameObject> → Room.ID ===
+            List<GameObject> loopRef = new List<GameObject>(currentCheckpoints);
+            allCheckpoints.Add(loopRef);
+            loopMappings.Add(new LoopMap(newRoom.ID, loopRef));
+
             currentCheckpoints.Clear();
-            isClosedLoop = true;
+            // isClosedLoop = true;
+            isClosedLoop = false;
             return;
         }
 
@@ -351,7 +371,7 @@ public class CheckpointManager : MonoBehaviour
         float minDistance = closeThreshold;
         GameObject nearestCheckpoint = null;
 
-        // ✅ Duyệt tất cả checkpoint trong allCheckpoints
+        // Duyệt tất cả checkpoint trong allCheckpoints
         foreach (var loop in allCheckpoints)
         {
             foreach (var checkpoint in loop)
@@ -365,7 +385,7 @@ public class CheckpointManager : MonoBehaviour
             }
         }
 
-        // ❗ Nếu chưa có loop, dùng currentCheckpoints (đang vẽ)
+        // Nếu chưa có loop, dùng currentCheckpoints (đang vẽ)
         if (!isClosedLoop)
         {
             foreach (var checkpoint in currentCheckpoints)
@@ -395,16 +415,49 @@ public class CheckpointManager : MonoBehaviour
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
         selectedCheckpoint.transform.position = newPosition;
 
-        // ✅ Tìm loop chứa selectedCheckpoint
         foreach (var loop in allCheckpoints)
         {
             if (loop.Contains(selectedCheckpoint))
             {
-                DrawingTool.UpdateLinesAndDistances(loop);
+                string roomID = FindRoomIDForLoop(loop);
+                if (!string.IsNullOrEmpty(roomID))
+                {
+                    Room room = RoomStorage.rooms.Find(r => r.ID == roomID);
+                    if (room != null)
+                    {
+                        for (int i = 0; i < loop.Count; i++)
+                        {
+                            Vector3 pos = loop[i].transform.position;
+                            room.checkpoints[i] = new Vector2(pos.x, pos.z);
+                        }
+
+                        for (int i = 0; i < room.wallLines.Count; i++)
+                        {
+                            room.wallLines[i].start = new Vector3(room.checkpoints[i].x, 0, room.checkpoints[i].y);
+                            room.wallLines[i].end = new Vector3(room.checkpoints[(i + 1) % room.checkpoints.Count].x, 0, room.checkpoints[(i + 1) % room.checkpoints.Count].y);
+                        }
+
+                        RoomStorage.UpdateOrAddRoom(room);
+                    }
+                }
+
+                DrawingTool.ClearAllLines();
+                RedrawAllRooms();
                 break;
             }
         }
     }
+
+    private string FindRoomIDForLoop(List<GameObject> loop)
+    {
+        foreach (var mapping in loopMappings)
+        {
+            if (ReferenceEquals(mapping.CheckpointsGO, loop)) return mapping.RoomID;
+        }
+        Debug.LogWarning("Loop không tìm thấy RoomID!");
+        return null;
+    }
+
 
     void DeselectCheckpoint()
     {
@@ -460,112 +513,37 @@ public class CheckpointManager : MonoBehaviour
         }
     }
 
-    void LoadPointsFromDataTransfer()
+    void ShowIncompleteLoopPopup()
     {
-        List<List<Vector2>> allPoints = DataTransfer.Instance.GetAllPoints();
-        List<List<float>> allHeights = DataTransfer.Instance.GetAllHeights();
-        List<List<WallLine>> allWallLines = DataTransfer.Instance.GetAllWallLines(); // thêm WallLines
-
-        if (allPoints.Count == 0)
-        {
-            Debug.Log("Không có dữ liệu điểm để hiển thị.");
-            return;
-        }
-
-        for (int pathIndex = 0; pathIndex < allPoints.Count; pathIndex++)
-        {
-            List<Vector2> path = allPoints[pathIndex];
-            List<GameObject> checkpointsForPath = new List<GameObject>();
-
-            for (int i = 0; i < path.Count; i++)
+        PopupController.Show(
+            "Mạch chưa khép kín!\nBạn muốn xóa dữ liệu vẽ tạm không?",
+            onYes: () =>
             {
-                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y);
-                GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
-                checkpointsForPath.Add(checkpoint);
-
-                if (i > 0)
-                {
-                    DrawingTool.DrawLineAndDistance(checkpointsForPath[i - 1].transform.position, worldPos);
-                }
-            }
-
-            if (checkpointsForPath.Count > 2 && Vector3.Distance(checkpointsForPath[0].transform.position, checkpointsForPath[^1].transform.position) < closeThreshold)
+                Debug.Log("Người dùng chọn YES: Xóa toàn bộ checkpoint + line.");
+                DeleteCurrentDrawingData();
+            },
+            onNo: () =>
             {
-                DrawingTool.DrawLineAndDistance(checkpointsForPath[^1].transform.position, checkpointsForPath[0].transform.position);
-                isClosedLoop = true;
+                Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín.");
             }
-
-            allCheckpoints.Add(checkpointsForPath);
-
-            // Vẽ thêm WallLines của Room này
-            if (pathIndex < allWallLines.Count)
-            {
-                foreach (WallLine wall in allWallLines[pathIndex])
-                {
-                    DrawingTool.DrawLineAndDistance(wall.start, wall.end);
-                }
-            }
-        }
-
-        Debug.Log($"[LoadPoints] Đã nạp {allPoints.Count} mạch với tổng cộng {CountTotalCheckpoints()} checkpoint và WallLines.");
+        );
     }
-
-    int CountTotalCheckpoints()
+    void DeleteCurrentDrawingData()
     {
-        int total = 0;
-        foreach (var list in allCheckpoints)
-            total += list.Count;
-        return total;
-    }
-
-    public bool TryFindClosestSegment(Vector3 position, out int loopIndex, out int segmentIndex, float maxDistance = 0.1f)
-    {
-        loopIndex = -1;
-        segmentIndex = -1;
-        float closestDist = maxDistance;
-
-        for (int i = 0; i < allCheckpoints.Count; i++)
+        foreach (var cp in currentCheckpoints)
         {
-            var loop = allCheckpoints[i];
-            for (int j = 0; j < loop.Count; j++)
-            {
-                int next = (j + 1) % loop.Count;
-                Vector3 a = loop[j].transform.position;
-                Vector3 b = loop[next].transform.position;
-
-                float dist = DistanceFromPointToSegment(position, a, b);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    loopIndex = i;
-                    segmentIndex = j;
-                }
-            }
+            if (cp != null)
+                Destroy(cp);
         }
+        currentCheckpoints.Clear();
 
-        return loopIndex != -1;
-    }
-    public float DistanceFromPointToSegment(Vector3 p, Vector3 a, Vector3 b)
-    {
-        Vector3 ap = p - a;
-        Vector3 ab = b - a;
-        float magnitudeAB = ab.sqrMagnitude;
-        float abDotAp = Vector3.Dot(ap, ab);
-        float t = Mathf.Clamp01(abDotAp / magnitudeAB);
-        Vector3 projection = a + ab * t;
-        return Vector3.Distance(p, projection);
-    }
-    private void InsertCheckpointIntoExistingLoop(Vector3 position)
-    {
-        if (TryFindClosestSegment(position, out int loopIndex, out int segmentIndex))
-        {
-            GameObject newCheckpoint = Instantiate(checkpointPrefab, position, Quaternion.identity);
-            var loop = allCheckpoints[loopIndex];
+        wallLines.Clear();
+        DrawingTool.ClearAllLines();
 
-            loop.Insert(segmentIndex + 1, newCheckpoint);// Chèn vào sau segmentIndex
-            DrawingTool.UpdateLinesAndDistances(loop); // Vẽ lại vòng đó
+        isClosedLoop = false;
+        previewCheckpoint = null;
+        selectedCheckpoint = null;
 
-            Debug.Log($"Chèn checkpoint vào vòng {loopIndex} sau đoạn {segmentIndex}");
-        }
+        Debug.Log("Đã xóa toàn bộ dữ liệu vẽ chưa khép kín.");
     }
 }
