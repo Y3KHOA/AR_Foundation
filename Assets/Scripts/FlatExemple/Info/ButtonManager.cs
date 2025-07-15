@@ -88,7 +88,7 @@ public class ButtonManager : MonoBehaviour
                 currentButton = toggleButtonUI;
                 currentButton.OnActive();
             }
-   
+            
             item.ChangeState(state);
         }
     }
