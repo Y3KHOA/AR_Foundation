@@ -213,7 +213,7 @@ public class CheckpointManager : MonoBehaviour
 
             currentCheckpoints.Clear();
             // isClosedLoop = true;
-            isClosedLoop = false;
+            // isClosedLoop = false;
             return;
         }
 
