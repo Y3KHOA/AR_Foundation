@@ -11178,7 +11178,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1031031293
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11197,9 +11197,9 @@ RectTransform:
   - {fileID: 1184832090}
   m_Father: {fileID: 1298582152}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 504, y: 340.87}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 33, y: 340.87}
   m_SizeDelta: {x: 300, y: 255}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!114 &1031031294
@@ -16413,8 +16413,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 131e7979166f1b34092d232fa085c497, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  toggleButton: {fileID: 0}
-  targetPanel: {fileID: 0}
+  toggleButton: {fileID: 1066306431689187603}
+  targetPanel: {fileID: 1031031292}
 --- !u!114 &1508313561
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17720,7 +17720,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40.15
+  m_fontSize: 52.95
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
