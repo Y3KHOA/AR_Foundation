@@ -49,8 +49,7 @@ public class CheckpointManager : MonoBehaviour
     {
         if (!PenManager.isPenActive)
         {
-            // Khi Pen không hoạt động, không cho phép đặt điểm và chỉ di chuyển camera
-            penManager.HandleZoomAndPan(true);  // Bật zoom và di chuyển camera
+            penManager.HandleZoomAndPan(true);
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -58,10 +57,10 @@ public class CheckpointManager : MonoBehaviour
             }
             else if (Input.GetMouseButton(0))
             {
-                if (selectedCheckpoint != null && isClosedLoop)
+                if (selectedCheckpoint != null)
                 {
                     isDragging = true;
-                    MoveSelectedCheckpoint(); // Thêm dòng này!
+                    MoveSelectedCheckpoint();
                 }
             }
             else if (Input.GetMouseButtonUp(0))
@@ -90,7 +89,7 @@ public class CheckpointManager : MonoBehaviour
         }
         else if (Input.GetMouseButton(0)) // Khi giữ ngón tay, di chuyển điểm hoặc hiển thị preview
         {
-            if (selectedCheckpoint != null && isClosedLoop) // Nếu đã chọn điểm và mạch kín, di chuyển điểm
+            if (IsInSavedLoop(selectedCheckpoint) || isClosedLoop) // Nếu đã chọn điểm và mạch kín, di chuyển điểm
             {
                 MoveSelectedCheckpoint();
                 isDragging = true;
@@ -143,6 +142,15 @@ public class CheckpointManager : MonoBehaviour
             isDragging = false;
         }
     }
+    bool IsInSavedLoop(GameObject checkpoint)
+    {
+        foreach (var loop in allCheckpoints)
+        {
+            if (loop.Contains(checkpoint))
+                return true;
+        }
+        return false;
+    }
 
     void SelectCheckpoint()
     {
@@ -155,11 +163,9 @@ public class CheckpointManager : MonoBehaviour
         if (selectedCheckpoint != null) return; // Nếu đã chọn điểm, không cần đặt mới
 
         // === Nếu đang định thêm Door/Window nhưng chưa có loop kín ===
-        if ((currentLineType == LineType.Door || currentLineType == LineType.Window) && !isClosedLoop)
+        if ((currentLineType == LineType.Door || currentLineType == LineType.Window) && currentCheckpoints.Count > 0)
         {
-            Debug.Log("[CheckpointManager] Không thể thêm cửa/cửa sổ vì mạch chưa khép kín!");
-
-            ShowIncompleteLoopPopup();
+            ShowIncompleteLoopPopup(); // hỏi xóa hay tiếp tục vẽ để khép
             return;
         }
 
@@ -201,7 +207,7 @@ public class CheckpointManager : MonoBehaviour
             }
 
             // Khi loop đóng
-            isClosedLoop = true;
+            // isClosedLoop = true;
             RoomStorage.rooms.Add(newRoom);
             Debug.Log("Đã lưu Room với " + newRoom.checkpoints.Count + " điểm và " + newRoom.wallLines.Count + " cạnh.");
 
