@@ -1813,8 +1813,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 708498530}
   - {fileID: 491469629}
+  - {fileID: 708498530}
   - {fileID: 1515051277}
   - {fileID: 744628051}
   - {fileID: 1179580337}
@@ -3401,7 +3401,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 51.35
+  m_fontSize: 16.8
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4930,10 +4930,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 117810541}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.31441882, y: 0.23425144}
-  m_AnchorMax: {x: 0.68222225, y: 0.38737616}
-  m_AnchoredPosition: {x: -0.9642029, y: -0.79615784}
-  m_SizeDelta: {x: -3.9500122, y: -5}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 1.63}
+  m_SizeDelta: {x: 0, y: 16.26}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &421035837
 MonoBehaviour:
@@ -4955,10 +4955,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "T\u1EA0O B\u1EA2N V\u1EBC 2D"
+  m_text: "Xem phong thu\u1EF7"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: a4a05656ee07e954693f551091535cbc, type: 2}
+  m_sharedMaterial: {fileID: 525258616581486387, guid: a4a05656ee07e954693f551091535cbc,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4982,10 +4983,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
+  m_fontSize: 18
   m_fontSizeBase: 50
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
@@ -5589,7 +5590,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.9111112, y: 0.53800005}
   m_AnchorMax: {x: 0.9111112, y: 0.53800005}
-  m_AnchoredPosition: {x: 0, y: 0.099990845}
+  m_AnchoredPosition: {x: -6.899994, y: 0.099990845}
   m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &466040349
@@ -6447,7 +6448,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &491469629
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8244,15 +8245,15 @@ RectTransform:
   m_GameObject: {fileID: 708498529}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: -1, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 117810541}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -1.6959991}
-  m_SizeDelta: {x: 0, y: -0.77194214}
+  m_AnchoredPosition: {x: 0, y: -13.017}
+  m_SizeDelta: {x: 0, y: 32.103}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &708498531
 MonoBehaviour:
@@ -8268,7 +8269,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -8861,7 +8862,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.10444443, y: 0.53800005}
   m_AnchorMax: {x: 0.10444443, y: 0.53800005}
-  m_AnchoredPosition: {x: -0.059936523, y: 0}
+  m_AnchoredPosition: {x: 10, y: 0}
   m_SizeDelta: {x: 52.814, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &756512265
@@ -11942,7 +11943,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.116000004, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -5.126068, y: -0.0000038146973}
+  m_AnchoredPosition: {x: -5.126066, y: -0.0000038146973}
   m_SizeDelta: {x: -9.748001, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1015298312
@@ -16120,7 +16121,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1515051277}
   - component: {fileID: 1515051279}
-  - component: {fileID: 1515051278}
   - component: {fileID: 1515051280}
   m_Layer: 5
   m_Name: ButtonGroup
@@ -16145,41 +16145,11 @@ RectTransform:
   - {fileID: 466040348}
   m_Father: {fileID: 117810541}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0.07608032}
-  m_SizeDelta: {x: 0, y: -0.77249146}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: -43.8}
+  m_SizeDelta: {x: 0, y: 57.22751}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1515051278
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1515051276}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6111f7db7ef085a46877385bb97cb90b, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &1515051279
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -16958,7 +16928,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 33.9
+  m_fontSize: 10.85
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -19260,7 +19230,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34.2
+  m_fontSize: 10.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

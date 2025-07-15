@@ -1,4 +1,5 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -28,20 +29,6 @@ public class BackgroundUI : MonoBehaviour
 
     public BackgroundUI()
     {
-        background = new GameObject().AddComponent<Image>();
-        background.color = new Color(0, 0, 0, 0.5f);
-        background.raycastTarget = false;
-
-        canvas = GameObject.FindFirstObjectByType<Canvas>();
-        background.transform.SetParent(canvas.transform);
-        ResetEverything();
-
-        var backgroundRect = background.GetComponent<RectTransform>();
-        backgroundRect.sizeDelta = canvas.GetComponent<RectTransform>().sizeDelta;
-        backgroundRect.transform.rotation = canvas.transform.rotation;  
-
-        SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
-        SceneManager.sceneUnloaded += SceneManagerOnsceneUnloaded;
     }
 
     private void SceneManagerOnsceneUnloaded(Scene arg0)
@@ -56,13 +43,47 @@ public class BackgroundUI : MonoBehaviour
         ResetEverything();
     }
 
+    private bool isInit = false;
+
     public void Show(GameObject target)
     {
+        CoroutineManager.Run(PlayDelay(target));
+    }
+
+    private IEnumerator PlayDelay(GameObject target)
+    {
+        yield return null;
+        if (!isInit)
+        {
+            background = new GameObject().AddComponent<Image>();
+            background.color = new Color(0, 0, 0, 0.5f);
+            background.raycastTarget = false;
+            background.gameObject.name = "Background Black";
+            canvas = GameObject.FindFirstObjectByType<Canvas>();
+            background.transform.SetParent(canvas.transform);
+            ResetEverything();
+
+            var backgroundRect = background.GetComponent<RectTransform>();
+            backgroundRect.sizeDelta = canvas.GetComponent<RectTransform>().sizeDelta;
+            backgroundRect.transform.rotation = canvas.transform.rotation;
+
+            SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
+            SceneManager.sceneUnloaded += SceneManagerOnsceneUnloaded;
+
+            isInit = true;
+        }
+
+        yield return null;
         if (target)
         {
-            background.transform.SetParent(canvas.transform);
+            background.transform.SetParent(target.transform.parent.transform);
             background.transform.SetSiblingIndex(target.transform.GetSiblingIndex() - 1);
         }
+        else
+        {
+            Debug.Log("Target is null, please checkout");
+        }
+
         SetBackgroundActive(true);
     }
 

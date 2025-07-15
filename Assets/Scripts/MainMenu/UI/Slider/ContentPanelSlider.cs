@@ -43,11 +43,11 @@ public class ContentManager : MonoBehaviour
         ShowContent();
 
         // Start auto-move timer if enabled
-        if (useTimer)
-        {
-            timer = autoMoveTime;
-            InvokeRepeating(nameof(AutoMoveContent), 1f, 1f); // Invoke every second to update the timer
-        }
+        // if (useTimer)
+        // {
+        //     timer = autoMoveTime;
+        //     InvokeRepeating(nameof(AutoMoveContent), 1f, 1f); // Invoke every second to update the timer
+        // }
     }
 
     void InitializeDots()
@@ -95,6 +95,7 @@ public class ContentManager : MonoBehaviour
     {
         // Detect swipe input only within the content area
         DetectSwipe();
+        AutoMoveContent();
     }
 
     void DetectSwipe()
@@ -126,6 +127,8 @@ public class ContentManager : MonoBehaviour
                 {
                     NextContent();
                 }
+                // reset auto move after swipe
+                timer = autoMoveTime;
             }
         }
     }
@@ -139,15 +142,13 @@ public class ContentManager : MonoBehaviour
     void AutoMoveContent()
     {
         Debug.Log("Update Time for move content");
-        timer -= 1f; // Decrease timer every second
-
+        // timer -= 1f; // Decrease timer every second
+        timer -= Time.deltaTime;
         if (timer <= 0)
         {
             timer = autoMoveTime;
             NextContent();
         }
-
-        UpdateDots(); // Update dots on every timer tick
     }
 
     void NextContent()
