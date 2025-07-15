@@ -53,7 +53,7 @@ public class PenManager : MonoBehaviour
         if (scroll != 0f)
         {
             // Điều chỉnh kích thước của camera, giới hạn phạm vi zoom
-            mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - scroll * zoomSpeed, 1f, 20f);
+            mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - scroll * zoomSpeed, 1f, 70f);
         }
 
         // Di chuyển camera bằng chuột (hoặc bằng 1 ngón tay)
@@ -66,7 +66,7 @@ public class PenManager : MonoBehaviour
                 // Tính toán sự thay đổi của vị trí màn hình để di chuyển camera
                 Vector3 touchDelta = touch.deltaPosition;  // Sự thay đổi của vị trí touch
                 Vector3 move = mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, mainCamera.nearClipPlane)) -
-               mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x - touchDelta.x, touch.position.y - touchDelta.y, mainCamera.nearClipPlane));
+                mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x - touchDelta.x, touch.position.y - touchDelta.y, mainCamera.nearClipPlane));
 
                 mainCamera.transform.Translate(-move, Space.World);
             }
@@ -87,7 +87,7 @@ public class PenManager : MonoBehaviour
             float difference = currentMagnitude - prevMagnitude;
 
             // Điều chỉnh kích thước camera dựa trên sự thay đổi khoảng cách giữa 2 ngón tay
-            mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - difference * zoomSpeed * 0.01f, 1f, 20f);
+            mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - difference * zoomSpeed * 0.01f, 1f, 70f);
         }
     }
 
