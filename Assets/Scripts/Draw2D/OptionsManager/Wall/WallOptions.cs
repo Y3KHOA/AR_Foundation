@@ -8,14 +8,19 @@ public class PanelToggleController : MonoBehaviour
     public GameObject targetPanel; // Panel để mở/đóng
 
     private bool isPanelOpen = false;
+    private ToggleColor toggleColor;
 
     void Start()
     {
+        
         if (toggleButton != null)
             toggleButton.onClick.AddListener(TogglePanel);
 
         if (targetPanel != null)
             targetPanel.SetActive(false); // Ban đầu tắt panel
+
+        toggleColor = toggleButton.GetComponent<ToggleColor>();
+        toggleColor.Toggle(isPanelOpen);
     }
 
     void TogglePanel()
@@ -24,6 +29,7 @@ public class PanelToggleController : MonoBehaviour
 
         isPanelOpen = !isPanelOpen;
         targetPanel.SetActive(isPanelOpen);
+        toggleColor.Toggle(isPanelOpen);
 
         Debug.Log(isPanelOpen ? "Panel Opened" : "Panel Closed");
     }

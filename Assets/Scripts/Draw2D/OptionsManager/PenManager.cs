@@ -12,6 +12,7 @@ public class PenManager : MonoBehaviour
     public static bool isPenActive = true; // Trạng thái của Pen (bật/tắt)
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển vẽ
 
+    private ToggleColor toggleColor;
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
 
     void Start()
@@ -19,7 +20,8 @@ public class PenManager : MonoBehaviour
         mainCamera = Camera.main;
         // Gán sự kiện click vào Button
         penButton.onClick.AddListener(TogglePen);
-
+        toggleColor = penButton.GetComponent<ToggleColor>();
+        toggleColor.Toggle(isPenActive);
         // Lấy tham chiếu đến CheckpointManager
         checkpointManager = FindObjectOfType<CheckpointManager>();
 
@@ -96,6 +98,8 @@ public class PenManager : MonoBehaviour
     {
         isPenActive = !isPenActive;  // Chuyển trạng thái Pen
         UpdatePenState();            // Cập nhật trạng thái Pen
+        toggleColor.Toggle(isPenActive);
+
     }
 
     // Cập nhật trạng thái Pen
