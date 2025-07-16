@@ -11,7 +11,6 @@ public class CompassMenu : MonoBehaviour
     private bool isActive = false;
 
     private DirectionRotationCalculator DirectionRotationCalculator;
-
     private void Awake()
     {
         turnOnBtn.gameObject.SetActive(true);
@@ -23,6 +22,9 @@ public class CompassMenu : MonoBehaviour
         SetupToggleButton();
 
         InitDirections();
+        
+        Refresh();
+        
     }
 
     private void SetupToggleButton()
@@ -38,19 +40,29 @@ public class CompassMenu : MonoBehaviour
         turnOffCompassBtn.gameObject.SetActive(iShow);
     }
 
-
+    List<Direction> directions = new()
+    {
+        Direction.East, // icon is look to this direction so this is default rotation
+        Direction.South,
+        Direction.North,
+        Direction.West
+    };
     private void InitDirections()
     {
-        List<Direction> directions = new()
-        {
-            Direction.East, // icon is look to this direction so this is default rotation
-            Direction.South,
-            Direction.North,
-            Direction.West
-        };
         for (int i = 0; i < directions.Count; i++)
         {
             var item = Instantiate(directionalItemPrefab, directionalsObject.transform);
+            itemList.Add(item);
+            
+        }
+
+    }
+
+    public void Refresh()
+    {
+        for (int i = 0; i < itemList.Count; i++)
+        {
+            var item = itemList[i];
             var itemRect = item.GetComponent<RectTransform>();
             var direction = directions[i];
             var anchor = direction.ToAnchor();
@@ -62,6 +74,8 @@ public class CompassMenu : MonoBehaviour
             DirectionRotationCalculator.SetZRotation(item.Icon, direction);
         }
     }
+
+    private List<DirectionalItem> itemList = new();
 
     private void InitRotationCalculator()
     {
