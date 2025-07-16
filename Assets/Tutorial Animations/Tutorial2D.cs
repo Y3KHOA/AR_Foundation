@@ -121,6 +121,7 @@ public class Tutorial2D : MonoBehaviour
         foreach (var item in lineRenderers) item.ResetLine();
         foreach (var point in points)
         {
+            point.DOKill();
             point.transform.GetComponent<SpriteRenderer>().DOFade(0, 0);
             point.DOScale(Vector3.zero,0);
         }
