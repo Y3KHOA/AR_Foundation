@@ -12,9 +12,11 @@ public class PenManager : MonoBehaviour
 
     public static bool isPenActive = true; // Trạng thái của Pen (bật/tắt)
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển vẽ
+    private DrawingTool DrawTool; // Tham chiếu đến DrawingTool để điều khiển vẽ
 
     private ToggleColor toggleColor;
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
+    private Vector3 previewPosition; // Vị trí preview
 
     void Start()
     {
@@ -24,7 +26,7 @@ public class PenManager : MonoBehaviour
         toggleColor = penButton.GetComponent<ToggleColor>();
         toggleColor.Toggle(isPenActive);
         // Lấy tham chiếu đến CheckpointManager
-        checkpointManager = FindObjectOfType<CheckpointManager>();
+        checkpointManager = FindFirstObjectByType<CheckpointManager>();
 
         // Đảm bảo trạng thái ban đầu của Pen là tắt
         UpdatePenState();
@@ -32,7 +34,8 @@ public class PenManager : MonoBehaviour
 
     void Update()
     {
-        if (isPenActive)
+        DrawTool=FindFirstObjectByType<DrawingTool>();
+        if (!isPenActive)
         {
             checkpointManager.enabled = true;
             HandleZoomAndPan(false); // Tắt zoom khi vẽ
@@ -51,6 +54,24 @@ public class PenManager : MonoBehaviour
             {
                 HandleZoomAndPan(true);
             }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                checkpointManager.SelectCheckpoint();
+            }
+            else if (Input.GetMouseButton(0))
+            {
+                if (checkpointManager.IsInSavedLoop(checkpointManager.selectedCheckpoint) || checkpointManager.isClosedLoop)
+                {
+                    checkpointManager.MoveSelectedCheckpoint();
+                    checkpointManager.isDragging = true;
+                }
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                checkpointManager.DeselectCheckpoint();
+                checkpointManager.isDragging = false;
+            }
         }
     }
 
@@ -58,13 +79,20 @@ public class PenManager : MonoBehaviour
     public void HandleZoomAndPan(bool canZoomAndPan)
     {
         if (!canZoomAndPan) return;
+
+        if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
+        {
+            Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
+            return;
+        }
+
         if (IsTouchOverRoomFloor())
         {
             Debug.Log("Đang chạm RoomFloor ➜ KHÔNG zoom/pan!");
             return;
         }
 
-        // ✨ Thêm kiểm tra raycast vào đầu tiên
+        // Thêm kiểm tra raycast vào đầu tiên
         if (Input.touchCount == 1)
         {
             Touch touch = Input.GetTouch(0);
@@ -75,7 +103,7 @@ public class PenManager : MonoBehaviour
                 {
                     if (hit.collider.gameObject.CompareTag("RoomFloor"))
                     {
-                        Debug.Log("🛑 Raycast đang hit RoomFloor ➜ Bỏ pan/zoom bàn cờ!");
+                        Debug.Log("Raycast đang hit RoomFloor ➜ Bỏ pan/zoom bàn cờ!");
                         return; // Chặn bàn cờ ngay từ đầu
                     }
                 }
@@ -97,7 +125,7 @@ public class PenManager : MonoBehaviour
             {
                 Vector3 touchDelta = touch.deltaPosition;
                 Vector3 move = mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, mainCamera.nearClipPlane)) -
-                               mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x - touchDelta.x, touch.position.y - touchDelta.y, mainCamera.nearClipPlane));
+                                mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x - touchDelta.x, touch.position.y - touchDelta.y, mainCamera.nearClipPlane));
 
                 mainCamera.transform.Translate(-move, Space.World);
             }

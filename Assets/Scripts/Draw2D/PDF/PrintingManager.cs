@@ -34,10 +34,16 @@ public class PrintingManager : MonoBehaviour
     {
         // byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(allPolygons, allWallLines, 0.1f);
         byte[] pdfBytes = PdfExporter.GeneratePdfAsBytes(RoomStorage.rooms, 0.1f);
-        // SavePdfToDownloads(pdfBytes, "Bản vẽ mẫu.pdf");
-        // Tạo tên file theo ngày giờ: yyyyMMdd_HHmmss.pdf
-        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        string fileName = $"Bản vẽ 2D.pdf";
+
+        string fileName;
+#if UNITY_EDITOR
+    fileName = "Bản vẽ 2D.pdf"; // Giữ tên đơn giản khi debug
+#else
+    string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+    fileName = $"Bản vẽ 2D_{timestamp}.pdf"; // Thêm timestamp để tránh trùng và chuyên nghiệp hơn
+#endif
+
+    SavePdfToDownloads(pdfBytes, fileName);
 
         SavePdfToDownloads(pdfBytes, fileName);
     }

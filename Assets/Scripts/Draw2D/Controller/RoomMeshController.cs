@@ -16,7 +16,7 @@ public class RoomMeshController : MonoBehaviour
 #else
 void Update()
 {
-    if (PenManager.isPenActive) return;
+    if (!PenManager.isPenActive) return;
 
     if (Input.touchCount == 1)
     {
@@ -164,7 +164,7 @@ void Update()
 
     private void OnMouseDown()
     {
-        if (PenManager.isPenActive) return;
+        if (!PenManager.isPenActive) return;
 
         var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
         if (checkpointMgr != null)
@@ -184,7 +184,7 @@ void Update()
 
     private void OnMouseDrag()
     {
-        if (PenManager.isPenActive) return;
+        if (!PenManager.isPenActive) return;
         if (!isDragging) return;
 
         Plane plane = new Plane(Vector3.up, Vector3.zero);
