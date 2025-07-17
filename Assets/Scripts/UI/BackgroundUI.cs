@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -11,6 +14,8 @@ public class BackgroundUI : MonoBehaviour
     private Image background;
     private Canvas canvas;
 
+    private Action clickCallback;
+    
     public static BackgroundUI Instance
     {
         get
@@ -45,8 +50,9 @@ public class BackgroundUI : MonoBehaviour
 
     private bool isInit = false;
 
-    public void Show(GameObject target)
+    public void Show(GameObject target, Action onClickCallback)
     {
+        clickCallback = onClickCallback;
         CoroutineManager.Run(PlayDelay(target));
     }
 
@@ -56,17 +62,31 @@ public class BackgroundUI : MonoBehaviour
         if (!isInit)
         {
             background = new GameObject().AddComponent<Image>();
-            background.color = new Color(0, 0, 0, 0.5f);
-            background.raycastTarget = false;
+            background.color = new Color(0, 0, 0, 0.7f);
+            background.raycastTarget = true;
             background.gameObject.name = "Background Black";
+
             canvas = GameObject.FindFirstObjectByType<Canvas>();
+            
             background.transform.SetParent(canvas.transform);
+            
             ResetEverything();
 
             var backgroundRect = background.GetComponent<RectTransform>();
-            backgroundRect.sizeDelta = canvas.GetComponent<RectTransform>().sizeDelta;
             backgroundRect.transform.rotation = canvas.transform.rotation;
 
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.sizeDelta = Vector2.zero;
+
+
+            var entry = new EventTrigger.Entry();
+            entry.eventID = EventTriggerType.PointerClick;
+            entry.callback.AddListener((eventData) => OnClick((PointerEventData)eventData));
+            
+            var eventTrigger = backgroundRect.AddComponent<EventTrigger>();
+            eventTrigger.triggers.Add(entry);
+            
             SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
             SceneManager.sceneUnloaded += SceneManagerOnsceneUnloaded;
 
@@ -85,6 +105,16 @@ public class BackgroundUI : MonoBehaviour
         }
 
         SetBackgroundActive(true);
+    }
+
+    private void OnClick(PointerEventData data)
+    {
+        Debug.Log("On pointer click");
+        if (clickCallback != null)
+        {
+            clickCallback?.Invoke();
+            clickCallback = null;
+        }
     }
 
     public void Hide()

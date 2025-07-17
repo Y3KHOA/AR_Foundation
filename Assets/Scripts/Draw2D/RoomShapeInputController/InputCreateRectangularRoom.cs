@@ -5,8 +5,8 @@ using TMPro;
 public class InputCreateRectangularRoom : MonoBehaviour
 {
     [Header("UI References")]
-    public TMP_InputField sidesInputField;   // Số cạnh
-    public TMP_InputField lengthInputField;  // Chiều dài cạnh (m)
+    public GameObject sidesInputField;   // Số cạnh
+    public GameObject lengthInputField;  // Chiều dài cạnh (m)
     public Button createButton;          // Nút "Tạo Room"
     public GameObject targetPanel; // Panel đóng
 
@@ -31,7 +31,9 @@ public class InputCreateRectangularRoom : MonoBehaviour
 
         // === Lấy số cạnh ===
         int width = 0;
-        if (!int.TryParse(sidesInputField.text, out width) || width <= 0)
+        // if (!int.TryParse(sidesInputField.text, out width) || width <= 0)
+        TMP_InputField widthField = sidesInputField.GetComponentInChildren<TMP_InputField>();
+        if (widthField == null || !int.TryParse(widthField.text, out width) || width <= 0)
         {
             Debug.LogWarning("Chiều dài cạnh không hợp lệ! (>0)");
             PopupController.Show("Chiều dài cạnh không hợp lệ! (>0)", null);
@@ -40,7 +42,9 @@ public class InputCreateRectangularRoom : MonoBehaviour
 
         // === Lấy chiều dài cạnh ===
         float height = 0f;
-        if (!float.TryParse(lengthInputField.text, out height) || height <= 0)
+        // if (!float.TryParse(lengthInputField.text, out height) || height <= 0)
+        TMP_InputField heightField = lengthInputField.GetComponentInChildren<TMP_InputField>();
+        if (heightField == null || !float.TryParse(heightField.text, out height) || height <= 0)
         {
             Debug.LogWarning("Chiều rộng cạnh không hợp lệ! (>0)");
             PopupController.Show("Chiều rộng cạnh không hợp lệ! (>0)", null);
