@@ -6,7 +6,7 @@ public class ToggleGroupUI : MonoBehaviour
     [SerializeField] private List<ToggleButtonLineType> list = new();
     public DrawingTool drawingTool;
     public CheckpointManager checkpointManager;
-    private void Awake()
+    private void Start()
     {
         Setup();
     }
