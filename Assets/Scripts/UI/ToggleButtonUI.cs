@@ -1,20 +1,17 @@
 using System;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
-public class ToggleButtonUI : MonoBehaviour
+public class ToggleButtonUI : ToggleButtonUIBase
 {
 
-    public Button btn;
-    public State currentState = State.DeActive;
     [SerializeField] private GameObject activeStateUI;
     [SerializeField] private GameObject deActiveStateUI;
     public Action ActiveEvent;
-    private void Awake()
+    protected override void Awake()
     {
-        btn = GetComponent<Button>();
 
+        base.Awake();
         if (!activeStateUI)
         {
             Debug.LogWarning("activeStateUI is null");
@@ -33,9 +30,9 @@ public class ToggleButtonUI : MonoBehaviour
         ActiveEvent?.Invoke();
     }
 
-    public void ChangeState(State newState)
+    public override void ChangeState(State newState)
     {
-        currentState = newState;
+        base.ChangeState(newState);
         if (currentState == State.Active)
         {
             activeStateUI?.gameObject.SetActive(true);
@@ -47,17 +44,5 @@ public class ToggleButtonUI : MonoBehaviour
             deActiveStateUI?.gameObject.SetActive(true);
         }
 
-    }
-    
-    public enum State
-    {
-        Active,
-        DeActive
-    }
-
-
-    public void ChangeStateForVisual(State state)
-    {
-        currentState = state;
     }
 }
