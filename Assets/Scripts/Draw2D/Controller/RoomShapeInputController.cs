@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class RoomShapeInputController : MonoBehaviour
+public class InputCreatePolygonRoom : MonoBehaviour
 {
     [Header("UI References")]
     public TMP_InputField sidesInputField;   // Số cạnh

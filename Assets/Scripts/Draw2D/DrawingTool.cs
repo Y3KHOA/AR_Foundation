@@ -14,7 +14,6 @@ public class DrawingTool : MonoBehaviour
     public Material doorMaterial;
     public Material windowMaterial;
 
-
     private List<LineRenderer> linePool = new List<LineRenderer>(); // Object Pooling
     private List<TextMeshPro> textPool = new List<TextMeshPro>();
 
@@ -44,7 +43,6 @@ public class DrawingTool : MonoBehaviour
                 return solidMaterial;
         }
     }
-
 
     public void DrawLineAndDistance(Vector3 start, Vector3 end)
     {
@@ -83,8 +81,11 @@ public class DrawingTool : MonoBehaviour
             matInstance.mainTextureScale = new Vector2(len * 2f, 1f); // nhân đôi để tile dày hơn
         }
 
+        matInstance.renderQueue = 3100; // ← Ép vẽ sau grid
+
         // Gán vật liệu
         lr.material = matInstance;
+        lr.sortingOrder = 10; 
 
         // Lưu line đã vẽ
         lines.Add(lr);

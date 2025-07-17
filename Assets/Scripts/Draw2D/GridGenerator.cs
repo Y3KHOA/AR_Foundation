@@ -40,7 +40,7 @@ public class GridGenerator : MonoBehaviour
         float width = viewRange * 2;
         float height = viewRange * 2;
         background.transform.position =
-            new Vector3(cam.transform.position.x, -0.01f, cam.transform.position.z); // Y thấp hơn để nằm dưới lưới
+            new Vector3(cam.transform.position.x, -5f, cam.transform.position.z); // Y thấp hơn để nằm dưới lưới
         background.transform.localScale = new Vector3(width, height, 1);
     }
 
@@ -139,6 +139,9 @@ public class GridGenerator : MonoBehaviour
     {
         GameObject line = new GameObject("GridLine");
         LineRenderer lr = line.AddComponent<LineRenderer>();
+
+        lr.sortingOrder = -1000;
+
         lr.positionCount = 2;
         lr.material = test;
         lr.useWorldSpace = true;
