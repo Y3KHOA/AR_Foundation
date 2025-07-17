@@ -48,7 +48,7 @@ public class DrawingTool : MonoBehaviour
     {
         // GameObject go = Instantiate(linePrefab);
         // LineRenderer lr = go.GetComponent<LineRenderer>();
-        LineRenderer lr = GetOrCreateLine(); // ✅ Dùng pool thay vì Instantiate
+        LineRenderer lr = GetOrCreateLine(); // Dùng pool thay vì Instantiate
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
 
@@ -58,8 +58,12 @@ public class DrawingTool : MonoBehaviour
         lr.numCapVertices = 0;
         lr.widthMultiplier = 0.1f;
         lr.positionCount = 2;
-        lr.SetPosition(0, start);
-        lr.SetPosition(1, end);
+        // if (currentLineType == LineType.Door)
+        // {
+        //     DrawDashedLine(start, end); // tạo nét đứt
+        //     return; // Không cần vẽ line chính nữa
+        // }
+
 
         // Lấy chiều dài đoạn
         float len = Vector3.Distance(start, end);
@@ -85,7 +89,11 @@ public class DrawingTool : MonoBehaviour
 
         // Gán vật liệu
         lr.material = matInstance;
-        lr.sortingOrder = 10; 
+        // Ưu tiên nét đứt (cửa/cửa sổ) vẽ sau
+        if (currentLineType == LineType.Door || currentLineType == LineType.Window)
+            lr.sortingOrder = 20;
+        else
+            lr.sortingOrder = 10;
 
         // Lưu line đã vẽ
         lines.Add(lr);
@@ -319,6 +327,33 @@ public class DrawingTool : MonoBehaviour
         {
             tmp.fontSize = 3f; // kích thước font mặc định
             tmp.color = Color.black;
+        }
+    }
+
+    public void DrawDashedLine(Vector3 start, Vector3 end, float dashLength = 0.1f, float gapLength = 0.05f)
+    {
+        Vector3 direction = (end - start).normalized;
+        float totalLength = Vector3.Distance(start, end);
+        float currentPos = 0f;
+
+        while (currentPos < totalLength)
+        {
+            float nextDash = Mathf.Min(dashLength, totalLength - currentPos);
+
+            Vector3 dashStart = start + direction * currentPos;
+            Vector3 dashEnd = start + direction * (currentPos + nextDash);
+
+            LineRenderer lr = GetOrCreateLine();
+            lr.positionCount = 2;
+            lr.SetPosition(0, dashStart);
+            lr.SetPosition(1, dashEnd);
+
+            lr.material = new Material(doorMaterial); // Gán vật liệu cửa
+            lr.widthMultiplier = 0.1f;
+
+            lines.Add(lr); // lưu để quản lý nếu cần xóa
+
+            currentPos += dashLength + gapLength;
         }
     }
 }

@@ -2485,103 +2485,6 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 1
---- !u!1 &182188288
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 182188291}
-  - component: {fileID: 182188290}
-  - component: {fileID: 182188293}
-  - component: {fileID: 182188289}
-  - component: {fileID: 182188292}
-  m_Layer: 0
-  m_Name: InputRoomController
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &182188289
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182188288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 131e7979166f1b34092d232fa085c497, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  toggleButton: {fileID: 726215050}
-  targetPanel: {fileID: 1237074960}
---- !u!114 &182188290
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182188288}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 131e7979166f1b34092d232fa085c497, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  toggleButton: {fileID: 1956570594}
-  targetPanel: {fileID: 1237074960}
---- !u!4 &182188291
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182188288}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1517.7963, y: 612.3683, z: -55.78817}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &182188292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182188288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d41bff9ae9389d448f7503c8ec20841, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sidesInputField: {fileID: 1237074959}
-  lengthInputField: {fileID: 675574545}
-  createButton: {fileID: 1237074958}
-  targetPanel: {fileID: 1237074960}
-  checkpointManager: {fileID: 667801197}
---- !u!114 &182188293
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 182188288}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9573ad1daaaf88447a20c5ae991c9b73, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sidesInputField: {fileID: 1237074959}
-  lengthInputField: {fileID: 675574545}
-  createButton: {fileID: 1237074958}
-  targetPanel: {fileID: 1237074960}
-  checkpointManager: {fileID: 667801197}
 --- !u!1 &185468700
 GameObject:
   m_ObjectHideFlags: 0
@@ -17981,7 +17884,7 @@ PrefabInstance:
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
@@ -17991,12 +17894,12 @@ PrefabInstance:
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 151
       objectReference: {fileID: 0}
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
@@ -18041,12 +17944,12 @@ PrefabInstance:
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 75.5
       objectReference: {fileID: 0}
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -75
       objectReference: {fileID: 0}
     - target: {fileID: 3333912735617907548, guid: 365c6b394e192ea4eb625450dce1e913,
         type: 3}
@@ -18068,6 +17971,144 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 365c6b394e192ea4eb625450dce1e913, type: 3}
+--- !u!1001 &4792116433733338418
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 375815962078879140, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: targetPanel
+      value: 
+      objectReference: {fileID: 1237074960}
+    - target: {fileID: 375815962078879140, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: toggleButton
+      value: 
+      objectReference: {fileID: 726215050}
+    - target: {fileID: 2112956034353599904, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: targetPanel
+      value: 
+      objectReference: {fileID: 1237074960}
+    - target: {fileID: 2112956034353599904, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: createButton
+      value: 
+      objectReference: {fileID: 1237074958}
+    - target: {fileID: 2112956034353599904, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: sidesInputField
+      value: 
+      objectReference: {fileID: 1237074959}
+    - target: {fileID: 2112956034353599904, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: lengthInputField
+      value: 
+      objectReference: {fileID: 675574545}
+    - target: {fileID: 2112956034353599904, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: checkpointManager
+      value: 
+      objectReference: {fileID: 667801197}
+    - target: {fileID: 3083371317286012877, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: targetPanel
+      value: 
+      objectReference: {fileID: 1237074960}
+    - target: {fileID: 3083371317286012877, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: toggleButton
+      value: 
+      objectReference: {fileID: 1956570594}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1517.7963
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 612.3683
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -55.78817
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5077479096192031999, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: targetPanel
+      value: 
+      objectReference: {fileID: 1237074960}
+    - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: createButton
+      value: 
+      objectReference: {fileID: 1237074958}
+    - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: sidesInputField
+      value: 
+      objectReference: {fileID: 1237074959}
+    - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: lengthInputField
+      value: 
+      objectReference: {fileID: 675574545}
+    - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: checkpointManager
+      value: 
+      objectReference: {fileID: 667801197}
+    - target: {fileID: 8015272430477605960, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: m_Name
+      value: InputRoomController
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3b13d746543f71542a8a4316e95d6032, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -18075,7 +18116,7 @@ SceneRoots:
   - {fileID: 1336687766}
   - {fileID: 529780657}
   - {fileID: 667801196}
-  - {fileID: 182188291}
+  - {fileID: 4792116433733338418}
   - {fileID: 2060100581}
   - {fileID: 1285148371}
   - {fileID: 1231677537}
