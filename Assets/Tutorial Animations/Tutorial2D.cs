@@ -15,7 +15,6 @@ public class Tutorial2D : TutorialBase
     [SerializeField] private Transform[] points;
     [SerializeField] private Transform[] movePoints;
 
-
     [Serializable]
     public class CustomAnimation
     {
@@ -46,6 +45,15 @@ public class Tutorial2D : TutorialBase
         }
         
 
+    }
+
+    public override void SetRatio(float ratio)
+    {
+        base.SetRatio(ratio);
+        foreach (var item in lineRenderers)
+        {
+            item.SetRatio(ratio);
+        }
     }
 
     public override void StopTutorial()

@@ -10,7 +10,10 @@ public abstract class TutorialBase : MonoBehaviour
         TutorialHandle.tutorial = this;
     }
 
-
+    public virtual void SetRatio(float ratio)
+    {
+        
+    }
     public abstract void StopTutorial();
 
     public abstract void PlayTutorial();
