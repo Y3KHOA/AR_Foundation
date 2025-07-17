@@ -7,18 +7,14 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.Splines;
 
-public class Tutorial2D : MonoBehaviour
+public class Tutorial2D : TutorialBase
 {
     [SerializeField] private SplineContainer splineContainer;
     [SerializeField] private GameObject mouse;
     [SerializeField] private TestLine[] lineRenderers;
     [SerializeField] private Transform[] points;
     [SerializeField] private Transform[] movePoints;
-    [SerializeField] private EventTrigger eventTrigger;
 
-
-    private bool isPlayAgain = false;
-    
     [Serializable]
     public class CustomAnimation
     {
@@ -29,8 +25,9 @@ public class Tutorial2D : MonoBehaviour
 
     public List<CustomAnimation> customAnimations = new();
   
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         originalScale = points[0].transform.localScale;
         customAnimations = new List<CustomAnimation>()
         {
@@ -47,30 +44,29 @@ public class Tutorial2D : MonoBehaviour
             customAnimations[i].TestLine = lineRenderers[i];
         }
         
-        EventTrigger.Entry entry = new EventTrigger.Entry();
-        entry.eventID = EventTriggerType.PointerClick;
-        entry.callback.AddListener(StopTutorial);
-        eventTrigger.triggers.Add(entry);
+
     }
 
-    private void StopTutorial(BaseEventData arg0)
+    public override void SetRatio(float ratio)
+    {
+        base.SetRatio(ratio);
+        foreach (var item in lineRenderers)
+        {
+            item.SetRatio(ratio);
+        }
+    }
+
+    public override void StopTutorial()
     {
         sequence?.Kill();
         StopCoroutine(PlayTutorialSequence());
-        eventTrigger.gameObject.SetActive(false);
         isPlayAgain = false;
         Clear();
     }
 
-    private void Start()
-    {
-        PlayTutorial();
-    }
-
-    public void PlayTutorial()
+    public override void PlayTutorial()
     {
         if (isPlayAgain) return;
-        eventTrigger.gameObject.SetActive(true);
         StartCoroutine(PlayTutorialSequence());
         isPlayAgain = true;
     }
