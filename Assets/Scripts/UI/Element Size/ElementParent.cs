@@ -15,7 +15,6 @@ public class ElementParent : MonoBehaviour
 
     private void Start()
     {
-        isActiveBar = false;
         toggleButton.onClick.AddListener(() =>
         {
             isActiveBar = !isActiveBar;
