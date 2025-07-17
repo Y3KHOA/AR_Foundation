@@ -99,7 +99,7 @@ public class DrawingTool : MonoBehaviour
         lines.Add(lr);
 
         // Khoảng cách và text
-        float distanceInCm = len * 100f;
+        float distanceInM = len * 1f;
 
         // Tạo line phụ để đặt text (vuông góc line chính)
         Vector3 dir = (end - start).normalized;
@@ -112,7 +112,7 @@ public class DrawingTool : MonoBehaviour
         // TextMeshPro textMesh = GetOrCreateText();
         // textMesh.text = $"{distanceInCm:F1} cm";
         TextMeshPro textMesh = GetOrCreateText(); // Dùng pool
-        textMesh.text = $"{distanceInCm:F1} cm";
+        textMesh.text = $"{distanceInM:F2} m";
 
         Vector3 textPosition = (aux1End + aux2End) / 2;
         textMesh.transform.position = textPosition;
@@ -153,9 +153,9 @@ public class DrawingTool : MonoBehaviour
             linePool[i].SetPosition(0, checkpoints[i].transform.position);
             linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
 
-            float distanceInCm = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 100f;
+            float distanceInM = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 1f;
             textPool[i].gameObject.SetActive(true);
-            textPool[i].text = $"{distanceInCm:F1} cm";
+            textPool[i].text = $"{distanceInM:F2} m";
             textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
 
             // Cập nhật trạng thái line khi đang chọn checkpoint
@@ -170,7 +170,7 @@ public class DrawingTool : MonoBehaviour
                 linePool[i].material.color = Color.black;
             }
 
-            Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInCm:F1} cm | " +
+            Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInM:F2} m | " +
                         $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
         }
 
@@ -208,7 +208,7 @@ public class DrawingTool : MonoBehaviour
         previewLine.SetPosition(0, start);
         previewLine.SetPosition(1, end);
 
-        float distanceInCm = Vector3.Distance(start, end) * 100f;
+        float distanceInM = Vector3.Distance(start, end) * 1f;
 
         // Kiểm tra xem đã có previewText chưa
         if (previewText == null)
@@ -226,7 +226,7 @@ public class DrawingTool : MonoBehaviour
 
         // Hiển thị text
         previewText.gameObject.SetActive(true);
-        previewText.text = $"{distanceInCm:F1} cm";
+        previewText.text = $"{distanceInM:F2} m";
 
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
         previewText.transform.position = textPos;

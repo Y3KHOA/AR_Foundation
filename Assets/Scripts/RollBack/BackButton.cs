@@ -46,7 +46,7 @@ public class BackButton : MonoBehaviour
         Image panelImage = panelGO.AddComponent<Image>();
         panelImage.color = Color.white;
         RectTransform panelRect = panelGO.GetComponent<RectTransform>();
-        panelRect.sizeDelta = new Vector2(400, 200);
+        panelRect.sizeDelta = new Vector2(600, 300);
         panelRect.anchorMin = new Vector2(0.5f, 0.5f);
         panelRect.anchorMax = new Vector2(0.5f, 0.5f);
         panelRect.anchoredPosition = Vector2.zero;

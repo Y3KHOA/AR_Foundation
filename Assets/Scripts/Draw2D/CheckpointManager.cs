@@ -301,21 +301,6 @@ public class CheckpointManager : MonoBehaviour
         }
     }
 
-    int FindSegmentIndexInCheckpoint(List<Vector2> points, Vector3 start, Vector3 end, float tolerance = 0.01f)
-    {
-        for (int i = 0; i < points.Count; i++)
-        {
-            Vector3 a = new Vector3(points[i].x, 0, points[i].y);
-            Vector3 b = new Vector3(points[(i + 1) % points.Count].x, 0, points[(i + 1) % points.Count].y);
-
-            if ((Vector3.Distance(a, start) < tolerance && Vector3.Distance(b, end) < tolerance) ||
-                (Vector3.Distance(a, end) < tolerance && Vector3.Distance(b, start) < tolerance))
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
     Vector3 ProjectPointOnLineSegment(Vector3 a, Vector3 b, Vector3 point)
     {
         Vector3 ab = b - a;
@@ -335,10 +320,6 @@ public class CheckpointManager : MonoBehaviour
                 DrawingTool.DrawLineAndDistance(wl.start, wl.end);
             }
         }
-    }
-    bool ApproximatelyEqual(Vector3 a, Vector3 b, float tolerance = 0.001f)
-    {
-        return Vector3.Distance(a, b) < tolerance;
     }
 
     bool TrySelectCheckpoint(Vector3 position)
