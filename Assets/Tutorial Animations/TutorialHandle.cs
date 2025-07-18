@@ -23,6 +23,7 @@ public class TutorialHandle : MonoBehaviour
     public void Stop()
     {
         tutorial?.StopTutorial();
+        inputPanel.gameObject.SetActive(false);
     }
 
     private void Start()

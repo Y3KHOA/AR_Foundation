@@ -4,6 +4,16 @@ using UnityEngine.UI;
 public class BackButton : MonoBehaviour
 {
     public Button backButton;
+    private static ModularPopup modularPopup;
+    private static Canvas canvas;
+
+    private void Awake()
+    {
+        if (modularPopup == null)
+        {
+            modularPopup = Resources.Load<ModularPopup>("Modular Popup");
+        }
+    }
 
     void Start()
     {
@@ -11,8 +21,11 @@ public class BackButton : MonoBehaviour
         {
             backButton.onClick.AddListener(() =>
             {
+                if (isShow) return;
+                isShow = true;
                 Debug.Log("Button Back Clicked!");
-                ShowUnsavedDataPopup();
+                // ShowUnsavedDataPopup();
+                ShowPopupPrefab();
             });
         }
         else
@@ -20,6 +33,26 @@ public class BackButton : MonoBehaviour
             Debug.LogError("BackButton: Chưa gán Button!");
         }
     }
+
+    private bool isShow = false;
+
+    private void ShowPopupPrefab()
+    {
+        var popup = Instantiate(modularPopup);
+        var canvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Exclude);
+        popup.transform.SetParent(canvas.transform);
+        popup.Header = "Dữ liệu của bạn chưa được lưu!\nNếu thoát ra sẽ mất dữ liệu!";
+        popup.ClickYesEvent = OnClickYes;
+        popup.EventWhenClickButtons = () =>
+        {
+            BackgroundUI.Instance.Hide();
+            isShow = false;
+        };
+        popup.autoClearWhenClick = true;
+        popup.ResetAnchorOffsetAndScale();
+        BackgroundUI.Instance.Show(popup.gameObject, null);
+    }
+
 
     void ShowUnsavedDataPopup()
     {
@@ -72,18 +105,25 @@ public class BackButton : MonoBehaviour
         okGO.GetComponent<Button>().onClick.AddListener(() =>
         {
             Debug.Log("OK clicked");
-            RoomStorage.rooms.Clear();
-            SceneHistoryManager.LoadPreviousScene();
+            OnClickYes();
             Destroy(popupGO);
+            isShow = false;
         });
 
         // === Tạo nút Cancel ===
         GameObject cancelGO = CreateButton("Cancel", panelGO.transform, new Vector2(60, -60));
         cancelGO.GetComponent<Button>().onClick.AddListener(() =>
         {
+            isShow = false;
             Debug.Log("Cancel clicked");
             Destroy(popupGO);
         });
+    }
+
+    private static void OnClickYes()
+    {
+        RoomStorage.rooms.Clear();
+        SceneHistoryManager.LoadPreviousScene();
     }
 
     GameObject CreateButton(string label, Transform parent, Vector2 anchoredPos)
