@@ -10,10 +10,11 @@ public class ClearAllRoomsButton : MonoBehaviour
 
     private RoomInfoDisplay roomInfoDisplay; // Tham chiếu đến CheckpointManager để điều khiển vẽ
     [SerializeField] private ToggleGroupUI toggleGroupUI;
+    [SerializeField] private PenManager penManager;
     private bool isClearingAll = false;
     void Start()
     {
-
+        penManager = FindFirstObjectByType<PenManager>();
 
         if (clearAllButton != null)
             clearAllButton.onClick.AddListener(OnClearAllClicked);
@@ -34,10 +35,13 @@ public class ClearAllRoomsButton : MonoBehaviour
             Debug.Log("Người dùng xác nhận: Xóa tất cả!");
             ClearEverything();
 
+            toggleGroupUI.ToggleOffAll();
+            penManager.ChangeState(true );
+            
             if (roomInfoDisplay != null)
             {
                 roomInfoDisplay.ResetState();
-                toggleGroupUI.ToggleOffAll();
+
             }
             BackgroundUI.Instance.Hide();
         };
@@ -69,7 +73,7 @@ public class ClearAllRoomsButton : MonoBehaviour
 
         // 2) Xóa mesh floor
         // var floors = GameObject.FindObjectsOfType<RoomMeshController>();
-        var floors = GameObject.FindObjectsByType<RoomMeshController>(FindObjectsSortMode.None);
+        var floors = GameObject.FindObjectsByType<RoomMeshController>(FindObjectsSortMode.None);    
         foreach (var floor in floors)
         {
             Destroy(floor.gameObject);
