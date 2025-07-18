@@ -125,6 +125,7 @@ public class BackgroundUI : MonoBehaviour
 
     private void SetBackgroundActive(bool isActive)
     {
+        if (background == null) return;
         background.gameObject.SetActive(isActive);
     }
 

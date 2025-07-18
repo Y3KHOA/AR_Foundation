@@ -31,10 +31,16 @@ public class PanelToggleController : MonoBehaviour
         {
              BackgroundUI.Instance.Show(targetPanel, () =>
              {
-                 TogglePanel();
-                 BackgroundUI.Instance.Hide();
+                 HideWhenOk();
              });
             
         }
+    }
+
+    public void HideWhenOk()
+    {
+        targetPanel.SetActive(false);
+        isPanelOpen = false;
+        BackgroundUI.Instance.Hide();
     }
 }

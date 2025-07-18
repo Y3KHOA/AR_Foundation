@@ -15,6 +15,7 @@ public class InputCreateRectangularRoom : MonoBehaviour
     [Header("References")]
     public CheckpointManager checkpointManager; // Script vẽ
 
+    [SerializeField] private PanelToggleController panelToggleController;
     void Start()
     {
         if (createButton != null)
@@ -23,7 +24,7 @@ public class InputCreateRectangularRoom : MonoBehaviour
             Debug.LogError("Chưa gán CreateButton!");
 
         failedPopup.DescriptionText = "";
-
+        panelToggleController = GetComponent<PanelToggleController>();
         // Tự động focus vào chiều dài sau 1 frame
         StartCoroutine(FocusLengthInputNextFrame());
     }
@@ -80,8 +81,7 @@ public class InputCreateRectangularRoom : MonoBehaviour
         checkpointManager.CreateRectangleRoom(length, width);
 
         Debug.Log($"[RoomShapeInputController] Gửi yêu cầu tạo Room hình chữ nhật chiều dài {length}m , cạnh rộng {width}m");
-        targetPanel.SetActive(false);
-        BackgroundUI.Instance.Hide();
+        panelToggleController.HideWhenOk();
     }
 
     private void ShowInformationToast(string descriptionText)
