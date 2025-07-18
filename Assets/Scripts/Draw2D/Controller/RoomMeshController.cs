@@ -95,6 +95,17 @@ void Update()
                     {
                         foreach (var cp in mapping) cp.transform.position += delta;
                     }
+
+                    // === di chuyển point door/ window theo room
+                    if (checkpointMgr.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
+                    {
+                        foreach (var (line, p1GO, p2GO) in doorsInRoom)
+                        {
+                            p1GO.transform.position += delta;
+                            p2GO.transform.position += delta;
+                        }
+                    }
+
                     checkpointMgr.DrawingTool.ClearAllLines();
                     checkpointMgr.RedrawAllRooms();
                 }
@@ -228,6 +239,15 @@ void Update()
                         foreach (var cp in mapping)
                         {
                             cp.transform.position += delta;
+                        }
+                    }
+                    // === di chuyển point door/ window theo room
+                    if (checkpointMgr.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
+                    {
+                        foreach (var (line, p1GO, p2GO) in doorsInRoom)
+                        {
+                            p1GO.transform.position += delta;
+                            p2GO.transform.position += delta;
                         }
                     }
                     checkpointMgr.DrawingTool.ClearAllLines();

@@ -61,7 +61,8 @@ public class PenManager : MonoBehaviour
             }
             else if (Input.GetMouseButton(0))
             {
-                if (checkpointManager.IsInSavedLoop(checkpointManager.selectedCheckpoint) || checkpointManager.isClosedLoop)
+                // if (checkpointManager.IsInSavedLoop(checkpointManager.selectedCheckpoint) || checkpointManager.isClosedLoop)
+                if (checkpointManager.selectedCheckpoint != null)
                 {
                     checkpointManager.MoveSelectedCheckpoint();
                     checkpointManager.isDragging = true;
