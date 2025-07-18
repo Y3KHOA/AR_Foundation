@@ -9,7 +9,7 @@ public class InputCreateRectangularRoom : MonoBehaviour
     public GameObject lengthInputField;  // Chiều dài cạnh (m)
     public Button createButton;          // Nút "Tạo Room"
     public GameObject targetPanel; // Panel đóng
-
+    [SerializeField] private ToastUI failedPopup;
     [Header("References")]
     public CheckpointManager checkpointManager; // Script vẽ
 
@@ -19,7 +19,12 @@ public class InputCreateRectangularRoom : MonoBehaviour
             createButton.onClick.AddListener(OnCreateRoomClicked);
         else
             Debug.LogError("Chưa gán CreateButton!");
+
+        failedPopup.DescriptionText = "";
     }
+
+    private const string WidthErrorLog = "Chiều rộng cạnh không hợp lệ! (>0)";
+    private const string HeightErrorLog = "Chiều dài cạnh không hợp lệ! (>0)";
 
     void OnCreateRoomClicked()
     {
@@ -35,8 +40,9 @@ public class InputCreateRectangularRoom : MonoBehaviour
         TMP_InputField widthField = sidesInputField.GetComponentInChildren<TMP_InputField>();
         if (widthField == null || !int.TryParse(widthField.text, out width) || width <= 0)
         {
-            Debug.LogWarning("Chiều dài cạnh không hợp lệ! (>0)");
-            PopupController.Show("Chiều dài cạnh không hợp lệ! (>0)", null);
+            Debug.LogWarning(WidthErrorLog);
+            // PopupController.Show("Chiều dài cạnh không hợp lệ! (>0)", null);
+            ShowInformationToast(WidthErrorLog);
             return;
         }
 
@@ -46,8 +52,9 @@ public class InputCreateRectangularRoom : MonoBehaviour
         TMP_InputField heightField = lengthInputField.GetComponentInChildren<TMP_InputField>();
         if (heightField == null || !float.TryParse(heightField.text, out height) || height <= 0)
         {
-            Debug.LogWarning("Chiều rộng cạnh không hợp lệ! (>0)");
-            PopupController.Show("Chiều rộng cạnh không hợp lệ! (>0)", null);
+            Debug.LogWarning(HeightErrorLog);
+            // PopupController.Show("Chiều rộng cạnh không hợp lệ! (>0)", null);
+            ShowInformationToast(HeightErrorLog);
             return;
         }
 
@@ -60,5 +67,12 @@ public class InputCreateRectangularRoom : MonoBehaviour
 
         Debug.Log($"[RoomShapeInputController] Gửi yêu cầu tạo Room hình chữ nhật chiều dài {width}m , cạnh rộng {width}m");
         targetPanel.SetActive(false);
+        BackgroundUI.Instance.Hide();
+    }
+
+    private void ShowInformationToast(string descriptionText)
+    {
+        failedPopup.gameObject.SetActive(true);
+        failedPopup.DescriptionText = HeightErrorLog;
     }
 }

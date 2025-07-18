@@ -44,13 +44,14 @@ public class ToastUI : MonoBehaviour
     private Tween tween;
     private void OnEnable()
     {
+        tween?.Kill();
         tween = DOVirtual.Float(0, 1, 2, value =>
         {
             DoFillAmount(value);
         }).OnComplete(() =>
         {
             gameObject.SetActive(false);
-        });
+        }).SetEase(Ease.InSine);
     }
 
     private void OnDisable()

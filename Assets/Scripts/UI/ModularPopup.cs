@@ -27,6 +27,16 @@ public class ModularPopup : MonoBehaviour
     [SerializeField] private Button yesBtn;
     [SerializeField] private Button noBtn;
 
+    public Button YesBtn
+    {
+        get => yesBtn;
+    }
+
+    public Button NoBtn
+    {
+        get => noBtn;
+    }
+
     public Action ClickYesEvent;
     public Action ClickNoEvent;
     public Action EventWhenClickButtons;
