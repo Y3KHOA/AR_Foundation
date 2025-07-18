@@ -38,12 +38,16 @@ public class ClearAllRoomsButton : MonoBehaviour
             {
                 roomInfoDisplay.ResetState();
             }
+            BackgroundUI.Instance.Hide();
         };
-        popup.ClickNoEvent = () =>
+        popup.EventWhenClickButtons = () =>
         {
-            Debug.Log("Người dùng hủy bỏ xóa tất cả.");
+            BackgroundUI.Instance.Hide();
+
         };
         popup.autoClearWhenClick = true;
+        
+        BackgroundUI.Instance.Show(popup.gameObject, null);
         // PopupController.Show(
         //     "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!",
         //     onYes: () =>
