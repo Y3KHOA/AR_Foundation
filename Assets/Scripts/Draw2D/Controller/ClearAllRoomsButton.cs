@@ -5,10 +5,17 @@ public class ClearAllRoomsButton : MonoBehaviour
 {
     [Header("References")]
     public Button clearAllButton;
+
     public CheckpointManager checkpointManager;
+    private ModularPopup modularPopup;
 
     void Start()
     {
+        if (modularPopup == null)
+        {
+            modularPopup = Resources.Load<ModularPopup>("Modular Popup");
+        }
+
         if (clearAllButton != null)
             clearAllButton.onClick.AddListener(OnClearAllClicked);
         else
@@ -20,18 +27,29 @@ public class ClearAllRoomsButton : MonoBehaviour
 
     void OnClearAllClicked()
     {
-        PopupController.Show(
-            "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!",
-            onYes: () =>
-            {
-                Debug.Log("Người dùng xác nhận: Xóa tất cả!");
-                ClearEverything();
-            },
-            onNo: () =>
-            {
-                Debug.Log("Người dùng hủy bỏ xóa tất cả.");
-            }
-        );
+        var popup = Instantiate(modularPopup);
+        popup.AutoFindCanvasAndSetup();
+        popup.Header = "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!";
+        popup.ClickYesEvent = () =>
+        {
+            Debug.Log("Người dùng xác nhận: Xóa tất cả!");
+            ClearEverything();
+        };
+        popup.ClickNoEvent = () =>
+        {
+            Debug.Log("Người dùng hủy bỏ xóa tất cả.");
+            ClearEverything();
+        };
+        popup.autoClearWhenClick = true;
+        // PopupController.Show(
+        //     "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!",
+        //     onYes: () =>
+        //     {
+        //         Debug.Log("Người dùng xác nhận: Xóa tất cả!");
+        //         ClearEverything();
+        //     },
+        //     onNo: () => { Debug.Log("Người dùng hủy bỏ xóa tất cả."); }
+        // );
     }
 
     void ClearEverything()
@@ -54,6 +72,7 @@ public class ClearAllRoomsButton : MonoBehaviour
                 if (cp != null) Destroy(cp);
             }
         }
+
         checkpointManager.AllCheckpoints.Clear();
 
         // 4) Xóa dữ liệu tạm

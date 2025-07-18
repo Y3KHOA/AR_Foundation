@@ -73,4 +73,11 @@ public class ModularPopup : MonoBehaviour
 
 
     }
+
+    public void AutoFindCanvasAndSetup()
+    {  
+        var canvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Exclude);
+        transform.SetParent(canvas.transform);
+        ResetAnchorOffsetAndScale();
+    }
 }

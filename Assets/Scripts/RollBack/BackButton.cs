@@ -39,8 +39,7 @@ public class BackButton : MonoBehaviour
     private void ShowPopupPrefab()
     {
         var popup = Instantiate(modularPopup);
-        var canvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Exclude);
-        popup.transform.SetParent(canvas.transform);
+        popup.AutoFindCanvasAndSetup();
         popup.Header = "Dữ liệu của bạn chưa được lưu!\nNếu thoát ra sẽ mất dữ liệu!";
         popup.ClickYesEvent = OnClickYes;
         popup.EventWhenClickButtons = () =>
@@ -49,7 +48,6 @@ public class BackButton : MonoBehaviour
             isShow = false;
         };
         popup.autoClearWhenClick = true;
-        popup.ResetAnchorOffsetAndScale();
         BackgroundUI.Instance.Show(popup.gameObject, null);
     }
 
