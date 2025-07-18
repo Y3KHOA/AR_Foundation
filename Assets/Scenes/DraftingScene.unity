@@ -3176,7 +3176,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 1398399510862754056, guid: 56d1117d9e482db4390a426d371d2486, type: 3}
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 1188347523028407658, guid: 56d1117d9e482db4390a426d371d2486, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 7393946570058174024, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
@@ -19602,9 +19603,14 @@ PrefabInstance:
       objectReference: {fileID: 1475697506}
     - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
         type: 3}
-      propertyPath: lengthInputField
+      propertyPath: widthInputField
       value: 
       objectReference: {fileID: 40852884}
+    - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: lengthInputField
+      value: 
+      objectReference: {fileID: 1475697506}
     - target: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
         type: 3}
       propertyPath: checkpointManager
