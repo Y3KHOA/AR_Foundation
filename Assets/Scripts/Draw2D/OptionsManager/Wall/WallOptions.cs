@@ -4,7 +4,8 @@ using UnityEngine.UI;
 public class PanelToggleController : MonoBehaviour
 {
     [Header("Toggle Elements")]
-    public Button toggleButton;  // Button để click
+    public Button toggleButton; // Button để click
+
     public GameObject targetPanel; // Panel để mở/đóng
 
     private bool isPanelOpen = false;
@@ -26,5 +27,20 @@ public class PanelToggleController : MonoBehaviour
         targetPanel.SetActive(isPanelOpen);
 
         Debug.Log(isPanelOpen ? "Panel Opened" : "Panel Closed");
+        if (isPanelOpen)
+        {
+             BackgroundUI.Instance.Show(targetPanel, () =>
+             {
+                 HideWhenOk();
+             });
+            
+        }
+    }
+
+    public void HideWhenOk()
+    {
+        targetPanel.SetActive(false);
+        isPanelOpen = false;
+        BackgroundUI.Instance.Hide();
     }
 }

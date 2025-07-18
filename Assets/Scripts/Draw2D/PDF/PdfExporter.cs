@@ -282,20 +282,49 @@ public class PdfExporter
             cb.SetRGBColorFill(0, 0, 0);
 
             // Tính số liệu
-            float length = globalSize.x;
-            float width = globalSize.y;
-            float perimeter = 2 * (length + width);
-            float area = length * width;
+            float totalLength = 0f;
+            float totalWidth = 0f;
+            float totalPerimeter = 0f;
+            float totalArea = 0f;
+
+            foreach (var room in rooms)
+            {
+                var pts = room.checkpoints;
+                if (pts == null || pts.Count < 3) continue;
+
+                float perimeter = 0f;
+                float maxLength = 0f;
+                float minLength = float.MaxValue;
+                float area = 0f;
+
+                for (int i = 0; i < pts.Count; i++)
+                {
+                    Vector2 a = pts[i];
+                    Vector2 b = pts[(i + 1) % pts.Count];
+                    float dist = Vector2.Distance(a, b);
+                    perimeter += dist;
+                    maxLength = Mathf.Max(maxLength, dist);
+                    minLength = Mathf.Min(minLength, dist);
+                    area += (a.x * b.y - b.x * a.y);
+                }
+
+                area = Mathf.Abs(area) * 0.5f;
+
+                totalLength += maxLength;
+                totalWidth += minLength;
+                totalPerimeter += perimeter;
+                totalArea += area;
+            }
 
             float textX = boxX + 5f;
             float textY = boxY + infoBoxHeight - 12f;
             float leading = 12f; // Khoảng cách dòng
 
             cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Thong so ban ve:", textX, textY, 0);
-            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chieu dai: {length:0.00} m", textX, textY - leading, 0);
-            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chieu rong: {width:0.00} m", textX, textY - 2 * leading, 0);
-            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chu vi: {perimeter:0.00} m", textX, textY - 3 * leading, 0);
-            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Dien tich: {area:0.00} m²", textX, textY - 4 * leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chieu dai: {totalLength:0.00} m", textX, textY - leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chieu rong: {totalWidth:0.00} m", textX, textY - 2 * leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Chu vi: {totalPerimeter:0.00} m", textX, textY - 3 * leading, 0);
+            cb.ShowTextAligned(PdfContentByte.ALIGN_LEFT, $"Dien tich: {totalArea:0.00} m²", textX, textY - 4 * leading, 0);
 
             cb.EndText();
 

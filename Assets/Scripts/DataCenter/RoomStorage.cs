@@ -24,4 +24,15 @@ public static class RoomStorage
         }
         rooms.Add(updatedRoom);
     }
+
+    public static Room GetRoomByID(string id)
+    {
+        foreach (var room in rooms)
+        {
+            if (room.ID == id)
+                return room;
+        }
+        Debug.LogWarning($"RoomStorage: Không tìm thấy Room với ID: {id}");
+        return null;
+    }
 }        

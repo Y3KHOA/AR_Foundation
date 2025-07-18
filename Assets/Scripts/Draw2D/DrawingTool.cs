@@ -14,7 +14,6 @@ public class DrawingTool : MonoBehaviour
     public Material doorMaterial;
     public Material windowMaterial;
 
-
     private List<LineRenderer> linePool = new List<LineRenderer>(); // Object Pooling
     private List<TextMeshPro> textPool = new List<TextMeshPro>();
 
@@ -45,12 +44,11 @@ public class DrawingTool : MonoBehaviour
         }
     }
 
-
     public void DrawLineAndDistance(Vector3 start, Vector3 end)
     {
         // GameObject go = Instantiate(linePrefab);
         // LineRenderer lr = go.GetComponent<LineRenderer>();
-        LineRenderer lr = GetOrCreateLine(); // ✅ Dùng pool thay vì Instantiate
+        LineRenderer lr = GetOrCreateLine(); // Dùng pool thay vì Instantiate
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
 
@@ -60,8 +58,12 @@ public class DrawingTool : MonoBehaviour
         lr.numCapVertices = 0;
         lr.widthMultiplier = 0.1f;
         lr.positionCount = 2;
-        lr.SetPosition(0, start);
-        lr.SetPosition(1, end);
+        // if (currentLineType == LineType.Door)
+        // {
+        //     DrawDashedLine(start, end); // tạo nét đứt
+        //     return; // Không cần vẽ line chính nữa
+        // }
+
 
         // Lấy chiều dài đoạn
         float len = Vector3.Distance(start, end);
@@ -83,14 +85,21 @@ public class DrawingTool : MonoBehaviour
             matInstance.mainTextureScale = new Vector2(len * 2f, 1f); // nhân đôi để tile dày hơn
         }
 
+        matInstance.renderQueue = 3100; // ← Ép vẽ sau grid
+
         // Gán vật liệu
         lr.material = matInstance;
+        // Ưu tiên nét đứt (cửa/cửa sổ) vẽ sau
+        if (currentLineType == LineType.Door || currentLineType == LineType.Window)
+            lr.sortingOrder = 20;
+        else
+            lr.sortingOrder = 10;
 
         // Lưu line đã vẽ
         lines.Add(lr);
 
         // Khoảng cách và text
-        float distanceInCm = len * 100f;
+        float distanceInM = len * 1f;
 
         // Tạo line phụ để đặt text (vuông góc line chính)
         Vector3 dir = (end - start).normalized;
@@ -103,7 +112,7 @@ public class DrawingTool : MonoBehaviour
         // TextMeshPro textMesh = GetOrCreateText();
         // textMesh.text = $"{distanceInCm:F1} cm";
         TextMeshPro textMesh = GetOrCreateText(); // Dùng pool
-        textMesh.text = $"{distanceInCm:F1} cm";
+        textMesh.text = $"{distanceInM:F2} m";
 
         Vector3 textPosition = (aux1End + aux2End) / 2;
         textMesh.transform.position = textPosition;
@@ -144,9 +153,9 @@ public class DrawingTool : MonoBehaviour
             linePool[i].SetPosition(0, checkpoints[i].transform.position);
             linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
 
-            float distanceInCm = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 100f;
+            float distanceInM = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 1f;
             textPool[i].gameObject.SetActive(true);
-            textPool[i].text = $"{distanceInCm:F1} cm";
+            textPool[i].text = $"{distanceInM:F2} m";
             textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
 
             // Cập nhật trạng thái line khi đang chọn checkpoint
@@ -161,7 +170,7 @@ public class DrawingTool : MonoBehaviour
                 linePool[i].material.color = Color.black;
             }
 
-            Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInCm:F1} cm | " +
+            Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInM:F2} m | " +
                         $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
         }
 
@@ -199,7 +208,7 @@ public class DrawingTool : MonoBehaviour
         previewLine.SetPosition(0, start);
         previewLine.SetPosition(1, end);
 
-        float distanceInCm = Vector3.Distance(start, end) * 100f;
+        float distanceInM = Vector3.Distance(start, end) * 1f;
 
         // Kiểm tra xem đã có previewText chưa
         if (previewText == null)
@@ -217,7 +226,7 @@ public class DrawingTool : MonoBehaviour
 
         // Hiển thị text
         previewText.gameObject.SetActive(true);
-        previewText.text = $"{distanceInCm:F1} cm";
+        previewText.text = $"{distanceInM:F2} m";
 
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
         previewText.transform.position = textPos;
@@ -318,6 +327,46 @@ public class DrawingTool : MonoBehaviour
         {
             tmp.fontSize = 3f; // kích thước font mặc định
             tmp.color = Color.black;
+        }
+    }
+
+    public void DrawDashedLine(Vector3 start, Vector3 end, float dashLength = 0.1f, float gapLength = 0.05f)
+    {
+        Vector3 direction = (end - start).normalized;
+        float totalLength = Vector3.Distance(start, end);
+        float currentPos = 0f;
+
+        while (currentPos < totalLength)
+        {
+            float nextDash = Mathf.Min(dashLength, totalLength - currentPos);
+
+            Vector3 dashStart = start + direction * currentPos;
+            Vector3 dashEnd = start + direction * (currentPos + nextDash);
+
+            LineRenderer lr = GetOrCreateLine();
+            lr.positionCount = 2;
+            lr.SetPosition(0, dashStart);
+            lr.SetPosition(1, dashEnd);
+
+            lr.material = new Material(doorMaterial); // Gán vật liệu cửa
+            lr.widthMultiplier = 0.1f;
+
+            lines.Add(lr); // lưu để quản lý nếu cần xóa
+
+            currentPos += dashLength + gapLength;
+        }
+    }
+
+    public void DrawAllLinesFromRoomStorage()
+    {
+        ClearAllLines(); // Xóa toàn bộ line hiện tại (nếu cần)
+
+        foreach (Room room in RoomStorage.rooms)
+        {
+            foreach (WallLine wall in room.wallLines)
+            {
+                DrawLineAndDistance(wall.start, wall.end);
+            }
         }
     }
 }

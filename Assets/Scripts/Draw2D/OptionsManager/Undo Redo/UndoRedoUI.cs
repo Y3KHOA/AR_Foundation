@@ -13,12 +13,12 @@ public class UndoRedoUI : MonoBehaviour
         undoButton.onClick.AddListener(() =>
         {
             Debug.Log("Undo button clicked!");
-            undoRedoManager.Undo();
+            undoRedoManager?.Undo();
         });
         redoButton.onClick.AddListener(() =>
         {
             Debug.Log("Redo button clicked!");
-            undoRedoManager.Redo();
+            undoRedoManager?.Redo();
         });
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,38 +9,72 @@ public class PenManager : MonoBehaviour
     public static Camera mainCamera;  // Camera chính để di chuyển và phóng to
     public float zoomSpeed = 2f;      // Tốc độ zoom
     public float panSpeed = 0.5f;     // Tốc độ di chuyển
+    public static bool isRoomFloorBeingDragged = false;
 
     public static bool isPenActive = true; // Trạng thái của Pen (bật/tắt)
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển vẽ
+    private DrawingTool DrawTool; // Tham chiếu đến DrawingTool để điều khiển vẽ
 
+    private ToggleColor toggleColor;
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
-
+    private Vector3 previewPosition; // Vị trí preview
+    [SerializeField] private ToggleGroupUI toggleGroupUI;
     void Start()
     {
         mainCamera = Camera.main;
         // Gán sự kiện click vào Button
         penButton.onClick.AddListener(TogglePen);
-
+        toggleColor = penButton.GetComponent<ToggleColor>();
+        toggleColor.Toggle(isPenActive);
         // Lấy tham chiếu đến CheckpointManager
-        checkpointManager = FindObjectOfType<CheckpointManager>();
+        checkpointManager = FindFirstObjectByType<CheckpointManager>();
 
         // Đảm bảo trạng thái ban đầu của Pen là tắt
         UpdatePenState();
+        HandleToggleGroupUI(isPenActive);
     }
 
     void Update()
     {
-        if (isPenActive)
+        DrawTool=FindFirstObjectByType<DrawingTool>();
+        if (!isPenActive)
         {
-            // Nếu Pen đang bật, cho phép vẽ
-            checkpointManager.enabled = true;  // Bật chế độ vẽ trong CheckpointManager
-            HandleZoomAndPan(false);  // Tắt zoom và di chuyển khi vẽ
+            checkpointManager.enabled = true;
+            HandleZoomAndPan(false); // Tắt zoom khi vẽ
         }
         else
         {
-            // Nếu Pen đang tắt, cho phép di chuyển và zoom camera
-            checkpointManager.enabled = false; // Tắt chế độ vẽ trong CheckpointManager
-            HandleZoomAndPan(true);  // Bật zoom và di chuyển khi không vẽ
+            checkpointManager.enabled = false;
+
+            // Nếu mesh sàn đang drag ➜ khóa bàn cờ
+            if (isRoomFloorBeingDragged)
+            {
+                Debug.Log("RoomFloor drag đang hoạt động ➜ Khóa pan/zoom");
+                HandleZoomAndPan(false);
+            }
+            else
+            {
+                HandleZoomAndPan(true);
+            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                checkpointManager.SelectCheckpoint();
+            }
+            else if (Input.GetMouseButton(0))
+            {
+                // if (checkpointManager.IsInSavedLoop(checkpointManager.selectedCheckpoint) || checkpointManager.isClosedLoop)
+                if (checkpointManager.selectedCheckpoint != null)
+                {
+                    checkpointManager.MoveSelectedCheckpoint();
+                    checkpointManager.isDragging = true;
+                }
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                checkpointManager.DeselectCheckpoint();
+                checkpointManager.isDragging = false;
+            }
         }
     }
 
@@ -48,45 +83,67 @@ public class PenManager : MonoBehaviour
     {
         if (!canZoomAndPan) return;
 
-        // Zoom bằng cuộn chuột
+        if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
+        {
+            Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
+            return;
+        }
+
+        if (IsTouchOverRoomFloor())
+        {
+            Debug.Log("Đang chạm RoomFloor ➜ KHÔNG zoom/pan!");
+            return;
+        }
+
+        // Thêm kiểm tra raycast vào đầu tiên
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began || touch.phase == TouchPhase.Moved)
+            {
+                Ray ray = mainCamera.ScreenPointToRay(touch.position);
+                if (Physics.Raycast(ray, out RaycastHit hit))
+                {
+                    if (hit.collider.gameObject.CompareTag("RoomFloor"))
+                    {
+                        Debug.Log("Raycast đang hit RoomFloor ➜ Bỏ pan/zoom bàn cờ!");
+                        return; // Chặn bàn cờ ngay từ đầu
+                    }
+                }
+            }
+        }
+
+        // Zoom bằng cuộn chuột (Editor/PC)
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (scroll != 0f)
         {
-            // Điều chỉnh kích thước của camera, giới hạn phạm vi zoom
             mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - scroll * zoomSpeed, 1f, 70f);
         }
 
-        // Di chuyển camera bằng chuột (hoặc bằng 1 ngón tay)
-        if (Input.touchCount == 1) // Nếu chỉ có 1 ngón tay trên màn hình
+        // Di chuyển camera bằng chuột hoặc bằng 1 ngón tay
+        if (Input.touchCount == 1)
         {
             Touch touch = Input.GetTouch(0);
-
             if (touch.phase == TouchPhase.Moved)
             {
-                // Tính toán sự thay đổi của vị trí màn hình để di chuyển camera
-                Vector3 touchDelta = touch.deltaPosition;  // Sự thay đổi của vị trí touch
+                Vector3 touchDelta = touch.deltaPosition;
                 Vector3 move = mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, mainCamera.nearClipPlane)) -
-                mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x - touchDelta.x, touch.position.y - touchDelta.y, mainCamera.nearClipPlane));
+                                mainCamera.ScreenToWorldPoint(new Vector3(touch.position.x - touchDelta.x, touch.position.y - touchDelta.y, mainCamera.nearClipPlane));
 
                 mainCamera.transform.Translate(-move, Space.World);
             }
         }
 
         // Phóng to/thu nhỏ bằng hai ngón tay (pinch-to-zoom)
-        if (Input.touchCount == 2) // Nếu có 2 ngón tay trên màn hình
+        if (Input.touchCount == 2)
         {
             Touch touch1 = Input.GetTouch(0);
             Touch touch2 = Input.GetTouch(1);
 
-            // Tính toán sự thay đổi khoảng cách giữa 2 ngón tay
             float prevMagnitude = (touch1.position - touch1.deltaPosition - (touch2.position - touch2.deltaPosition)).magnitude;
             float currentMagnitude = (touch1.position - touch2.position).magnitude;
-            Debug.Log($"prevMagnitude: {prevMagnitude}, currentMagnitude: {currentMagnitude}");
 
-            // Tính toán sự thay đổi khoảng cách và điều chỉnh kích thước camera
             float difference = currentMagnitude - prevMagnitude;
-
-            // Điều chỉnh kích thước camera dựa trên sự thay đổi khoảng cách giữa 2 ngón tay
             mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - difference * zoomSpeed * 0.01f, 1f, 70f);
         }
     }
@@ -94,8 +151,30 @@ public class PenManager : MonoBehaviour
     // Toggle trạng thái Pen
     void TogglePen()
     {
-        isPenActive = !isPenActive;  // Chuyển trạng thái Pen
+        var newActivePenState = !isPenActive;
+        ChangeState(newActivePenState);
+        HandleToggleGroupUI(newActivePenState);
+    }
+
+    private void HandleToggleGroupUI(bool currentPenState )
+    {
+        if (currentPenState)
+        {
+            // tắt hết toggle bên kia
+            toggleGroupUI.ToggleOffAll();
+        }
+        else
+        {
+            toggleGroupUI.ShowFirstButton();
+            // bật button đầu tiên
+        }
+    }
+
+    public void ChangeState(bool state)
+    {
+        isPenActive = state;  // Chuyển trạng thái Pen
         UpdatePenState();            // Cập nhật trạng thái Pen
+        toggleColor.Toggle(isPenActive);
     }
 
     // Cập nhật trạng thái Pen
@@ -110,4 +189,22 @@ public class PenManager : MonoBehaviour
             Debug.LogWarning("Lỗi khi cập nhật button text: " + e.Message);
         }
     }
+    private bool IsTouchOverRoomFloor()
+    {
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetMouseButton(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            return Physics.Raycast(ray, out RaycastHit hit) && hit.collider.gameObject.layer == LayerMask.NameToLayer("RoomFloor");
+        }
+#else
+    if (Input.touchCount > 0)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+        return Physics.Raycast(ray, out RaycastHit hit) && hit.collider.gameObject.layer == LayerMask.NameToLayer("RoomFloor");
+    }
+#endif
+        return false;
+    }
+
 }
