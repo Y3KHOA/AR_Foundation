@@ -21,6 +21,7 @@ public class InputCreateRectangularRoom : MonoBehaviour
             Debug.LogError("Chưa gán CreateButton!");
 
         failedPopup.DescriptionText = "";
+        
         // Tự động focus vào chiều dài trước
         var field = lengthInputField.GetComponentInChildren<TMP_InputField>();
         if (field != null)
