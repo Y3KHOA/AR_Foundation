@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
 using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class CheckpointManager : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class CheckpointManager : MonoBehaviour
     public PenManager penManager;
     public UndoRedoManager undoRedoManager;
     public StoragePermissionRequester permissionRequester;
+    
 
 
     public LineType currentLineType = LineType.Wall;
@@ -694,6 +696,39 @@ public class CheckpointManager : MonoBehaviour
         tempDoorWindowPoints.Clear();
 
         Debug.Log("Đã xóa toàn bộ dữ liệu vẽ chưa khép kín.");
+    }
+
+    public string lastSelectedRoomID = null;
+
+    public string GetSelectedRoomID()
+    {
+        if (selectedCheckpoint != null)
+        {
+            foreach (var loop in allCheckpoints)
+            {
+                if (loop.Contains(selectedCheckpoint))
+                {
+                    lastSelectedRoomID = FindRoomIDForLoop(loop);
+                    return lastSelectedRoomID;
+                }
+            }
+        }
+        // Nếu đang kéo mesh ➜ lấy RoomID từ RoomMeshController đang hoạt động
+        if (IsDraggingRoom)
+        {
+            var activeFloors = GameObject.FindObjectsByType<RoomMeshController>(FindObjectsSortMode.None);
+            foreach (var floor in activeFloors)
+            {
+                if (floor.isDragging) // đã gán từ RoomMeshController
+                {
+                    lastSelectedRoomID = floor.RoomID;
+                    return lastSelectedRoomID;
+                }
+            }
+        }
+
+        // Nếu đang không chọn gì nhưng vẫn có room đã chọn trước đó → giữ nguyên
+        return lastSelectedRoomID;
     }
 
     public void CreateRegularPolygonRoom(int sides, float edgeLength)
