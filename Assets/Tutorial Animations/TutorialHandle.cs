@@ -49,7 +49,6 @@ public class TutorialHandle : MonoBehaviour
     private void SetToCenterOfCamera()
     {
         var center = mainCam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f));
-        Debug.Log("Center pos: " + center);
     }
     
     
