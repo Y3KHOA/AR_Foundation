@@ -5,8 +5,8 @@ using TMPro;
 public class InputCreateRectangularRoom : MonoBehaviour
 {
     [Header("UI References")]
-    public GameObject sidesInputField;   // Số cạnh
-    public GameObject lengthInputField;  // Chiều dài cạnh (m)
+    public GameObject lengthInputField;   // Chiều dài cạnh (m)
+    public GameObject widthInputField;  // Chiều rộng cạnh (m)
     public Button createButton;          // Nút "Tạo Room"
     public GameObject targetPanel; // Panel đóng
     [SerializeField] private ToastUI failedPopup;
@@ -21,6 +21,10 @@ public class InputCreateRectangularRoom : MonoBehaviour
             Debug.LogError("Chưa gán CreateButton!");
 
         failedPopup.DescriptionText = "";
+        // Tự động focus vào chiều dài trước
+        var field = lengthInputField.GetComponentInChildren<TMP_InputField>();
+        if (field != null)
+            field.Select();
     }
 
     private const string WidthErrorLog = "Chiều rộng cạnh không hợp lệ! (>0)";
@@ -34,11 +38,10 @@ public class InputCreateRectangularRoom : MonoBehaviour
             return;
         }
 
-        // === Lấy số cạnh ===
-        int width = 0;
-        // if (!int.TryParse(sidesInputField.text, out width) || width <= 0)
-        TMP_InputField widthField = sidesInputField.GetComponentInChildren<TMP_InputField>();
-        if (widthField == null || !int.TryParse(widthField.text, out width) || width <= 0)
+        // === Lấy chiều dài ===
+        float length = 0f;
+        TMP_InputField lengthField = lengthInputField.GetComponentInChildren<TMP_InputField>();
+        if (lengthField == null || !float.TryParse(lengthField.text, out length) || length <= 0)
         {
             Debug.LogWarning(WidthErrorLog);
             // PopupController.Show("Chiều dài cạnh không hợp lệ! (>0)", null);
@@ -46,11 +49,10 @@ public class InputCreateRectangularRoom : MonoBehaviour
             return;
         }
 
-        // === Lấy chiều dài cạnh ===
-        float height = 0f;
-        // if (!float.TryParse(lengthInputField.text, out height) || height <= 0)
-        TMP_InputField heightField = lengthInputField.GetComponentInChildren<TMP_InputField>();
-        if (heightField == null || !float.TryParse(heightField.text, out height) || height <= 0)
+        // === Lấy chiều rộng ===
+        float width = 0f;
+        TMP_InputField widthField = widthInputField.GetComponentInChildren<TMP_InputField>();
+        if (widthField == null || !float.TryParse(widthField.text, out width) || width <= 0)
         {
             Debug.LogWarning(HeightErrorLog);
             // PopupController.Show("Chiều rộng cạnh không hợp lệ! (>0)", null);
@@ -62,10 +64,10 @@ public class InputCreateRectangularRoom : MonoBehaviour
         if (checkpointManager.drawingCamera == null)
             checkpointManager.drawingCamera = Camera.main;
 
-        // === Tạo Room tự động ===
-        checkpointManager.CreateRectangleRoom(width, height);
+        // === Tạo Room hình chữ nhật ===
+        checkpointManager.CreateRectangleRoom(length, width);
 
-        Debug.Log($"[RoomShapeInputController] Gửi yêu cầu tạo Room hình chữ nhật chiều dài {width}m , cạnh rộng {width}m");
+        Debug.Log($"[RoomShapeInputController] Gửi yêu cầu tạo Room hình chữ nhật chiều dài {length}m , cạnh rộng {width}m");
         targetPanel.SetActive(false);
         BackgroundUI.Instance.Hide();
     }

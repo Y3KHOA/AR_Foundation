@@ -5,8 +5,6 @@ using UnityEngine.XR.ARSubsystems;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
 
 public class BtnController : MonoBehaviour
 {
