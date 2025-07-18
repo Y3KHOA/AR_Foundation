@@ -39,8 +39,16 @@ public class ToggleGroupUI : MonoBehaviour
 
     }
 
+    [SerializeField] private GameObject toastUI;
     private void OnSelectThis(ToggleButtonLineType btn)
     {
+        if (RoomStorage.rooms.Count == 0)
+        {
+            // Show popup
+            toastUI.gameObject.SetActive(true);
+            return;
+        }
+        
         if (btn.currentState == ToggleButtonUIBase.State.DeActive)
         {
             btn.ChangeState(ToggleButtonUIBase.State.Active);

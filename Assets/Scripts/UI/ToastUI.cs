@@ -44,6 +44,7 @@ public class ToastUI : MonoBehaviour
     private Tween tween;
     private void OnEnable()
     {
+        fillTimeAmountImg.fillAmount = 0;
         tween?.Kill();
         tween = DOVirtual.Float(0, 1, 2, value =>
         {
