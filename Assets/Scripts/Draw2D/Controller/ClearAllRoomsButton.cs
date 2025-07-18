@@ -7,6 +7,10 @@ public class ClearAllRoomsButton : MonoBehaviour
     public Button clearAllButton;
 
     public CheckpointManager checkpointManager;
+
+    private RoomInfoDisplay roomInfoDisplay; // Tham chiếu đến CheckpointManager để điều khiển vẽ
+
+    private bool isClearingAll = false;
     void Start()
     {
 
@@ -29,6 +33,11 @@ public class ClearAllRoomsButton : MonoBehaviour
         {
             Debug.Log("Người dùng xác nhận: Xóa tất cả!");
             ClearEverything();
+
+            if (roomInfoDisplay != null)
+            {
+                roomInfoDisplay.ResetState();
+            }
         };
         popup.ClickNoEvent = () =>
         {
@@ -48,11 +57,14 @@ public class ClearAllRoomsButton : MonoBehaviour
 
     void ClearEverything()
     {
+        roomInfoDisplay= FindFirstObjectByType<RoomInfoDisplay>();
+
         // 1) Xóa Room trong RoomStorage
         RoomStorage.rooms.Clear();
 
         // 2) Xóa mesh floor
-        var floors = GameObject.FindObjectsOfType<RoomMeshController>();
+        // var floors = GameObject.FindObjectsOfType<RoomMeshController>();
+        var floors = GameObject.FindObjectsByType<RoomMeshController>(FindObjectsSortMode.None);
         foreach (var floor in floors)
         {
             Destroy(floor.gameObject);
@@ -74,6 +86,8 @@ public class ClearAllRoomsButton : MonoBehaviour
 
         // 5) Clear line trong DrawingTool
         checkpointManager.DrawingTool.ClearAllLines();
+
+        // roomInfoDisplay.ClearText();
 
         Debug.Log("Đã xóa toàn bộ Room, checkpoint, mesh, line!");
     }

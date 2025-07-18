@@ -14,10 +14,10 @@ public class RoomInfoDisplay : MonoBehaviour
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển room đã chọn
 
     private string selectedRoomID = "";
-
+    private bool forceSelectFirstRoom = false;
 
     void Start()
-    {        
+    {
         checkpointManager = FindFirstObjectByType<CheckpointManager>();
     }
 
@@ -25,18 +25,40 @@ public class RoomInfoDisplay : MonoBehaviour
     {
         string currentRoomID = checkpointManager.GetSelectedRoomID();
 
-        // Nếu trước đó có chọn mà giờ không chọn gì ➜ clear
-        if (!string.IsNullOrEmpty(selectedRoomID) && string.IsNullOrEmpty(currentRoomID))
+        // 1. Nếu có chọn mới → cập nhật nếu khác với room trước đó
+        if (!string.IsNullOrEmpty(currentRoomID) && currentRoomID != selectedRoomID)
+        {
+            selectedRoomID = currentRoomID;
+            forceSelectFirstRoom = false;
+        }
+
+        // 1.5. Nếu vừa reset và có ít nhất 1 room → ép lấy room đầu tiên
+        if (forceSelectFirstRoom && RoomStorage.rooms.Count > 0 && string.IsNullOrEmpty(selectedRoomID))
+        {
+            selectedRoomID = RoomStorage.rooms[0].ID;
+            Room room = RoomStorage.rooms[0];
+            if (room != null) UpdateRoomInfo(room);
+            forceSelectFirstRoom = false;
+            return;
+        }
+
+        // 2. Nếu chưa có chọn gì nhưng có ít nhất 1 room → chọn room đầu tiên
+        if (string.IsNullOrEmpty(currentRoomID) && string.IsNullOrEmpty(selectedRoomID) && RoomStorage.rooms.Count > 0)
+        {
+            selectedRoomID = RoomStorage.rooms[0].ID;
+        }
+
+        // 3. Nếu room hiện tại bị xoá
+        if (!string.IsNullOrEmpty(selectedRoomID) && RoomStorage.GetRoomByID(selectedRoomID) == null)
         {
             selectedRoomID = "";
             ClearText();
             return;
         }
 
-        // Nếu có RoomID đang chọn → luôn cập nhật thông tin mới nhất
-        if (!string.IsNullOrEmpty(currentRoomID))
+        // 4. Nếu đã có room được chọn → luôn cập nhật realtime
+        if (!string.IsNullOrEmpty(selectedRoomID))
         {
-            selectedRoomID = currentRoomID;
             Room room = RoomStorage.GetRoomByID(selectedRoomID);
             if (room != null)
             {
@@ -78,11 +100,18 @@ public class RoomInfoDisplay : MonoBehaviour
         areaText.text = $"Diện tích: {area:F2} m²";
     }
 
-    void ClearText()
+    public void ClearText()
     {
         lengthText.text = "Chiều dài: -";
         widthText.text = "| Chiều rộng: -";
         perimeterText.text = "| Chu vi: -";
         areaText.text = "Diện tích: -";
+    }
+
+    public void ResetState()
+    {
+        selectedRoomID = "";
+        forceSelectFirstRoom = true;
+        ClearText();
     }
 }
