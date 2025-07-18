@@ -9,7 +9,7 @@ public class ClearAllRoomsButton : MonoBehaviour
     public CheckpointManager checkpointManager;
 
     private RoomInfoDisplay roomInfoDisplay; // Tham chiếu đến CheckpointManager để điều khiển vẽ
-
+    [SerializeField] private ToggleGroupUI toggleGroupUI;
     private bool isClearingAll = false;
     void Start()
     {
@@ -37,6 +37,7 @@ public class ClearAllRoomsButton : MonoBehaviour
             if (roomInfoDisplay != null)
             {
                 roomInfoDisplay.ResetState();
+                toggleGroupUI.ToggleOffAll();
             }
             BackgroundUI.Instance.Hide();
         };
