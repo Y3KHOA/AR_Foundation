@@ -10,11 +10,11 @@ public class CheckpointManager : MonoBehaviour
 {
     [Header("Prefabs")]
     public GameObject checkpointPrefab;
+
     public DrawingTool DrawingTool;
     public PenManager penManager;
     public UndoRedoManager undoRedoManager;
     public StoragePermissionRequester permissionRequester;
-    
 
 
     public LineType currentLineType = LineType.Wall;
@@ -30,7 +30,10 @@ public class CheckpointManager : MonoBehaviour
     public bool isDragging = false; // Kiểm tra xem có đang kéo điểm không 
     public bool isPreviewing = false; // Trạng thái preview
     public bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa 
-    public List<List<GameObject>> AllCheckpoints => allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+
+    public List<List<GameObject>> AllCheckpoints =>
+        allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+
     public bool IsDraggingRoom = false;
     public GameObject previewCheckpoint = null;
 
@@ -38,16 +41,20 @@ public class CheckpointManager : MonoBehaviour
     private float closeThreshold = 0.5f; // Khoảng cách tối đa để chọn điểm
     private Vector3 previewPosition; // Vị trí preview
 
-    private WallLine selectedWallLineForDoor;   // đoạn tường được chọn
+    private WallLine selectedWallLineForDoor; // đoạn tường được chọn
     private Room selectedRoomForDoor;
-    private Vector3? firstDoorPoint = null;     // lưu P1
+
+    private Vector3? firstDoorPoint = null; // lưu P1
+
     // Map loop checkpoint list => Room ID
     private Dictionary<List<GameObject>, string> loopToRoomID = new Dictionary<List<GameObject>, string>();
     private List<LoopMap> loopMappings = new List<LoopMap>();
+
     List<GameObject> doorPoints = new List<GameObject>();
+
     // [RoomID] → List<(WallLine, GameObject p1, GameObject p2)>
-    public Dictionary<string, List<(WallLine line, GameObject p1, GameObject p2)>> tempDoorWindowPoints 
-            = new Dictionary<string, List<(WallLine, GameObject, GameObject)>>();
+    public Dictionary<string, List<(WallLine line, GameObject p1, GameObject p2)>> tempDoorWindowPoints
+        = new Dictionary<string, List<(WallLine, GameObject, GameObject)>>();
     // Dictionary<string (roomID), List<(WallLine, GameObject, GameObject)>> tempDoorWindowPoints;
 
 
@@ -69,6 +76,7 @@ public class CheckpointManager : MonoBehaviour
                 Destroy(previewCheckpoint);
                 previewCheckpoint = null;
             }
+
             return;
         }
 
@@ -88,6 +96,7 @@ public class CheckpointManager : MonoBehaviour
                 previewCheckpoint = Instantiate(checkpointPrefab, previewPosition, Quaternion.identity);
                 previewCheckpoint.name = "PreviewCheckpoint";
             }
+
             previewCheckpoint.transform.position = previewPosition;
         }
         else if (Input.GetMouseButtonUp(0))
@@ -114,6 +123,7 @@ public class CheckpointManager : MonoBehaviour
             if (loop.Contains(checkpoint))
                 return true;
         }
+
         return false;
     }
 
@@ -142,7 +152,8 @@ public class CheckpointManager : MonoBehaviour
         }
 
         // Kiểm tra nếu điểm mới gần p1, chỉ nối lại các điểm
-        if (currentCheckpoints.Count > 2 && Vector3.Distance(currentCheckpoints[0].transform.position, position) < closeThreshold)
+        if (currentCheckpoints.Count > 2 &&
+            Vector3.Distance(currentCheckpoints[0].transform.position, position) < closeThreshold)
         {
             Vector3 start = currentCheckpoints[^1].transform.position;
             Vector3 end = currentCheckpoints[0].transform.position;
@@ -159,6 +170,7 @@ public class CheckpointManager : MonoBehaviour
                 pos.y = 0f;
                 newRoom.checkpoints.Add(new Vector2(pos.x, pos.z));
             }
+
             // === Fix winding: đảo nếu diện tích âm
             if (MeshGenerator.CalculateArea(newRoom.checkpoints) > 0)
             {
@@ -182,7 +194,8 @@ public class CheckpointManager : MonoBehaviour
             // Khi loop đóng
             // isClosedLoop = true;
             RoomStorage.rooms.Add(newRoom);
-            Debug.Log("Đã lưu Room với " + newRoom.checkpoints.Count + " điểm và " + newRoom.wallLines.Count + " cạnh.");
+            Debug.Log("Đã lưu Room với " + newRoom.checkpoints.Count + " điểm và " + newRoom.wallLines.Count +
+                      " cạnh.");
 
             // === Sinh mesh sàn tự động ===
             GameObject floorGO = new GameObject($"RoomFloor_{newRoom.ID}");
@@ -218,6 +231,7 @@ public class CheckpointManager : MonoBehaviour
             wallLines.Add(new WallLine(start, end, currentLineType));
         }
     }
+
     public void InsertDoorOrWindow(Vector3 clickPosition, LineType type)
     {
         if (firstDoorPoint == null)
@@ -264,7 +278,8 @@ public class CheckpointManager : MonoBehaviour
         {
             // Lần click thứ 2: xác định đoạn cửa
             Vector3 p1 = firstDoorPoint.Value;
-            Vector3 p2 = ProjectPointOnLineSegment(selectedWallLineForDoor.start, selectedWallLineForDoor.end, clickPosition);
+            Vector3 p2 = ProjectPointOnLineSegment(selectedWallLineForDoor.start, selectedWallLineForDoor.end,
+                clickPosition);
 
             if (Vector3.Distance(p1, p2) < 0.01f)
             {
@@ -323,6 +338,7 @@ public class CheckpointManager : MonoBehaviour
         t = Mathf.Clamp01(t);
         return a + t * ab;
     }
+
     public void RedrawAllRooms()
     {
         DrawingTool.ClearAllLines();
@@ -369,6 +385,7 @@ public class CheckpointManager : MonoBehaviour
                 }
             }
         }
+
         // Nếu không chọn được trong loop, thử với point cửa/cửa sổ
         foreach (var kvp in tempDoorWindowPoints)
         {
@@ -395,7 +412,7 @@ public class CheckpointManager : MonoBehaviour
             selectedCheckpoint = nearestCheckpoint;
             return true;
         }
-        
+
         return false;
     }
 
@@ -489,7 +506,7 @@ public class CheckpointManager : MonoBehaviour
                     if (wall.type != LineType.Wall) continue;
 
                     float dist = GetDistanceFromSegment(door.start, wall.start, wall.end)
-                                + GetDistanceFromSegment(door.end, wall.start, wall.end);
+                                 + GetDistanceFromSegment(door.end, wall.start, wall.end);
 
                     if (dist < minDistance)
                     {
@@ -536,6 +553,7 @@ public class CheckpointManager : MonoBehaviour
             break;
         }
     }
+
     private WallLine FindClosestWallLine(WallLine doorLine, string roomID)
     {
         var room = RoomStorage.GetRoomByID(roomID);
@@ -549,7 +567,7 @@ public class CheckpointManager : MonoBehaviour
             if (wall.type != LineType.Wall) continue;
 
             float dist = GetDistanceFromSegment(doorLine.start, wall.start, wall.end)
-                        + GetDistanceFromSegment(doorLine.end, wall.start, wall.end);
+                         + GetDistanceFromSegment(doorLine.end, wall.start, wall.end);
 
             if (dist < minDist)
             {
@@ -580,6 +598,7 @@ public class CheckpointManager : MonoBehaviour
         {
             if (ReferenceEquals(mapping.CheckpointsGO, loop)) return mapping.RoomID;
         }
+
         Debug.LogWarning("Loop không tìm thấy RoomID!");
         return null;
     }
@@ -600,6 +619,7 @@ public class CheckpointManager : MonoBehaviour
         {
             return ray.GetPoint(distance);
         }
+
         return ray.GetPoint(5f);
     }
 
@@ -634,7 +654,7 @@ public class CheckpointManager : MonoBehaviour
             floorGO.transform.rotation = Quaternion.identity;
             floorGO.transform.localScale = Vector3.one;
             var meshCtrl = floorGO.AddComponent<RoomMeshController>();
-            meshCtrl.Initialize(room.ID);  // tự gọi GenerateMesh(room.checkpoints)
+            meshCtrl.Initialize(room.ID); // tự gọi GenerateMesh(room.checkpoints)
 
             // === Vẽ lại các wallLines
             foreach (var wl in room.wallLines)
@@ -684,12 +704,13 @@ public class CheckpointManager : MonoBehaviour
             Debug.Log("Người dùng chọn YES: Xóa toàn bộ checkpoint + line.");
             DeleteCurrentDrawingData();
         };
-        popup.ClickNoEvent = () =>
-        {
-            Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín.");
-        };
+        popup.ClickNoEvent = () => { Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín."); };
+        popup.EventWhenClickButtons = () => { BackgroundUI.Instance.Hide(); };
+        BackgroundUI.Instance.Show(popup.gameObject, null);
+
         popup.autoClearWhenClick = true;
     }
+
     public void DeleteCurrentDrawingData()
     {
         foreach (var cp in currentCheckpoints)
@@ -697,6 +718,7 @@ public class CheckpointManager : MonoBehaviour
             if (cp != null)
                 Destroy(cp);
         }
+
         currentCheckpoints.Clear();
 
         wallLines.Clear();
@@ -714,6 +736,7 @@ public class CheckpointManager : MonoBehaviour
                 if (p2 != null) Destroy(p2);
             }
         }
+
         tempDoorWindowPoints.Clear();
 
         Debug.Log("Đã xóa toàn bộ dữ liệu vẽ chưa khép kín.");
@@ -734,6 +757,7 @@ public class CheckpointManager : MonoBehaviour
                 }
             }
         }
+
         // Nếu đang kéo mesh ➜ lấy RoomID từ RoomMeshController đang hoạt động
         if (IsDraggingRoom)
         {
