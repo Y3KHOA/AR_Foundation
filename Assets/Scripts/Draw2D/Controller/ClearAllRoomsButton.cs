@@ -33,7 +33,6 @@ public class ClearAllRoomsButton : MonoBehaviour
         popup.ClickNoEvent = () =>
         {
             Debug.Log("Người dùng hủy bỏ xóa tất cả.");
-            ClearEverything();
         };
         popup.autoClearWhenClick = true;
         // PopupController.Show(
