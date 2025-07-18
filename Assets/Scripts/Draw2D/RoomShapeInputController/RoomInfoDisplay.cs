@@ -73,16 +73,16 @@ public class RoomInfoDisplay : MonoBehaviour
         area = Mathf.Abs(area) * 0.5f;
 
         lengthText.text = $"Chiều dài: {maxLength:F2} m";
-        widthText.text = $"Chiều rộng: {minLength:F2} m";
-        perimeterText.text = $"Chu vi: {perimeter:F2} m";
+        widthText.text = $"| Chiều rộng: {minLength:F2} m";
+        perimeterText.text = $"| Chu vi: {perimeter:F2} m";
         areaText.text = $"Diện tích: {area:F2} m²";
     }
 
     void ClearText()
     {
         lengthText.text = "Chiều dài: -";
-        widthText.text = "Chiều rộng: -";
-        perimeterText.text = "Chu vi: -";
+        widthText.text = "| Chiều rộng: -";
+        perimeterText.text = "| Chu vi: -";
         areaText.text = "Diện tích: -";
     }
 }
