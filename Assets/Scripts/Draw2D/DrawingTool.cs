@@ -356,4 +356,17 @@ public class DrawingTool : MonoBehaviour
             currentPos += dashLength + gapLength;
         }
     }
+
+    public void DrawAllLinesFromRoomStorage()
+    {
+        ClearAllLines(); // Xóa toàn bộ line hiện tại (nếu cần)
+
+        foreach (Room room in RoomStorage.rooms)
+        {
+            foreach (WallLine wall in room.wallLines)
+            {
+                DrawLineAndDistance(wall.start, wall.end);
+            }
+        }
+    }
 }

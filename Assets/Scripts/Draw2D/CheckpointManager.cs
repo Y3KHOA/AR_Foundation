@@ -885,7 +885,7 @@ public class CheckpointManager : MonoBehaviour
         }
 
         // 1) Xoá dữ liệu tạm nếu đang vẽ dở
-        // DeleteCurrentDrawingData();
+        DeleteCurrentDrawingData();
 
         // 2) Tìm center trên mặt phẳng y=0 theo camera
         Camera cam = drawingCamera != null ? drawingCamera : Camera.main;
@@ -962,6 +962,8 @@ public class CheckpointManager : MonoBehaviour
 
         currentCheckpoints.Clear();
         wallLines.Clear();
+
+        DrawingTool.DrawAllLinesFromRoomStorage();
 
         Debug.Log($"Đã tạo Room hình chữ nhật: {width} x {height} m, RoomID: {newRoom.ID}");
     }

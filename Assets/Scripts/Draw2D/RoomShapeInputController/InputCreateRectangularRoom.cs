@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
+using UnityEngine.EventSystems;
 
 public class InputCreateRectangularRoom : MonoBehaviour
 {
@@ -21,11 +23,20 @@ public class InputCreateRectangularRoom : MonoBehaviour
             Debug.LogError("Chưa gán CreateButton!");
 
         failedPopup.DescriptionText = "";
-        
-        // Tự động focus vào chiều dài trước
-        var field = lengthInputField.GetComponentInChildren<TMP_InputField>();
+
+        // Tự động focus vào chiều dài sau 1 frame
+        StartCoroutine(FocusLengthInputNextFrame());
+    }
+    private IEnumerator FocusLengthInputNextFrame()
+    {
+        yield return null; // Đợi 1 frame
+        TMP_InputField field = lengthInputField.GetComponentInChildren<TMP_InputField>();
         if (field != null)
-            field.Select();
+        {
+            // Set selected game object để Unity UI focus đúng
+            EventSystem.current.SetSelectedGameObject(field.gameObject);
+            field.OnPointerClick(new PointerEventData(EventSystem.current)); // kích hoạt caret
+        }
     }
 
     private const string WidthErrorLog = "Chiều rộng cạnh không hợp lệ! (>0)";
