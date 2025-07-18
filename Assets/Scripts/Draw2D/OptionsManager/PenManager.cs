@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -17,7 +18,7 @@ public class PenManager : MonoBehaviour
     private ToggleColor toggleColor;
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
     private Vector3 previewPosition; // Vị trí preview
-
+    [SerializeField] private ToggleGroupUI toggleGroupUI;
     void Start()
     {
         mainCamera = Camera.main;
@@ -30,6 +31,7 @@ public class PenManager : MonoBehaviour
 
         // Đảm bảo trạng thái ban đầu của Pen là tắt
         UpdatePenState();
+        HandleToggleGroupUI(isPenActive);
     }
 
     void Update()
@@ -149,10 +151,30 @@ public class PenManager : MonoBehaviour
     // Toggle trạng thái Pen
     void TogglePen()
     {
-        isPenActive = !isPenActive;  // Chuyển trạng thái Pen
+        var newActivePenState = !isPenActive;
+        ChangeState(newActivePenState);
+        HandleToggleGroupUI(newActivePenState);
+    }
+
+    private void HandleToggleGroupUI(bool currentPenState )
+    {
+        if (currentPenState)
+        {
+            // tắt hết toggle bên kia
+            toggleGroupUI.ToggleOffAll();
+        }
+        else
+        {
+            toggleGroupUI.ShowFirstButton();
+            // bật button đầu tiên
+        }
+    }
+
+    public void ChangeState(bool state)
+    {
+        isPenActive = state;  // Chuyển trạng thái Pen
         UpdatePenState();            // Cập nhật trạng thái Pen
         toggleColor.Toggle(isPenActive);
-
     }
 
     // Cập nhật trạng thái Pen

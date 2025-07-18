@@ -640,18 +640,32 @@ public class CheckpointManager : MonoBehaviour
 
     void ShowIncompleteLoopPopup()
     {
-        PopupController.Show(
-            "Mạch chưa khép kín!\nBạn muốn xóa dữ liệu vẽ tạm không?",
-            onYes: () =>
-            {
-                Debug.Log("Người dùng chọn YES: Xóa toàn bộ checkpoint + line.");
-                DeleteCurrentDrawingData();
-            },
-            onNo: () =>
-            {
-                Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín.");
-            }
-        );
+        // PopupController.Show(
+        //     "Mạch chưa khép kín!\nBạn muốn xóa dữ liệu vẽ tạm không?",
+        //     onYes: () =>
+        //     {
+        //         Debug.Log("Người dùng chọn YES: Xóa toàn bộ checkpoint + line.");
+        //         DeleteCurrentDrawingData();
+        //     },
+        //     onNo: () =>
+        //     {
+        //         Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín.");
+        //     }
+        // );
+        //
+        var popup = Instantiate(ModularPopup.Prefab);
+        popup.AutoFindCanvasAndSetup();
+        popup.Header = "Mạch chưa khép kín!\\nBạn muốn xóa dữ liệu vẽ tạm không?";
+        popup.ClickYesEvent = () =>
+        {
+            Debug.Log("Người dùng chọn YES: Xóa toàn bộ checkpoint + line.");
+            DeleteCurrentDrawingData();
+        };
+        popup.ClickNoEvent = () =>
+        {
+            Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín.");
+        };
+        popup.autoClearWhenClick = true;
     }
     public void DeleteCurrentDrawingData()
     {

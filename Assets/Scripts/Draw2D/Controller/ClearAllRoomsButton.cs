@@ -7,14 +7,9 @@ public class ClearAllRoomsButton : MonoBehaviour
     public Button clearAllButton;
 
     public CheckpointManager checkpointManager;
-    private ModularPopup modularPopup;
-
     void Start()
     {
-        if (modularPopup == null)
-        {
-            modularPopup = Resources.Load<ModularPopup>("Modular Popup");
-        }
+
 
         if (clearAllButton != null)
             clearAllButton.onClick.AddListener(OnClearAllClicked);
@@ -27,7 +22,7 @@ public class ClearAllRoomsButton : MonoBehaviour
 
     void OnClearAllClicked()
     {
-        var popup = Instantiate(modularPopup);
+        var popup = Instantiate(ModularPopup.Prefab);
         popup.AutoFindCanvasAndSetup();
         popup.Header = "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!";
         popup.ClickYesEvent = () =>
