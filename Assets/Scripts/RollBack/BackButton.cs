@@ -4,16 +4,8 @@ using UnityEngine.UI;
 public class BackButton : MonoBehaviour
 {
     public Button backButton;
-    private static ModularPopup modularPopup;
     private static Canvas canvas;
 
-    private void Awake()
-    {
-        if (modularPopup == null)
-        {
-            modularPopup = Resources.Load<ModularPopup>("Modular Popup");
-        }
-    }
 
     void Start()
     {
@@ -38,7 +30,7 @@ public class BackButton : MonoBehaviour
 
     private void ShowPopupPrefab()
     {
-        var popup = Instantiate(modularPopup);
+        var popup = Instantiate(ModularPopup.Prefab);
         popup.AutoFindCanvasAndSetup();
         popup.Header = "Dữ liệu của bạn chưa được lưu!\nNếu thoát ra sẽ mất dữ liệu!";
         popup.ClickYesEvent = OnClickYes;

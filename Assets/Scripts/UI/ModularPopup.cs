@@ -5,6 +5,21 @@ using UnityEngine.UI;
 
 public class ModularPopup : MonoBehaviour
 {
+    public static ModularPopup Prefab
+    {
+        get
+        {
+            if (modularPopupPrefab == null)
+            {
+                modularPopupPrefab = Resources.Load<ModularPopup>("Modular Popup");
+            }
+
+            return modularPopupPrefab;
+        }
+    }
+
+    private static ModularPopup modularPopupPrefab;
+
     [SerializeField] private TextMeshProUGUI headerText;
     [SerializeField] private TextMeshProUGUI yesBtnText;
     [SerializeField] private TextMeshProUGUI noBtnText;
@@ -70,12 +85,10 @@ public class ModularPopup : MonoBehaviour
         popupRect.offsetMin = Vector2.zero;
         popupRect.offsetMax = Vector2.zero;
         popupRect.transform.localScale = Vector3.one;
-
-
     }
 
     public void AutoFindCanvasAndSetup()
-    {  
+    {
         var canvas = FindFirstObjectByType<Canvas>(FindObjectsInactive.Exclude);
         transform.SetParent(canvas.transform);
         ResetAnchorOffsetAndScale();
