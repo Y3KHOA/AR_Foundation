@@ -58,7 +58,6 @@ public class BackgroundUI : MonoBehaviour
 
     private IEnumerator PlayDelay(GameObject target)
     {
-        yield return null;
         if (!isInit)
         {
             background = new GameObject().AddComponent<Image>();
@@ -79,6 +78,8 @@ public class BackgroundUI : MonoBehaviour
             backgroundRect.anchorMax = Vector2.one;
             backgroundRect.sizeDelta = Vector2.zero;
 
+            backgroundRect.offsetMax = new Vector2(200, 200);
+            backgroundRect.offsetMin = new Vector2(-200, -200);
 
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerClick;
@@ -93,7 +94,6 @@ public class BackgroundUI : MonoBehaviour
             isInit = true;
         }
 
-        yield return null;
         if (target)
         {
             background.transform.SetParent(target.transform.parent.transform);
@@ -105,6 +105,7 @@ public class BackgroundUI : MonoBehaviour
         }
 
         SetBackgroundActive(true);
+        yield return null;
     }
 
     private void OnClick(PointerEventData data)

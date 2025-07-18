@@ -51,7 +51,7 @@ public class ToastUI : MonoBehaviour
         }).OnComplete(() =>
         {
             gameObject.SetActive(false);
-        }).SetEase(Ease.InSine);
+        });
     }
 
     private void OnDisable()
