@@ -1,14 +1,11 @@
 using DG.Tweening;
 using UnityEngine;
 
-public class TestLine : MonoBehaviour
+public class TestLine : BaseLineTutorial
 {
-    [SerializeField] private LineRenderer lineRenderer;
-    [SerializeField] private float ratio = 1;
     private Vector3 targetValue;
     private Vector3 startValue;
 
-    private float startWidth = 0.1f;
     
     private void Awake()
     {
@@ -26,12 +23,7 @@ public class TestLine : MonoBehaviour
         tween = DOVirtual.Vector3(startValue, targetValue, time, value => { lineRenderer.SetPosition(1, value); });
     }
 
-    public void SetRatio(float ratio)
-    {
-        this.ratio = ratio;
-        lineRenderer.startWidth = Mathf.Clamp(startWidth * ratio, startWidth, 100);
-        lineRenderer.endWidth = Mathf.Clamp(startWidth * ratio, startWidth, 100);
-    }
+
 
     public void ResetLine()
     {
