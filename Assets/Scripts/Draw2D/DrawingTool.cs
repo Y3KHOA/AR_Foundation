@@ -4,6 +4,7 @@ using TMPro;
 
 public class DrawingTool : MonoBehaviour
 {
+    public float textOffset = 0.2f;
     [Header("Prefabs")]
     public GameObject linePrefab;
     public GameObject distanceTextPrefab;
@@ -115,7 +116,7 @@ public class DrawingTool : MonoBehaviour
         textMesh.text = $"{distanceInM:F2} m";
 
         Vector3 textPosition = (aux1End + aux2End) / 2;
-        textMesh.transform.position = textPosition;
+        textMesh.transform.position = textPosition + textMesh.transform.up * textOffset;
 
         float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
         textMesh.transform.rotation = Quaternion.Euler(90, 0, angle);
@@ -157,7 +158,6 @@ public class DrawingTool : MonoBehaviour
             textPool[i].gameObject.SetActive(true);
             textPool[i].text = $"{distanceInM:F2} m";
             textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
-
             // Cập nhật trạng thái line khi đang chọn checkpoint
             if (selectedCheckpoint == checkpoints[i] || selectedCheckpoint == checkpoints[nextIndex])
             {
