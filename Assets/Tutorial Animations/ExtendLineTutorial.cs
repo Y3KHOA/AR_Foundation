@@ -5,7 +5,7 @@ public class ExtendLineTutorial : BaseLineTutorial
     public Transform startPoint;
     public Transform endPoint;
 
-    private void Update()
+    public void UpdateLine()
     {
         if (!startPoint || !endPoint) return;
 
