@@ -37,7 +37,6 @@ public class InputCreateRectangularRoom : MonoBehaviour
         failedPopup.DescriptionText = "";
         panelToggleController = GetComponent<PanelToggleController>();
         // Tự động focus vào chiều dài sau 1 frame
-        StartCoroutine(FocusLengthInputNextFrame(_lengthInputField));
     }
 
     public void FocusOnInputField()
