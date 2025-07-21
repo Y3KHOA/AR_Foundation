@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
 public class DrawingTool : MonoBehaviour
 {
-    public float textOffset = 0.2f;
+    public float wallTextOffset = 0.2f;
+    public float doorTextOffset = 0.2f;
+    public float windowTextOffset = 0.2f;
     [Header("Prefabs")]
     public GameObject linePrefab;
     public GameObject distanceTextPrefab;
@@ -116,71 +119,102 @@ public class DrawingTool : MonoBehaviour
         textMesh.text = $"{distanceInM:F2} m";
 
         Vector3 textPosition = (aux1End + aux2End) / 2;
-        textMesh.transform.position = textPosition + textMesh.transform.up * textOffset;
 
         float angle = Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
         textMesh.transform.rotation = Quaternion.Euler(90, 0, angle);
-
+        textMesh.transform.position = textPosition + textMesh.transform.up * GetTextOffset(currentLineType);
+        textMesh.color = GetTextColor(currentLineType);
         // Lưu dữ liệu tường
         wallLines.Add(new WallLine(start, end, currentLineType));
     }
 
-    public void UpdateLinesAndDistances(List<GameObject> checkpoints)
+    private float GetTextOffset(LineType lineType)
     {
-        int pointCount = checkpoints.Count;
-        if (pointCount < 2) return;
-
-        // Đảm bảo linePool có đủ line
-        while (linePool.Count < pointCount)
+        switch (lineType)
         {
-            GameObject newLine = Instantiate(linePrefab);
-            LineRenderer lr = newLine.GetComponent<LineRenderer>();
-            linePool.Add(lr);
+            case LineType.Wall:
+                return wallTextOffset;
+            case LineType.Door:
+                return doorTextOffset;
+            case LineType.Window:
+                return windowTextOffset;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(lineType), lineType, null);
         }
-
-        // Đảm bảo textPool có đủ text
-        while (textPool.Count < pointCount)
-        {
-            GameObject newText = Instantiate(distanceTextPrefab);
-            TextMeshPro tmp = newText.GetComponent<TextMeshPro>();
-            textPool.Add(tmp);
-        }
-
-        for (int i = 0; i < pointCount; i++)
-        {
-            int nextIndex = (i + 1) % pointCount;
-
-            linePool[i].gameObject.SetActive(true);
-            linePool[i].SetPosition(0, checkpoints[i].transform.position);
-            linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
-
-            float distanceInM = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 1f;
-            textPool[i].gameObject.SetActive(true);
-            textPool[i].text = $"{distanceInM:F2} m";
-            textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
-            // Cập nhật trạng thái line khi đang chọn checkpoint
-            if (selectedCheckpoint == checkpoints[i] || selectedCheckpoint == checkpoints[nextIndex])
-            {
-                linePool[i].startWidth = linePool[i].endWidth = 0.05f; // to hơn khi thao tác
-                linePool[i].material.color = Color.blue; // màu khác biệt để dễ nhận diện
-            }
-            else
-            {
-                linePool[i].startWidth = linePool[i].endWidth = 0.02f; // mặc định
-                linePool[i].material.color = Color.black;
-            }
-
-            Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInM:F2} m | " +
-                        $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
-        }
-
-        // Ẩn các line và text dư thừa (nếu có)
-        for (int i = pointCount; i < linePool.Count; i++)
-            linePool[i].gameObject.SetActive(false);
-
-        for (int i = pointCount; i < textPool.Count; i++)
-            textPool[i].gameObject.SetActive(false);
     }
+    
+    private Color GetTextColor(LineType lineType)
+    {
+        switch (lineType)
+        {
+            case LineType.Wall:
+                return Color.black;
+            case LineType.Door:
+                return Color.red;
+            case LineType.Window:
+                return Color.blue;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(lineType), lineType, null);
+        }
+    }
+
+
+    // public void UpdateLinesAndDistances(List<GameObject> checkpoints)
+    // {
+    //     int pointCount = checkpoints.Count;
+    //     if (pointCount < 2) return;
+    //
+    //     // Đảm bảo linePool có đủ line
+    //     while (linePool.Count < pointCount)
+    //     {
+    //         GameObject newLine = Instantiate(linePrefab);
+    //         LineRenderer lr = newLine.GetComponent<LineRenderer>();
+    //         linePool.Add(lr);
+    //     }
+    //
+    //     // Đảm bảo textPool có đủ text
+    //     while (textPool.Count < pointCount)
+    //     {
+    //         GameObject newText = Instantiate(distanceTextPrefab);
+    //         TextMeshPro tmp = newText.GetComponent<TextMeshPro>();
+    //         textPool.Add(tmp);
+    //     }
+    //
+    //     for (int i = 0; i < pointCount; i++)
+    //     {
+    //         int nextIndex = (i + 1) % pointCount;
+    //
+    //         linePool[i].gameObject.SetActive(true);
+    //         linePool[i].SetPosition(0, checkpoints[i].transform.position);
+    //         linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
+    //
+    //         float distanceInM = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 1f;
+    //         textPool[i].gameObject.SetActive(true);
+    //         textPool[i].text = $"{distanceInM:F2} m";
+    //         textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
+    //         // Cập nhật trạng thái line khi đang chọn checkpoint
+    //         if (selectedCheckpoint == checkpoints[i] || selectedCheckpoint == checkpoints[nextIndex])
+    //         {
+    //             linePool[i].startWidth = linePool[i].endWidth = 0.05f; // to hơn khi thao tác
+    //             linePool[i].material.color = Color.blue; // màu khác biệt để dễ nhận diện
+    //         }
+    //         else
+    //         {
+    //             linePool[i].startWidth = linePool[i].endWidth = 0.02f; // mặc định
+    //             linePool[i].material.color = Color.black;
+    //         }
+    //
+    //         Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInM:F2} m | " +
+    //                     $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
+    //     }
+    //
+    //     // Ẩn các line và text dư thừa (nếu có)
+    //     for (int i = pointCount; i < linePool.Count; i++)
+    //         linePool[i].gameObject.SetActive(false);
+    //
+    //     for (int i = pointCount; i < textPool.Count; i++)
+    //         textPool[i].gameObject.SetActive(false);
+    // }
 
     public void DrawPreviewLine(Vector3 start, Vector3 end)
     {
@@ -230,7 +264,6 @@ public class DrawingTool : MonoBehaviour
 
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
         previewText.transform.position = textPos;
-
         // Xoay text luôn hướng về camera
         if (Camera.main != null)
         {

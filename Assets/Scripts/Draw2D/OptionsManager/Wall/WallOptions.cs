@@ -10,8 +10,12 @@ public class PanelToggleController : MonoBehaviour
 
     private bool isPanelOpen = false;
 
+    [SerializeField] private InputCreateRectangularRoom inputCreateRectangularRoom;
+
     void Start()
     {
+        inputCreateRectangularRoom = GetComponent<InputCreateRectangularRoom>();
+        
         if (toggleButton != null)
             toggleButton.onClick.AddListener(TogglePanel);
 
@@ -29,6 +33,7 @@ public class PanelToggleController : MonoBehaviour
         Debug.Log(isPanelOpen ? "Panel Opened" : "Panel Closed");
         if (isPanelOpen)
         {
+            inputCreateRectangularRoom.FocusOnInputField();
              BackgroundUI.Instance.Show(targetPanel, () =>
              {
                  HideWhenOk();

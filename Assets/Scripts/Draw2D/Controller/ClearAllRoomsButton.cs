@@ -11,6 +11,9 @@ public class ClearAllRoomsButton : MonoBehaviour
     private RoomInfoDisplay roomInfoDisplay; // Tham chiếu đến CheckpointManager để điều khiển vẽ
     [SerializeField] private ToggleGroupUI toggleGroupUI;
     [SerializeField] private PenManager penManager;
+    [SerializeField] private DrawingTool drawingTool;
+    
+    
     private bool isClearingAll = false;
     void Start()
     {
@@ -97,7 +100,7 @@ public class ClearAllRoomsButton : MonoBehaviour
         checkpointManager.DrawingTool.ClearAllLines();
 
         // roomInfoDisplay.ClearText();
-
         Debug.Log("Đã xóa toàn bộ Room, checkpoint, mesh, line!");
+        drawingTool.currentLineType = LineType.Wall;
     }
 }
