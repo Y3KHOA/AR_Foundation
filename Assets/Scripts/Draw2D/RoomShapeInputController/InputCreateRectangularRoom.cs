@@ -21,10 +21,16 @@ public class InputCreateRectangularRoom : MonoBehaviour
     private TMP_InputField _lengthInputField;
     private TMP_InputField _widthInputField;
 
+    private const int LIMIT_CHARACTER_COUNT = 9;
+    
+
     private void Awake()
     {
         _lengthInputField = lengthInputField.GetComponentInChildren<TMP_InputField>();
         _widthInputField = widthInputField.GetComponentInChildren<TMP_InputField>();
+        
+        _lengthInputField.characterLimit = LIMIT_CHARACTER_COUNT;
+        _widthInputField.characterLimit = LIMIT_CHARACTER_COUNT;
     }
 
     void Start()

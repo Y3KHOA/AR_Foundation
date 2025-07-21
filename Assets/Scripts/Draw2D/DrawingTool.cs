@@ -263,7 +263,7 @@ public class DrawingTool : MonoBehaviour
         previewText.text = $"{distanceInM:F2} m";
 
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
-        previewText.transform.position = textPos;
+        previewText.transform.position = textPos + previewText.transform.up * wallTextOffset;
         // Xoay text luôn hướng về camera
         if (Camera.main != null)
         {
