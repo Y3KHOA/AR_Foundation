@@ -2390,7 +2390,7 @@ PrefabInstance:
     - target: {fileID: 6270274267940198866, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -14.505005
+      value: -14.505127
       objectReference: {fileID: 0}
     - target: {fileID: 6351455673589983084, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
@@ -2745,7 +2745,7 @@ PrefabInstance:
     - target: {fileID: 8292028467234765399, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 43.281616
+      value: 43.28174
       objectReference: {fileID: 0}
     - target: {fileID: 8292028467234765399, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
@@ -3049,6 +3049,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 203559577}
   m_CullTransparentMesh: 1
+--- !u!114 &203597689 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5776610700298337379, guid: 3b13d746543f71542a8a4316e95d6032,
+    type: 3}
+  m_PrefabInstance: {fileID: 4792116433733338418}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d41bff9ae9389d448f7503c8ec20841, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &220555315
 GameObject:
   m_ObjectHideFlags: 0
@@ -7205,6 +7217,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toggleButton: {fileID: 1956570594}
   targetPanel: {fileID: 1237074960}
+  inputCreateRectangularRoom: {fileID: 0}
 --- !u!114 &667801200
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13196,6 +13209,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   toggleButton: {fileID: 0}
   targetPanel: {fileID: 0}
+  inputCreateRectangularRoom: {fileID: 0}
 --- !u!114 &1285148376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19342,6 +19356,11 @@ PrefabInstance:
       propertyPath: toggleButton
       value: 
       objectReference: {fileID: 2118739274}
+    - target: {fileID: 375815962078879140, guid: 3b13d746543f71542a8a4316e95d6032,
+        type: 3}
+      propertyPath: inputCreateRectangularRoom
+      value: 
+      objectReference: {fileID: 203597689}
     - target: {fileID: 2112956034353599904, guid: 3b13d746543f71542a8a4316e95d6032,
         type: 3}
       propertyPath: targetPanel
