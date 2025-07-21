@@ -152,6 +152,13 @@ public class PenManager : MonoBehaviour
     void TogglePen()
     {
         var newActivePenState = !isPenActive;
+
+        if (!newActivePenState && RoomStorage.rooms.Count == 0)
+        {
+            // Show popup
+            return;
+        }
+        
         ChangeState(newActivePenState);
         HandleToggleGroupUI(newActivePenState);
     }
