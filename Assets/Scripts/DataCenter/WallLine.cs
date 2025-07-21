@@ -45,7 +45,8 @@ public class Room
 {
     public string ID { get; private set; }  // ID chỉ đọc từ bên ngoài
 
-    public List<Vector2> checkpoints = new List<Vector2>();
+    public List<Vector2> checkpoints = new List<Vector2>(); // polygon chính
+    public List<Vector2> extraCheckpoints = new List<Vector2>(); // điểm lẻ trong phòng
     public List<WallLine> wallLines = new List<WallLine>();
     public List<float> heights = new List<float>();
 

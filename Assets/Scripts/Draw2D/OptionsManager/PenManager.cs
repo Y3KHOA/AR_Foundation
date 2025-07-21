@@ -49,7 +49,7 @@ public class PenManager : MonoBehaviour
             // Nếu mesh sàn đang drag ➜ khóa bàn cờ
             if (isRoomFloorBeingDragged)
             {
-                Debug.Log("RoomFloor drag đang hoạt động ➜ Khóa pan/zoom");
+                // Debug.Log("RoomFloor drag đang hoạt động ➜ Khóa pan/zoom");
                 HandleZoomAndPan(false);
             }
             else
@@ -85,13 +85,13 @@ public class PenManager : MonoBehaviour
 
         if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
         {
-            Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
+            // Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
             return;
         }
 
         if (IsTouchOverRoomFloor())
         {
-            Debug.Log("Đang chạm RoomFloor ➜ KHÔNG zoom/pan!");
+            // Debug.Log("Đang chạm RoomFloor ➜ KHÔNG zoom/pan!");
             return;
         }
 

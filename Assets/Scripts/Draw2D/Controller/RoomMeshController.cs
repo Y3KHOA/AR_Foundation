@@ -56,7 +56,7 @@ void Update()
     }
 }
 #endif
-
+    // Hàm di chuyển Room theo vị trí chạm for Android
     void DragRoom(Vector2 screenPos)
     {
         Plane plane = new Plane(Vector3.up, Vector3.zero);
@@ -90,6 +90,18 @@ void Update()
                 var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
                 if (checkpointMgr != null)
                 {
+                    if (checkpointMgr.RoomFloorMap.TryGetValue(RoomID, out var floorGO))
+                    {
+                        foreach (Transform child in floorGO.transform)
+                        {
+                            if (child.CompareTag("CheckpointExtra")) // <-- tag riêng cho point phụ
+                            {
+                                Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
+                                // child.position += delta;
+                            }
+                        }
+                    }
+
                     var mapping = checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
                     if (mapping != null)
                     {
@@ -112,7 +124,6 @@ void Update()
             }
         }
     }
-
     public void Initialize(string roomID)
     {
         RoomID = roomID;
@@ -143,20 +154,22 @@ void Update()
         // Tùy chọn: Thêm collider để click sàn
         if (GetComponent<MeshCollider>() == null)
             gameObject.AddComponent<MeshCollider>();
+
+        // Đảm bảo đăng ký lại RoomFloorMap
+        var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
+        if (checkpointMgr != null && !checkpointMgr.RoomFloorMap.ContainsKey(RoomID))
+        {
+            checkpointMgr.RoomFloorMap[RoomID] = this.gameObject;
+            Debug.Log($"Đã tự động đăng ký RoomFloorMap[{RoomID}] = {gameObject.name}");
+        }
     }
 
     public void GenerateMesh(List<Vector2> checkpoints)
     {
         Debug.Log($"[RoomMeshController] GenerateMesh: RoomID={RoomID}, checkpoints={checkpoints.Count}");
 
-        // Offset: cộng thêm transform.position để vẽ đúng vị trí hiện tại
-        Vector3 offset = transform.position;
-
-        List<Vector2> offsetPoints = new List<Vector2>();
-        foreach (var pt in checkpoints)
-        {
-            offsetPoints.Add(new Vector2(pt.x - offset.x, pt.y - offset.z)); // dùng offset ngược lại
-        }
+        // Không trừ offset nữa vì checkpoint đã là world-space
+        List<Vector2> offsetPoints = new List<Vector2>(checkpoints);
 
         Mesh mesh = MeshGenerator.CreateRoomMesh(offsetPoints);
         Debug.Log($"[RoomMeshController] Mesh vertices: {mesh.vertexCount}, triangles: {mesh.triangles.Length}");
@@ -219,6 +232,11 @@ void Update()
                     Vector2 moved = new Vector2(old.x + delta.x, old.y + delta.z);
                     room.checkpoints[i] = moved;
                 }
+                for (int i = 0; i < room.extraCheckpoints.Count; i++)
+                {
+                    Vector2 pt = room.extraCheckpoints[i];
+                    room.extraCheckpoints[i] = new Vector2(pt.x + delta.x, pt.y + delta.z);
+                }
 
                 for (int i = 0; i < room.wallLines.Count; i++)
                 {
@@ -230,9 +248,22 @@ void Update()
 
                 // Cập nhật checkpoint GameObjects bên ngoài
                 // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
+                
                 var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
                 if (checkpointMgr != null)
                 {
+                    // === Move checkpoint phụ (extraCheckpoints) ===
+                    if (checkpointMgr.RoomFloorMap.TryGetValue(RoomID, out var floorGO))
+                    {
+                        foreach (Transform child in floorGO.transform)
+                        {
+                            if (child.CompareTag("CheckpointExtra")) // <-- tag riêng cho point phụ
+                            {
+                                Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
+                                // child.position += delta;
+                            }
+                        }
+                    }
                     var mapping = checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
                     if (mapping != null)
                     {
