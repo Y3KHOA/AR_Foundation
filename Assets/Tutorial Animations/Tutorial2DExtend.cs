@@ -7,7 +7,6 @@ public class Tutorial2DExtend : TutorialBase
     [SerializeField] private Transform[] points;
     [SerializeField] private List<ExtendLineTutorial> lineRenderers = new();
     [SerializeField] private Transform mouseContainer;
-
     private Vector3 originalPosition;
     
     public override void SetRatio(float ratio)
