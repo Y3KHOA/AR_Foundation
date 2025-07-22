@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class RoomMeshController : MonoBehaviour
 {
@@ -147,7 +148,7 @@ void Update()
         {
             // floorMaterial = new Material(Shader.Find("Standard"));
             floorMaterial = new Material(Shader.Find("Unlit/Color"));
-            // floorMaterial.color = Color.red; // Đổi sang đỏ
+            floorMaterial.color = Color.red; // Đổi sang đỏ
         }
         meshRenderer.material = floorMaterial;
 
@@ -168,11 +169,14 @@ void Update()
     {
         Debug.Log($"[RoomMeshController] GenerateMesh: RoomID={RoomID}, checkpoints={checkpoints.Count}");
 
-        // Không trừ offset nữa vì checkpoint đã là world-space
-        List<Vector2> offsetPoints = new List<Vector2>(checkpoints);
+        Vector2 pivot = GetCentroid(checkpoints); // <== dùng pivot thật
+
+        // Dịch điểm về local-space để tạo mesh
+        List<Vector2> offsetPoints = checkpoints
+            .Select(p => new Vector2(p.x - pivot.x, p.y - pivot.y))
+            .ToList();
 
         Mesh mesh = MeshGenerator.CreateRoomMesh(offsetPoints);
-        Debug.Log($"[RoomMeshController] Mesh vertices: {mesh.vertexCount}, triangles: {mesh.triangles.Length}");
 
         if (GetComponent<MeshFilter>() == null)
             gameObject.AddComponent<MeshFilter>();
@@ -184,6 +188,22 @@ void Update()
         var meshCollider = GetComponent<MeshCollider>();
         if (meshCollider != null)
             meshCollider.sharedMesh = mesh;
+
+        // Đặt lại transform để khớp world-space
+        transform.position = new Vector3(pivot.x, 0, pivot.y);
+    }
+    private Vector2 GetCentroid(List<Vector2> points)
+    {
+        if (points == null || points.Count == 0)
+            return Vector2.zero;
+
+        float sumX = 0f, sumY = 0f;
+        foreach (var p in points)
+        {
+            sumX += p.x;
+            sumY += p.y;
+        }
+        return new Vector2(sumX / points.Count, sumY / points.Count);
     }
 
     private void OnMouseDown()

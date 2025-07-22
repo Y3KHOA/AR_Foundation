@@ -445,23 +445,53 @@ public class CheckpointManager : MonoBehaviour
                     {
                         if (RoomFloorMap.TryGetValue(room.ID, out GameObject floorGO))
                         {
+                            // TÍNH VỊ TRÍ CŨ NGAY LÚC VỪA LẤY floorGO — TRƯỚC KHI CHÈN, UPDATE VỊ TRÍ, ETC.
+                            Vector3 checkpointWorldPos = selectedCheckpoint.transform.position;
+                            Vector2 oldLocal2D = new Vector2(checkpointWorldPos.x, checkpointWorldPos.z)
+                                                - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+
+                            // Tính vị trí mới để chèn
                             Vector2 local2D = new2D - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
 
+                            // Chèn vào checkpoint chính
                             room.checkpoints.Insert(insertIndex, local2D);
-                            room.extraCheckpoints.RemoveAll(p => Vector2.Distance(p, new2D) < 0.05f);
+
+                            Vector2? nearest = null;
+
+                            float minDist1 = float.MaxValue; // <<< QUAN TRỌNG
+                            foreach (var p in room.extraCheckpoints)
+                            {
+                                float dist = Vector2.Distance(p, oldLocal2D);
+                                if (dist < minDist1)
+                                {
+                                    minDist1 = dist;
+                                    nearest = p;
+                                }
+                            }
+                            if (nearest.HasValue)
+                            {
+                            room.extraCheckpoints.Remove(nearest.Value);
+                            Debug.Log($"[ExtraCheckpoint] Removed nearest point at dist={minDist1:F3}: {nearest.Value}");
+                            }
+                            else
+                            {
+                            Debug.LogWarning($"[ExtraCheckpoint] Không tìm thấy điểm nào đủ gần (minDist={minDist1:F3}). Không xóa.");
+                            }
+
                             RoomStorage.UpdateOrAddRoom(room);
 
+                            // Cập nhật transform của checkpoint
                             selectedCheckpoint.transform.position = new Vector3(local2D.x, 0f, local2D.y) + floorGO.transform.position;
                             selectedCheckpoint.tag = "Untagged";
                             selectedCheckpoint.transform.SetParent(null);
 
+                            // Gán vào checkpoint chính
                             var loop = allCheckpoints.Find(l => FindRoomIDForLoop(l) == room.ID);
                             if (loop != null)
                             {
                                 loop.Insert(insertIndex, selectedCheckpoint);
                             }
 
-                            // Rebuild wallLines...
                             RebuildWallLinesPreservingDoors(room);
 
                             RoomStorage.UpdateOrAddRoom(room);
@@ -470,6 +500,30 @@ public class CheckpointManager : MonoBehaviour
                             DrawingTool.ClearAllLines();
                             RedrawAllRooms();
                             return;
+                        }
+                    }
+                    else
+                    {
+                        // Không đủ gần để chèn vào wall → chỉ là move trong extraCheckpoints
+                        if (RoomFloorMap.TryGetValue(room.ID, out GameObject floorGO))
+                        {
+                            Vector2 local2D = new2D - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+                            Vector2 old2D = new Vector2(selectedCheckpoint.transform.position.x, selectedCheckpoint.transform.position.z)
+                                            - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+
+                            // Cập nhật lại điểm trong extraCheckpoints gần vị trí cũ nhất
+                            for (int i = 0; i < room.extraCheckpoints.Count; i++)
+                            {
+                                if (Vector2.Distance(room.extraCheckpoints[i], old2D) < 0.1f)
+                                {
+                                    room.extraCheckpoints[i] = local2D;
+                                    break;
+                                }
+                            }
+
+                            selectedCheckpoint.transform.position = new Vector3(local2D.x, 0f, local2D.y) + floorGO.transform.position;
+
+                            RoomStorage.UpdateOrAddRoom(room); // ← cập nhật dữ liệu sau khi move
                         }
                     }
                 }
@@ -608,7 +662,7 @@ public class CheckpointManager : MonoBehaviour
             break;
         }
     }
-
+    
     void RebuildWallLinesPreservingDoors(Room room)
     {
         // 1. Backup all old wall lines
@@ -621,8 +675,8 @@ public class CheckpointManager : MonoBehaviour
             {
                 WallLine parent = oldWalls
                     .FirstOrDefault(w => w.type == LineType.Wall &&
-                                         GetDistanceFromSegment(dw.start, w.start, w.end) +
-                                         GetDistanceFromSegment(dw.end, w.start, w.end) < 0.1f);
+                                        GetDistanceFromSegment(dw.start, w.start, w.end) +
+                                        GetDistanceFromSegment(dw.end, w.start, w.end) < 0.1f);
 
                 if (parent == null) return (null, 0f, 0f, dw);
 
@@ -688,6 +742,12 @@ public class CheckpointManager : MonoBehaviour
                     list[i] = (newLine, p1, p2); // gán lại line mới vào tuple
                 }
             }
+        }
+
+        // === Cập nhật lại mesh sàn sau khi checkpoint thay đổi
+        if (RoomFloorMap.TryGetValue(room.ID, out GameObject floorGO))
+        {
+            floorGO.GetComponent<RoomMeshController>()?.GenerateMesh(room.checkpoints);
         }
     }
 
