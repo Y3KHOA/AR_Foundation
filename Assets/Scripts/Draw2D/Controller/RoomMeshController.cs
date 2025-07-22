@@ -265,9 +265,6 @@ void Update()
                 }
 
                 RoomStorage.UpdateOrAddRoom(room);
-
-                // Cập nhật checkpoint GameObjects bên ngoài
-                // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
                 
                 var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
                 if (checkpointMgr != null)
@@ -279,7 +276,7 @@ void Update()
                         {
                             if (child.CompareTag("CheckpointExtra")) // <-- tag riêng cho point phụ
                             {
-                                Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
+                                // Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
                                 // child.position += delta;
                             }
                         }

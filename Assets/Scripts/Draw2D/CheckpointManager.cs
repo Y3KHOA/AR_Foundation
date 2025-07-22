@@ -27,6 +27,8 @@ public class CheckpointManager : MonoBehaviour
     public bool isMovingCheckpoint = false;
     public List<GameObject> currentCheckpoints = new List<GameObject>();
     public GameObject selectedCheckpoint = null; // Điểm được chọn để di chuyển  
+    private GameObject selectedExtraCheckpoint = null; // Điểm phụ được chọn để nối
+    private GameObject selectedNormalCheckpoint = null; // Điểm chính được chọn để nối
     public bool isDragging = false; // Kiểm tra xem có đang kéo điểm không 
     public bool isPreviewing = false; // Trạng thái preview
     public bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa 
@@ -65,7 +67,6 @@ public class CheckpointManager : MonoBehaviour
 
     void Start()
     {
-        // LoadPointsFromDataTransfer();
         LoadPointsFromRoomStorage();
     }
 
@@ -394,11 +395,115 @@ public class CheckpointManager : MonoBehaviour
 
         if (nearestCheckpoint != null)
         {
-            selectedCheckpoint = nearestCheckpoint;
-            return true;
+            bool isExtra = nearestCheckpoint.CompareTag("CheckpointExtra");
+
+            if (isExtra)
+            {
+                selectedCheckpoint = nearestCheckpoint;
+
+                if (selectedExtraCheckpoint == null && selectedNormalCheckpoint == null)
+                {
+                    selectedExtraCheckpoint = nearestCheckpoint;
+                    Debug.Log($"[Extra→Chọn điểm phụ đầu]: {nearestCheckpoint.transform.position}");
+                }
+                else if (selectedExtraCheckpoint != null && selectedExtraCheckpoint != nearestCheckpoint)
+                {
+                    // Extra + Extra → Nối như cũ
+                    // ConnectExtraCheckpoints(selectedExtraCheckpoint, nearestCheckpoint);
+                    ToggleConnectionBetweenCheckpoints(selectedExtraCheckpoint, nearestCheckpoint);
+
+                    selectedExtraCheckpoint = null;
+                }
+                else if (selectedNormalCheckpoint != null)
+                {
+                    // Chính + Phụ → Nối
+                    // ConnectExtraCheckpoints(selectedNormalCheckpoint, nearestCheckpoint);
+                    ToggleConnectionBetweenCheckpoints(selectedNormalCheckpoint, nearestCheckpoint);
+
+                    selectedNormalCheckpoint = null;
+                }
+                else
+                {
+                    // Click lại chính nó
+                    selectedExtraCheckpoint = null;
+                }
+
+                return true;
+            }
+            else
+            {
+                selectedCheckpoint = nearestCheckpoint;
+
+                if (selectedExtraCheckpoint != null)
+                {
+                    // Phụ + Chính → Nối
+                    // ConnectExtraCheckpoints(selectedExtraCheckpoint, nearestCheckpoint);
+                    ToggleConnectionBetweenCheckpoints(selectedExtraCheckpoint, nearestCheckpoint);
+
+                    selectedExtraCheckpoint = null;
+                }
+                else if (selectedNormalCheckpoint == null)
+                {
+                    selectedNormalCheckpoint = nearestCheckpoint;
+                    Debug.Log($"[Normal→Chọn điểm chính đầu]: {nearestCheckpoint.transform.position}");
+                }
+                else if (selectedNormalCheckpoint == nearestCheckpoint)
+                {
+                    selectedNormalCheckpoint = null;
+                }
+
+                return true;
+            }
         }
 
         return false;
+    }
+
+    void ToggleConnectionBetweenCheckpoints(GameObject pointA, GameObject pointB)
+    {
+        Vector3 start = pointA.transform.position;
+        Vector3 end = pointB.transform.position;
+
+        // === Tìm room chứa cả 2 điểm ===
+        string roomID = FindRoomIDByPoint(start);
+        if (string.IsNullOrEmpty(roomID)) return;
+
+        if (!RoomFloorMap.TryGetValue(roomID, out GameObject floorGO)) return;
+        Room room = RoomStorage.GetRoomByID(roomID);
+        if (room == null) return;
+
+        Vector2 localA = new Vector2(start.x, start.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+        Vector2 localB = new Vector2(end.x, end.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+
+        // === Thêm điểm phụ nếu chưa có ===
+        if (!room.extraCheckpoints.Any(p => Vector2.Distance(p, localA) < 0.01f))
+            room.extraCheckpoints.Add(localA);
+
+        if (!room.extraCheckpoints.Any(p => Vector2.Distance(p, localB) < 0.01f))
+            room.extraCheckpoints.Add(localB);
+
+        // === Kiểm tra xem đã tồn tại line chưa ===
+        WallLine existingLine = room.wallLines.FirstOrDefault(w =>
+            (Vector3.Distance(w.start, start) < 0.01f && Vector3.Distance(w.end, end) < 0.01f) ||
+            (Vector3.Distance(w.start, end) < 0.01f && Vector3.Distance(w.end, start) < 0.01f)
+        );
+
+        if (existingLine != null)
+        {
+            // Nếu đã tồn tại → xóa line
+            room.wallLines.Remove(existingLine);
+            Debug.Log($"[Disconnect] Gỡ nối {pointA.name} ↔ {pointB.name}");
+        }
+        else
+        {
+            // Nếu chưa tồn tại → thêm line
+            room.wallLines.Add(new WallLine(start, end, LineType.Wall));
+            Debug.Log($"[Connect] Đã nối mới {pointA.name} ↔ {pointB.name}");
+        }
+
+        RoomStorage.UpdateOrAddRoom(room);
+        DrawingTool.ClearAllLines();
+        RedrawAllRooms();
     }
 
     public void MoveSelectedCheckpoint()
@@ -406,6 +511,8 @@ public class CheckpointManager : MonoBehaviour
         if (selectedCheckpoint == null) return;
 
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
+        Vector3 oldWorldPos = selectedCheckpoint.transform.position;
+
 
         // === Nếu là CheckpointExtra thì giới hạn di chuyển trong polygon ===
         if (selectedCheckpoint.CompareTag("CheckpointExtra"))
@@ -458,6 +565,12 @@ public class CheckpointManager : MonoBehaviour
 
                             Vector2? nearest = null;
 
+                            List<WallLine> affectedLines = room.wallLines
+                                .Where(w =>
+                                    (Vector2.Distance(ToLocal2D(w.start, floorGO), oldLocal2D) < 0.01f) ||
+                                    (Vector2.Distance(ToLocal2D(w.end, floorGO), oldLocal2D) < 0.01f)
+                                ).ToList();
+
                             float minDist1 = float.MaxValue; // <<< QUAN TRỌNG
                             foreach (var p in room.extraCheckpoints)
                             {
@@ -470,12 +583,12 @@ public class CheckpointManager : MonoBehaviour
                             }
                             if (nearest.HasValue)
                             {
-                            room.extraCheckpoints.Remove(nearest.Value);
-                            Debug.Log($"[ExtraCheckpoint] Removed nearest point at dist={minDist1:F3}: {nearest.Value}");
+                                room.extraCheckpoints.Remove(nearest.Value);
+                                Debug.Log($"[ExtraCheckpoint] Removed nearest point at dist={minDist1:F3}: {nearest.Value}");
                             }
                             else
                             {
-                            Debug.LogWarning($"[ExtraCheckpoint] Không tìm thấy điểm nào đủ gần (minDist={minDist1:F3}). Không xóa.");
+                                Debug.LogWarning($"[ExtraCheckpoint] Không tìm thấy điểm nào đủ gần (minDist={minDist1:F3}). Không xóa.");
                             }
 
                             RoomStorage.UpdateOrAddRoom(room);
@@ -492,6 +605,24 @@ public class CheckpointManager : MonoBehaviour
                                 loop.Insert(insertIndex, selectedCheckpoint);
                             }
 
+                            Vector3 newWorldPos = new Vector3(local2D.x, 0, local2D.y) + floorGO.transform.position;
+
+                            foreach (var line in room.wallLines)
+                            {
+                                Vector2 lineStartLocal = ToLocal2D(line.start, floorGO);
+                                Vector2 lineEndLocal = ToLocal2D(line.end, floorGO);
+
+                                if (Vector2.Distance(lineStartLocal, oldLocal2D) < 0.01f)
+                                {
+                                    line.start = newWorldPos;
+                                }
+                                else if (Vector2.Distance(lineEndLocal, oldLocal2D) < 0.01f)
+                                {
+                                    line.end = newWorldPos;
+                                }
+                            }
+
+
                             RebuildWallLinesPreservingDoors(room);
 
                             RoomStorage.UpdateOrAddRoom(room);
@@ -504,32 +635,51 @@ public class CheckpointManager : MonoBehaviour
                     }
                     else
                     {
-                        // Không đủ gần để chèn vào wall → chỉ là move trong extraCheckpoints
                         if (RoomFloorMap.TryGetValue(room.ID, out GameObject floorGO))
                         {
                             Vector2 local2D = new2D - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
-                            Vector2 old2D = new Vector2(selectedCheckpoint.transform.position.x, selectedCheckpoint.transform.position.z)
-                                            - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+                            Vector2 oldLocal2D = new Vector2(oldWorldPos.x, oldWorldPos.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
 
-                            // Cập nhật lại điểm trong extraCheckpoints gần vị trí cũ nhất
+                            float minDist1 = float.MaxValue;
+                            int nearestIndex = -1;
+
                             for (int i = 0; i < room.extraCheckpoints.Count; i++)
                             {
-                                if (Vector2.Distance(room.extraCheckpoints[i], old2D) < 0.1f)
+                                float d = Vector2.Distance(room.extraCheckpoints[i], oldLocal2D);
+                                Debug.Log($"[ExtraCheckpoint] Distance to oldLocal2D: {d:F3}");
+
+                                if (d < minDist1)
                                 {
-                                    room.extraCheckpoints[i] = local2D;
-                                    break;
+                                    minDist1 = d;
+                                    nearestIndex = i;
                                 }
                             }
 
-                            selectedCheckpoint.transform.position = new Vector3(local2D.x, 0f, local2D.y) + floorGO.transform.position;
+                            if (nearestIndex != -1 && minDist1 < 0.5f) // fallback với ngưỡng rộng hơn
+                            {
+                                room.extraCheckpoints[nearestIndex] = local2D;
+                                UpdateWallLinesFromExtraCheckpoint(room, oldLocal2D, local2D);
+                                Debug.Log($"[ExtraCheckpoint] Updated fallback at index {nearestIndex}, dist = {minDist1:F3}");
+                            }
+                            else
+                            {
+                                Debug.LogWarning($"[ExtraCheckpoint] Không tìm thấy điểm nào đủ gần (minDist={minDist1:F3})");
+                            }
 
-                            RoomStorage.UpdateOrAddRoom(room); // ← cập nhật dữ liệu sau khi move
+                            selectedCheckpoint.transform.position = new Vector3(local2D.x, 0f, local2D.y) + floorGO.transform.position;
+                            RoomStorage.UpdateOrAddRoom(room);
+                            UpdateExtraCheckpointVisual(room.ID, nearestIndex, local2D);
+
+                            DrawingTool.ClearAllLines();
+                            RedrawAllRooms();
+
+                            return;
                         }
                     }
                 }
             }
         }
-        
+
         selectedCheckpoint.transform.position = newPosition;
 
         isMovingCheckpoint = true;
@@ -662,6 +812,71 @@ public class CheckpointManager : MonoBehaviour
             break;
         }
     }
+
+    void UpdateWallLinesFromExtraCheckpoint(Room room, Vector2 oldLocal2D, Vector2 newLocal2D)
+    {
+        if (!RoomFloorMap.TryGetValue(room.ID, out GameObject floorGO)) return;
+
+        Vector3 newWorld = new Vector3(newLocal2D.x, 0f, newLocal2D.y) + floorGO.transform.position;
+        Vector3 oldWorld = new Vector3(oldLocal2D.x, 0f, oldLocal2D.y) + floorGO.transform.position;
+
+        List<WallLine> toUpdate = new List<WallLine>();
+
+        foreach (var line in room.wallLines)
+        {
+            if (Vector3.Distance(line.start, oldWorld) < 0.01f || Vector3.Distance(line.end, oldWorld) < 0.01f)
+            {
+                toUpdate.Add(line);
+            }
+        }
+
+        foreach (var line in toUpdate)
+        {
+            // Nếu line bị update cả 2 đầu thì giữ nguyên
+            if (Vector3.Distance(line.start, oldWorld) < 0.01f)
+                line.start = newWorld;
+
+            if (Vector3.Distance(line.end, oldWorld) < 0.01f)
+                line.end = newWorld;
+
+            Debug.Log($"[WallLineUpdate] Updated line to: {line.start} → {line.end}");
+        }
+    }
+
+    private Vector2 ToLocal2D(Vector3 world, GameObject floorGO)
+    {
+        Vector3 offset = world - floorGO.transform.position;
+        return new Vector2(offset.x, offset.z);
+    }
+
+    // Dictionary<string, List<GameObject>> ExtraCheckpointVisuals;
+    Dictionary<string, List<GameObject>> ExtraCheckpointVisuals = new Dictionary<string, List<GameObject>>();
+
+
+    void UpdateExtraCheckpointVisual(string roomID, int index, Vector2 local2D)
+    {
+        if (!ExtraCheckpointVisuals.TryGetValue(roomID, out var visuals))
+        {
+            return;
+        }
+
+        if (index < 0 || index >= visuals.Count)
+        {
+            return;
+        }
+
+        if (!RoomFloorMap.TryGetValue(roomID, out var floor))
+        {
+            return;
+        }
+
+        if (visuals[index] == null)
+        {
+            return;
+        }
+
+        visuals[index].transform.position = new Vector3(local2D.x, 0f, local2D.y) + floor.transform.position;
+    }
     
     void RebuildWallLinesPreservingDoors(Room room)
     {
@@ -706,6 +921,32 @@ public class CheckpointManager : MonoBehaviour
                 room.wallLines.Add(new WallLine(existing));
             else
                 room.wallLines.Add(new WallLine(start, end, LineType.Wall));
+        }
+
+        // 3.5. Thêm lại các wallLine nối từ extraCheckpoints
+        foreach (var w in oldWalls)
+        {
+            // Skip nếu đã xử lý trong các bước trên
+            if (w.type != LineType.Wall) continue;
+
+            // Nếu line này không phải là từ checkpoints chính
+            bool isStartMain = room.checkpoints.Any(p => Vector3.Distance(new Vector3(p.x, 0, p.y), w.start) < 0.01f);
+            bool isEndMain = room.checkpoints.Any(p => Vector3.Distance(new Vector3(p.x, 0, p.y), w.end) < 0.01f);
+
+            // Nếu cả 2 đều là checkpoint chính thì bỏ qua
+            if (isStartMain && isEndMain) continue;
+
+
+            // Giữ lại nếu chưa tồn tại trong danh sách wall mới
+            bool exists = room.wallLines.Any(existing =>
+                (Vector3.Distance(existing.start, w.start) < 0.01f && Vector3.Distance(existing.end, w.end) < 0.01f) ||
+                (Vector3.Distance(existing.start, w.end) < 0.01f && Vector3.Distance(existing.end, w.start) < 0.01f));
+
+            if (!exists)
+            {
+                room.wallLines.Add(new WallLine(w));
+            }
+
         }
 
         // 4. Chèn lại các cửa/cửa sổ dựa trên tỷ lệ theo đoạn wall mới
