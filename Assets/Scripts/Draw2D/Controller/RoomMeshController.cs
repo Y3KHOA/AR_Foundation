@@ -8,6 +8,7 @@ public class RoomMeshController : MonoBehaviour
     private Vector3 dragStartWorldPos;
     private Vector3 roomOriginalOffset;
     public bool isDragging = false;
+    private Room oldRoom;
 
     [Header("Floor Material (optional)")]
     [SerializeField] private Material floorMaterial;
@@ -103,7 +104,8 @@ void Update()
                         }
                     }
 
-                    var mapping = checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
+                    var mapping =
+                        checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
                     if (mapping != null)
                     {
                         foreach (var cp in mapping) cp.transform.position += delta;
@@ -125,6 +127,7 @@ void Update()
             }
         }
     }
+
     public void Initialize(string roomID)
     {
         RoomID = roomID;
@@ -150,6 +153,7 @@ void Update()
             floorMaterial = new Material(Shader.Find("Unlit/Color"));
             floorMaterial.color = Color.red; // Đổi sang đỏ
         }
+
         meshRenderer.material = floorMaterial;
 
         // Tùy chọn: Thêm collider để click sàn
@@ -192,6 +196,7 @@ void Update()
         // Đặt lại transform để khớp world-space
         transform.position = new Vector3(pivot.x, 0, pivot.y);
     }
+
     private Vector2 GetCentroid(List<Vector2> points)
     {
         if (points == null || points.Count == 0)
@@ -203,9 +208,10 @@ void Update()
             sumX += p.x;
             sumY += p.y;
         }
+
         return new Vector2(sumX / points.Count, sumY / points.Count);
     }
-
+    
     private void OnMouseDown()
     {
         if (!PenManager.isPenActive) return;
@@ -224,8 +230,20 @@ void Update()
             dragStartWorldPos = ray.GetPoint(distance);
             isDragging = true;
         }
+
+        oldRoom = new Room(RoomStorage.GetRoomByID(RoomID));
+        oldPosition = transform.position;
     }
 
+    private void ProcessDrag(Vector3 worldPos)
+    {
+        Vector3 delta = worldPos - dragStartWorldPos;
+        dragStartWorldPos = worldPos;
+
+        // Move the mesh GameObject
+        transform.position += delta;
+    }
+    
     private void OnMouseDrag()
     {
         if (!PenManager.isPenActive) return;
@@ -252,6 +270,7 @@ void Update()
                     Vector2 moved = new Vector2(old.x + delta.x, old.y + delta.z);
                     room.checkpoints[i] = moved;
                 }
+
                 for (int i = 0; i < room.extraCheckpoints.Count; i++)
                 {
                     Vector2 pt = room.extraCheckpoints[i];
@@ -268,7 +287,7 @@ void Update()
 
                 // Cập nhật checkpoint GameObjects bên ngoài
                 // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
-                
+
                 var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
                 if (checkpointMgr != null)
                 {
@@ -284,7 +303,9 @@ void Update()
                             }
                         }
                     }
-                    var mapping = checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
+
+                    var mapping =
+                        checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
                     if (mapping != null)
                     {
                         foreach (var cp in mapping)
@@ -292,6 +313,7 @@ void Update()
                             cp.transform.position += delta;
                         }
                     }
+
                     // === di chuyển point door/ window theo room
                     if (checkpointMgr.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
                     {
@@ -301,12 +323,17 @@ void Update()
                             p2GO.transform.position += delta;
                         }
                     }
+
                     checkpointMgr.DrawingTool.ClearAllLines();
                     checkpointMgr.RedrawAllRooms();
                 }
             }
         }
     }
+
+
+    private Vector2 oldPosition;
+
     private void OnMouseUp()
     {
         isDragging = false;
@@ -317,5 +344,23 @@ void Update()
             PenManager.isRoomFloorBeingDragged = false;
             checkpointMgr.IsDraggingRoom = false;
         }
+
+        CreateUndoCommand();
+
+    }
+
+    private void CreateUndoCommand()
+    {
+        MoveRoomData moveObject = new MoveRoomData();
+        moveObject.RoomID = RoomID;
+        moveObject.MovingObject = transform;
+        moveObject.NewPosition = transform.position;
+        moveObject.OldPosition = oldPosition;
+
+        moveObject.OldRoom = new Room(oldRoom);
+        moveObject.NewRoom = new Room(RoomStorage.GetRoomByID(RoomID));
+        var command = new MoveRetangularUndoRedoCommand(moveObject);
+        
+        UndoRedoController.Instance.AddToRedo(command);
     }
 }
