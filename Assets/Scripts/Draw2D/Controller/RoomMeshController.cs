@@ -148,7 +148,7 @@ void Update()
         {
             // floorMaterial = new Material(Shader.Find("Standard"));
             floorMaterial = new Material(Shader.Find("Unlit/Color"));
-            floorMaterial.color = Color.red; // Đổi sang đỏ
+            // floorMaterial.color = Color.red; // Đổi sang đỏ
         }
         meshRenderer.material = floorMaterial;
 

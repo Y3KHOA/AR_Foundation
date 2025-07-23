@@ -81,6 +81,7 @@ public class Room
 
         checkpoints = new List<Vector2>(other.checkpoints);
         wallLines = new List<WallLine>(other.wallLines.Select(w => new WallLine(w))); // clone từng wall
+        extraCheckpoints = new List<Vector2>(other.extraCheckpoints);
         heights = new List<float>(other.heights);
     }
 }
