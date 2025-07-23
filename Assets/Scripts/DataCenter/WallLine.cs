@@ -13,6 +13,8 @@ public class WallLine
     public Vector3 end;
     public LineType type; // Wall, Door, Window
     public WallLine() { }
+    
+    public bool isManualConnection = false;
 
     // Dùng cho cửa sổ:
     public float distanceHeight = 0f;   // độ cao bắt đầu từ mặt đất
@@ -32,8 +34,10 @@ public class WallLine
         this.start = other.start;
         this.end = other.end;
         this.type = other.type;
-        this.distanceHeight = other.distanceHeight ;
-        this.Height = other.Height ;
+        this.distanceHeight = other.distanceHeight;
+        this.Height = other.Height;
+        
+        this.isManualConnection = other.isManualConnection;
     }
 }
 

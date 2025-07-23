@@ -60,7 +60,7 @@ public class DrawingTool : MonoBehaviour
         lr.textureMode = LineTextureMode.Tile;
         lr.alignment = LineAlignment.View; // Quan trọng: để line luôn xoay đúng góc nhìn
         lr.numCapVertices = 0;
-        lr.widthMultiplier = 0.1f;
+        lr.widthMultiplier = 0.04f;
         lr.positionCount = 2;
         // if (currentLineType == LineType.Door)
         // {
@@ -382,7 +382,7 @@ public class DrawingTool : MonoBehaviour
             lr.SetPosition(1, dashEnd);
 
             lr.material = new Material(doorMaterial); // Gán vật liệu cửa
-            lr.widthMultiplier = 0.1f;
+            lr.widthMultiplier = 0.04f;
 
             lines.Add(lr); // lưu để quản lý nếu cần xóa
 
