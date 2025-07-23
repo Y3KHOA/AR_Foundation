@@ -11,7 +11,7 @@ public class RoomMeshController : MonoBehaviour
     private Vector3 roomOriginalOffset;
     public bool isDragging = false;
     private Room oldRoom;
-    private CheckpointManager checkpointManager;
+    private CheckpointManager checkPointManager;
 
     [Header("Floor Material (optional)")]
     [SerializeField] private Material floorMaterial;
@@ -23,7 +23,7 @@ public class RoomMeshController : MonoBehaviour
             mainCam = Camera.main;
         }
 
-        checkpointManager = CheckpointManager.Instance;
+        checkPointManager = CheckpointManager.Instance;
     }
 
 #if UNITY_STANDALONE
@@ -39,10 +39,8 @@ public class RoomMeshController : MonoBehaviour
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    if (CheckTouchHitThisObject(touch.position))
-                    {
-                         OnStartDrag(touch.position);
-                    }
+                    OnStartDrag(touch.position);
+
                     break;
 
                 case TouchPhase.Moved:
@@ -62,13 +60,15 @@ public class RoomMeshController : MonoBehaviour
     {
         Ray ray = mainCam.ScreenPointToRay(screenPos);
         RaycastHit hit;
-    
+
         if (Physics.Raycast(ray, out hit))
         {
             return hit.transform == this.transform;
         }
+
         return false;
     }
+
     // Hàm di chuyển Room theo vị trí chạm for Android
     void DragRoom(Vector2 screenPos)
     {
@@ -110,11 +110,10 @@ public class RoomMeshController : MonoBehaviour
                 // Cập nhật checkpoint GameObjects bên ngoài
                 // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
 
-                var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
-                if (checkpointMgr != null)
+                if (checkPointManager != null)
                 {
                     // === Move checkpoint phụ (extraCheckpoints) ===
-                    if (checkpointMgr.RoomFloorMap.TryGetValue(RoomID, out var floorGO))
+                    if (checkPointManager.RoomFloorMap.TryGetValue(RoomID, out var floorGO))
                     {
                         foreach (Transform child in floorGO.transform)
                         {
@@ -127,7 +126,8 @@ public class RoomMeshController : MonoBehaviour
                     }
 
                     var mapping =
-                        checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
+                        checkPointManager.AllCheckpoints.Find(loop =>
+                            checkPointManager.FindRoomIDForLoop(loop) == RoomID);
                     if (mapping != null)
                     {
                         foreach (var cp in mapping)
@@ -137,7 +137,7 @@ public class RoomMeshController : MonoBehaviour
                     }
 
                     // === di chuyển point door/ window theo room
-                    if (checkpointMgr.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
+                    if (checkPointManager.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
                     {
                         foreach (var (line, p1GO, p2GO) in doorsInRoom)
                         {
@@ -146,8 +146,8 @@ public class RoomMeshController : MonoBehaviour
                         }
                     }
 
-                    checkpointMgr.DrawingTool.ClearAllLines();
-                    checkpointMgr.RedrawAllRooms();
+                    checkPointManager.DrawingTool.ClearAllLines();
+                    checkPointManager.RedrawAllRooms();
                 }
             }
         }
@@ -239,10 +239,15 @@ public class RoomMeshController : MonoBehaviour
 
     private void OnStartDrag(Vector3 startDragPosition)
     {
-        if (checkpointManager != null)
+        if (!CheckTouchHitThisObject(startDragPosition))
+        {
+            return;
+        }
+
+        if (checkPointManager != null)
         {
             PenManager.isRoomFloorBeingDragged = true;
-            checkpointManager.IsDraggingRoom = true;
+            checkPointManager.IsDraggingRoom = true;
         }
 
         Ray ray = Camera.main.ScreenPointToRay(startDragPosition);
@@ -254,16 +259,33 @@ public class RoomMeshController : MonoBehaviour
 
         oldRoom = new Room(RoomStorage.GetRoomByID(RoomID));
         oldPosition = transform.position;
+        oldCheckPointList = SaveCheckPointPosition(RoomID);
     }
 
+    private List<(Vector3,Vector3)> SaveCheckPointPosition(string RoomID)
+    {
+        var checkPointList = new List<(Vector3, Vector3)>();
+        if (checkPointManager.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
+        {
+            foreach (var (line, p1GO, p2GO) in doorsInRoom)
+            {
+                checkPointList.Add((p1GO.transform.position, p2GO.transform.position));
+            }
+        }
+
+        return checkPointList;
+    }
+
+
+    
     private void OnEndDrag()
     {
         isDragging = false;
 
-        if (checkpointManager != null)
+        if (checkPointManager != null)
         {
             PenManager.isRoomFloorBeingDragged = false;
-            checkpointManager.IsDraggingRoom = false;
+            checkPointManager.IsDraggingRoom = false;
         }
 
         CreateUndoCommand();
@@ -286,91 +308,11 @@ public class RoomMeshController : MonoBehaviour
         if (!PenManager.isPenActive) return;
         if (!isDragging) return;
         DragRoom(Input.mousePosition);
-        // Plane plane = new Plane(Vector3.up, Vector3.zero);
-        // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        // if (plane.Raycast(ray, out float distance))
-        // {
-        //     Vector3 currentPos = ray.GetPoint(distance);
-        //     Vector3 delta = currentPos - dragStartWorldPos;
-        //     dragStartWorldPos = currentPos;
-        //
-        //     // Di chuyển chính GameObject Mesh sàn
-        //     transform.position += delta;
-        //
-        //     // Update tất cả checkpoint và wallLine theo
-        //     Room room = RoomStorage.GetRoomByID(RoomID);
-        //     if (room != null)
-        //     {
-        //         for (int i = 0; i < room.checkpoints.Count; i++)
-        //         {
-        //             Vector2 old = room.checkpoints[i];
-        //             Vector2 moved = new Vector2(old.x + delta.x, old.y + delta.z);
-        //             room.checkpoints[i] = moved;
-        //         }
-        //
-        //         for (int i = 0; i < room.extraCheckpoints.Count; i++)
-        //         {
-        //             Vector2 pt = room.extraCheckpoints[i];
-        //             room.extraCheckpoints[i] = new Vector2(pt.x + delta.x, pt.y + delta.z);
-        //         }
-        //
-        //         for (int i = 0; i < room.wallLines.Count; i++)
-        //         {
-        //             room.wallLines[i].start += delta;
-        //             room.wallLines[i].end += delta;
-        //         }
-        //
-        //         RoomStorage.UpdateOrAddRoom(room);
-        //
-        //         // Cập nhật checkpoint GameObjects bên ngoài
-        //         // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
-        //
-        //         var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
-        //         if (checkpointMgr != null)
-        //         {
-        //             // === Move checkpoint phụ (extraCheckpoints) ===
-        //             if (checkpointMgr.RoomFloorMap.TryGetValue(RoomID, out var floorGO))
-        //             {
-        //                 foreach (Transform child in floorGO.transform)
-        //                 {
-        //                     if (child.CompareTag("CheckpointExtra")) // <-- tag riêng cho point phụ
-        //                     {
-        //                         Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
-        //                         // child.position += delta;
-        //                     }
-        //                 }
-        //             }
-        //
-        //             var mapping =
-        //                 checkpointMgr.AllCheckpoints.Find(loop => checkpointMgr.FindRoomIDForLoop(loop) == RoomID);
-        //             if (mapping != null)
-        //             {
-        //                 foreach (var cp in mapping)
-        //                 {
-        //                     cp.transform.position += delta;
-        //                 }
-        //             }
-        //
-        //             // === di chuyển point door/ window theo room
-        //             if (checkpointMgr.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
-        //             {
-        //                 foreach (var (line, p1GO, p2GO) in doorsInRoom)
-        //                 {
-        //                     p1GO.transform.position += delta;
-        //                     p2GO.transform.position += delta;
-        //                 }
-        //             }
-        //
-        //             checkpointMgr.DrawingTool.ClearAllLines();
-        //             checkpointMgr.RedrawAllRooms();
-        //         }
-        //     }
-        // }
     }
 
 
     private Vector2 oldPosition;
-
+    private List<(Vector3, Vector3)> oldCheckPointList = new List<(Vector3, Vector3)>();
 
     private void CreateUndoCommand()
     {
@@ -378,11 +320,11 @@ public class RoomMeshController : MonoBehaviour
         MoveRoomData moveObject = new MoveRoomData();
         moveObject.RoomID = RoomID;
         moveObject.MovingObject = transform;
-        moveObject.NewPosition = transform.position;
-        moveObject.OldPosition = oldPosition;
 
+        moveObject.OldPosition = oldPosition;
         moveObject.OldRoom = new Room(oldRoom);
-        moveObject.NewRoom = new Room(RoomStorage.GetRoomByID(RoomID));
+        moveObject.oldCheckPointPos = new List<(Vector3, Vector3)>(oldCheckPointList);
+        
         var command = new MoveRetangularUndoRedoCommand(moveObject);
 
         UndoRedoController.Instance.AddToRedo(command);
