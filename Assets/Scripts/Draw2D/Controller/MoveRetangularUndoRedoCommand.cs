@@ -21,6 +21,7 @@ public class MoveRetangularUndoRedoCommand : IUndoRedoCommand
         Refresh();
         UpdateCheckPoint(RoomStorage.GetRoomByID(data.RoomID));
         LoadCheckPointPositions(data.oldCheckPointPos, data.RoomID);
+        data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(data.OldRoom.checkpoints);
     }
 
     private void UpdateCheckPoint(Room room)
