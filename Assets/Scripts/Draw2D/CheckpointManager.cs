@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class CheckpointManager : MonoBehaviour
 {
+    public static CheckpointManager Instance;
     [Header("Prefabs")]
     public GameObject checkpointPrefab;
 
@@ -64,6 +65,10 @@ public class CheckpointManager : MonoBehaviour
         = new Dictionary<string, List<(WallLine, GameObject, GameObject)>>();
     // Dictionary<string (roomID), List<(WallLine, GameObject, GameObject)>> tempDoorWindowPoints;
 
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
