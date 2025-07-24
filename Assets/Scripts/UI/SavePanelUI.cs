@@ -21,19 +21,12 @@ public class SavePanelUI : MonoBehaviour
 
     private void Awake()
     {
-        closeBtn.onClick.AddListener(Close);
-        confirmBtn.onClick.AddListener(Show);
-        confirmBtn.onClick.AddListener(Confirm);
+        //closeBtn.onClick.AddListener(Close);
+        confirmBtn.onClick.AddListener(() => Show());
+        confirmBtn.onClick.AddListener(() => Confirm());
         Close();
         successPopup.gameObject.SetActive(false);
         failedPopup.gameObject.SetActive(false);
-    }
-
-    private void OnDestroy()
-    {
-        closeBtn.onClick.RemoveListener(Close);
-        confirmBtn.onClick.RemoveListener(Show);
-        confirmBtn.onClick.RemoveListener(Confirm);
     }
 
     private void Close()

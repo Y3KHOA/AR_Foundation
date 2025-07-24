@@ -97,7 +97,10 @@ public class BackgroundUI : MonoBehaviour
         if (target)
         {
             background.transform.SetParent(target.transform.parent.transform);
-            background.transform.SetSiblingIndex(target.transform.GetSiblingIndex() - 1);
+            int targetIndex = target.transform.GetSiblingIndex();
+            int newIndex = Mathf.Max(0, targetIndex - (background.transform.GetSiblingIndex() < targetIndex ? 1 : 0));
+            background.transform.SetSiblingIndex(newIndex);
+
         }
         else
         {
