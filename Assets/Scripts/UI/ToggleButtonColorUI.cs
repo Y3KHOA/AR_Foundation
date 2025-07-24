@@ -1,15 +1,22 @@
-﻿public class ToggleButtonColorUI : ToggleButtonUIBase
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public class ToggleButtonColorUI : ToggleButtonUIBase
 {
-    private ToggleColor toggleColor;
+    private ToggleColorBase[] toggleColorList;
     protected override void Awake()
     {
         base.Awake();
-        toggleColor = GetComponent<ToggleColor>();
+        toggleColorList = GetComponentsInChildren<ToggleColorBase>();
     }
 
     public override void ChangeState(State newState)
     {
         base.ChangeState(newState);
-        toggleColor.Toggle(newState == State.Active);
+        
+        foreach (var toggleColor in toggleColorList)
+        {
+            toggleColor.Toggle(newState == State.Active);
+        }
     }
 }
