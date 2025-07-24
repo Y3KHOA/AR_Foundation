@@ -62,6 +62,8 @@ public class BtnController : MonoBehaviour
     private bool isMeasuringDoorHeight = false;
     private bool isMeasuringWindowHeight = false;
     private string currentRoomID = "";
+    private string overwriteRoomID = "";
+
     
     public GameObject compassLabelPrefab; // TextMesh hoặc mũi tên để hiển thị hướng
 
@@ -76,16 +78,19 @@ public class BtnController : MonoBehaviour
         string selectedID = PlayerPrefs.GetString("SelectedRoomID", "");
         if (!string.IsNullOrEmpty(selectedID))
         {
-            Room loadedRoom = RoomStorage.GetRoomByID(selectedID);
-            if (loadedRoom != null)
-            {
-                Debug.Log($"[BtnController] Load lại room theo ID: {selectedID}");
-                LoadRoomIntoScene(loadedRoom); // Gọi hàm cũ của bạn
-            }
-            else
-            {
-                Debug.LogWarning("Không tìm thấy Room với ID đã chọn.");
-            }
+            // Room loadedRoom = RoomStorage.GetRoomByID(selectedID);
+            // if (loadedRoom != null)
+            // {
+            //     Debug.Log($"[BtnController] Load lại room theo ID: {selectedID}");
+            //     LoadRoomIntoScene(loadedRoom); // Gọi hàm cũ của bạn
+            // }
+            // else
+            // {
+            //     Debug.LogWarning("Không tìm thấy Room với ID đã chọn.");
+            // }
+            overwriteRoomID = selectedID;
+            Debug.Log($"[BtnController] Đo lại room theo ID: {overwriteRoomID}");
+            HandleButtonClick();
         }
 
         if (btnByCam.Instance.IsMeasure)
