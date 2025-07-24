@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class SavePanelUI : MonoBehaviour
@@ -43,6 +44,8 @@ public class SavePanelUI : MonoBehaviour
 
     public void Show()
     {
+        EventSystem.current.SetSelectedGameObject(fileNameInputField.gameObject);
+        fileNameInputField.OnPointerClick(new PointerEventData(EventSystem.current)); 
         BackgroundUI.Instance.Show(transform.gameObject, Close);
         savePanelContainer.gameObject.SetActive(true);
     }
