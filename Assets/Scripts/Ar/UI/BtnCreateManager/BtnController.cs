@@ -22,6 +22,8 @@ public class BtnController : MonoBehaviour
     public float AreaValue = 0f; // Diện tích mặt đáy
     public float PerimeterValue = 0f; // Chu vi (tổng chiều dài các cạnh)
     public float CeilingValue = 0f; // Diện tích mặt trần
+    
+    public GameObject compassLabelPrefab; // TextMesh hoặc mũi tên để hiển thị hướng
 
     public ARAnchorManager anchorManager;
 
@@ -47,6 +49,7 @@ public class BtnController : MonoBehaviour
     private bool hasPlane = false;
     private float mergeThreshold = 0.1f; // Ngưỡng hợp nhất điểm
     private float closeThreshold = 0.2f; // Ngưỡng khép kín đường
+    public bool IsOverwrite = false;
     private int flag = 0; // Mặc định flag = 0
     public int Flag { get { return flag; } set { flag = value; } }
     private bool measure = true;
@@ -58,14 +61,8 @@ public class BtnController : MonoBehaviour
     private float heightDoor = 0.5f;
     private GameObject firstDoorBasePoint = null;
     private GameObject firstDoorTopPoint = null;
-    private bool measureRoom = false;
     private bool isMeasuringDoorHeight = false;
     private bool isMeasuringWindowHeight = false;
-    private string currentRoomID = "";
-    private string overwriteRoomID = "";
-
-    
-    public GameObject compassLabelPrefab; // TextMesh hoặc mũi tên để hiển thị hướng
 
     void Start()
     {
@@ -78,22 +75,12 @@ public class BtnController : MonoBehaviour
         string selectedID = PlayerPrefs.GetString("SelectedRoomID", "");
         if (!string.IsNullOrEmpty(selectedID))
         {
-            // Room loadedRoom = RoomStorage.GetRoomByID(selectedID);
-            // if (loadedRoom != null)
-            // {
-            //     Debug.Log($"[BtnController] Load lại room theo ID: {selectedID}");
-            //     LoadRoomIntoScene(loadedRoom); // Gọi hàm cũ của bạn
-            // }
-            // else
-            // {
-            //     Debug.LogWarning("Không tìm thấy Room với ID đã chọn.");
-            // }
-            overwriteRoomID = selectedID;
-            Debug.Log($"[BtnController] Đo lại room theo ID: {overwriteRoomID}");
-            HandleButtonClick();
+            heightValue = 0f;
+            IsOverwrite = true;
         }
 
-        if (btnByCam.Instance.IsMeasure)
+        // if (btnByCam.Instance.IsMeasure) /// Cực kì dễ lỗi. ko dùng đến vẫn lỗi như thường nếu NULL!
+        if (btnByCam.Instance != null && btnByCam.Instance.IsMeasure)
         {
             heightValue = 0f;
             Debug.Log("btn da vao day heightValue: " + heightValue);
@@ -112,20 +99,12 @@ public class BtnController : MonoBehaviour
         if (planeManager != null)
             planeManager.planesChanged += OnPlanesChanged;
     }
-    private void LoadRoomIntoScene(Room room)
-    {
-        // KHÔNG tạo điểm hay wall nào từ dữ liệu cũ!
-
-        // Đánh dấu lại Room đang đo để ghi đè lên sau
-        currentRoomID = room.ID;
-        Debug.Log($"[ScanMode] Đang đo lại Room ID: {currentRoomID}");
-    }
-
-
+    
     void Update()
     {
         isDoor = PanelManagerDoorWindow.Instance.IsDoorChanged;
         isWindow = PanelManagerDoorWindow.Instance.IsWindowChanged;
+        // Debug.Log($"[ScanMode] Con song");
 
         if (!hasPlane || !isPointVisible || pointPrefab == null || raycastManager == null)
             return;
@@ -374,6 +353,7 @@ public class BtnController : MonoBehaviour
         // === khi nhan height=00 ===
         else
         {
+            Debug.Log($"[ScanMode] Dang do do cao ");
             // Lấy camera
             Camera cam = Camera.main != null ? Camera.main : Camera.allCameras.Length > 0 ? Camera.allCameras[0] : null;
             if (cam == null) return;
@@ -946,10 +926,8 @@ public class BtnController : MonoBehaviour
 
         if (heightValue == 0)
         {
-            Debug.Log("1 btn co vao day ko? heightValue = 0");
             if (measure)
             {
-                Debug.Log("2 btn co vao day ko? measure = false");
                 measure = false;
 
                 // Tạo base point và lưu lại tạm
@@ -969,7 +947,6 @@ public class BtnController : MonoBehaviour
             else
             {
                 // Lần nhấn thứ hai - Kết thúc đo chiều cao
-                Debug.Log("Lần nhấn 2 - Lưu chiều cao");
 
                 if (previewPoint != null)
                 {
@@ -1074,10 +1051,8 @@ public class BtnController : MonoBehaviour
             PanelManagerDoorWindow.Instance.IsClicked = true;
 
             // Tính diện tích giữa các mặt đáy và mặt trên
-            float baseArea = AreaCalculator.CalculateArea(GetBasePoints());
-            float heightArea = AreaCalculator.CalculateArea(GetHeightPoints());
-            Debug.Log("Dien tich base = " + baseArea); // Diện tích đáy
-            Debug.Log("Dien tich height = " + heightArea); // Diện tích mặt trên
+            float baseArea = AreaCalculator.CalculateArea(GetBasePoints());// Diện tích đáy
+            float heightArea = AreaCalculator.CalculateArea(GetHeightPoints());// Diện tích mặt trên
             AreaValue = baseArea;
             CeilingValue = heightArea;
             // PerimeterValue = AreaCalculator.CalculateArea(currentBasePoints); // Tính chu vi (tổng chiều dài các cạnh)
@@ -1284,10 +1259,6 @@ public class BtnController : MonoBehaviour
                 return i;
             }
         }
-
-        // Debug để phát hiện vấn đề
-        Debug.LogWarning($"Không tìm thấy đoạn tường. Wall start: {wallStart}, Wall end: {wallEnd}");
-        Debug.LogWarning($"Đang tìm trong {checkpoints.Count} điểm checkpoint");
 
         // In ra tất cả các đoạn để debug
         for (int i = 0; i < checkpoints.Count; i++)

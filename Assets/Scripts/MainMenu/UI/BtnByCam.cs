@@ -53,14 +53,6 @@ public class btnByCam : MonoBehaviour
 
     void OnEnterClicked()
     {
-        Debug.Log("Nhấn Enter - Ẩn các button và hiển thị unit");
-
-        // if (btnEnter != null)
-        //     btnEnter.gameObject.SetActive(false); // Ẩn nút Enter
-
-        // if (btnMeasure != null)
-        //     btnMeasure.gameObject.SetActive(false); // Ẩn nút Measure
-
         if (unit != null)
             unit.SetActive(true);    // Hiện GameObject unit
         
@@ -71,7 +63,7 @@ public class btnByCam : MonoBehaviour
             buttonBar.SetActive(false); // Ẩn toàn bộ Button Bar
     }
 
-    void OnMeasureClicked()
+    public void OnMeasureClicked()
     {
         isMeasure = true;
         Debug.Log("Measure clicked - To scene ARFoundation\nMeasure =true");
