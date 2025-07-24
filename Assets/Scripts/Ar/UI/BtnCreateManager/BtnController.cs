@@ -61,6 +61,7 @@ public class BtnController : MonoBehaviour
     private bool measureRoom = false;
     private bool isMeasuringDoorHeight = false;
     private bool isMeasuringWindowHeight = false;
+    private string currentRoomID = "";
     
     public GameObject compassLabelPrefab; // TextMesh hoặc mũi tên để hiển thị hướng
 
@@ -70,6 +71,22 @@ public class BtnController : MonoBehaviour
         string unit = PlayerPrefs.GetString("SelectedUnit", "m");
         float savedHeight = PlayerPrefs.GetFloat("HeightValue", 0f);
         this.heightValue = savedHeight;
+
+        // LOAD ROOM THEO ID NẾU CÓ
+        string selectedID = PlayerPrefs.GetString("SelectedRoomID", "");
+        if (!string.IsNullOrEmpty(selectedID))
+        {
+            Room loadedRoom = RoomStorage.GetRoomByID(selectedID);
+            if (loadedRoom != null)
+            {
+                Debug.Log($"[BtnController] Load lại room theo ID: {selectedID}");
+                LoadRoomIntoScene(loadedRoom); // Gọi hàm cũ của bạn
+            }
+            else
+            {
+                Debug.LogWarning("Không tìm thấy Room với ID đã chọn.");
+            }
+        }
 
         if (btnByCam.Instance.IsMeasure)
         {
@@ -90,6 +107,15 @@ public class BtnController : MonoBehaviour
         if (planeManager != null)
             planeManager.planesChanged += OnPlanesChanged;
     }
+    private void LoadRoomIntoScene(Room room)
+    {
+        // KHÔNG tạo điểm hay wall nào từ dữ liệu cũ!
+
+        // Đánh dấu lại Room đang đo để ghi đè lên sau
+        currentRoomID = room.ID;
+        Debug.Log($"[ScanMode] Đang đo lại Room ID: {currentRoomID}");
+    }
+
 
     void Update()
     {
@@ -1098,7 +1124,12 @@ public class BtnController : MonoBehaviour
                 segmentWallLines.Add(wl);
             }
             // Lưu chính xác các WallLine này vào Room hiện tại
+            string selectedID = PlayerPrefs.GetString("SelectedRoomID", "");
             Room room = new Room();
+            if (!string.IsNullOrEmpty(selectedID))
+            {
+                room.SetID(selectedID); // Gán lại ID để overwrite
+            }
             room.wallLines.AddRange(segmentWallLines);
             Debug.Log("Done 1: " + segmentWallLines.Count);
 
@@ -1117,7 +1148,8 @@ public class BtnController : MonoBehaviour
             room.heights.AddRange(heightList);
             Debug.Log("Done 3");
 
-            RoomStorage.rooms.Add(room);
+            // RoomStorage.rooms.Add(room);
+            RoomStorage.UpdateOrAddRoom(room);
 
             // Tính diện tích mặt đứng **phải làm ở đây**, trước khi clear
             for (int i = 0; i < count; i++)

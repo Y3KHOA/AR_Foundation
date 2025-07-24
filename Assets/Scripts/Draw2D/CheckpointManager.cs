@@ -20,7 +20,7 @@ public class CheckpointManager : MonoBehaviour
     public LineType currentLineType = LineType.Wall;
     public List<WallLine> wallLines = new List<WallLine>();
     public List<Room> rooms = new List<Room>();
-
+    
     [Header("Camera")]
     public Camera drawingCamera; // Gán Camera chính vẽ 2D
 
