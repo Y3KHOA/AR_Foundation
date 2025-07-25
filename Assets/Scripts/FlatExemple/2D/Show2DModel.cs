@@ -1,5 +1,10 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using TMPro;
+using System.Linq;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Show2DModel : MonoBehaviour
@@ -7,117 +12,133 @@ public class Show2DModel : MonoBehaviour
     [Header("Prefabs")]
     public GameObject checkpointPrefab;
     public Drawing2D Drawing2D;
+
+    //parent of all checkpoints
+    [Header("Parent")]
     public Transform modelRoot;
 
     [Header("Camera")]
-    public Camera sceneCamera;
-    public float padding = 1.2f; // Dư lề
+    public Camera PreviewCamera;
 
     [Header("Buttons")]
     public Button ButtonFloorPlan;
     public Button Button3DView;
     public Button ButtonInfo;
 
+    private List<LoopMap> loopMappings = new List<LoopMap>();
+    private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
+    public List<List<GameObject>> AllCheckpoints =>
+        allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+
+    private CheckpointManager checkPointManager;
+
     void Start()
     {
+        modelRoot.gameObject.layer = LayerMask.NameToLayer("PreviewModel"); //add layer to modelRoot
+
         LoadPointsFromRoomStorage();
-        SetupButtons();   // Gắn listener cho nút
-        FitCameraToFloorPlan(); // Mặc định mở FloorPlan
+
+        ButtonFloorPlan.onClick.AddListener(onclickFloorPlan);
+        Button3DView.onClick.AddListener(onclick3DView);
+        ButtonInfo.onClick.AddListener(onclickInfo);
     }
 
-    void SetupButtons()
-    {
-        ButtonFloorPlan.onClick.AddListener(FitCameraToFloorPlan);
-        Button3DView.onClick.AddListener(FitCameraTo3DView);
-        ButtonInfo.onClick.AddListener(FitCameraToInfo);
-    }
-
+    // === Load points from RoomStorage
     void LoadPointsFromRoomStorage()
     {
-        List<Room> rooms = RoomStorage.rooms;
+        checkPointManager = FindFirstObjectByType<CheckpointManager>();
 
-        if (rooms == null || rooms.Count == 0)
+        var rooms = RoomStorage.rooms;
+        if (rooms.Count == 0)
         {
-            Debug.Log("Không có Room nào trong RoomStorage.");
+            Debug.Log("Không có Room nào để hiển thị.");
             return;
         }
 
-        modelRoot.rotation = Quaternion.identity;
-
-        foreach (Room room in rooms)
+        foreach (var room in rooms)
         {
-            List<GameObject> checkpointsForRoom = new List<GameObject>();
-            List<Vector2> path = room.checkpoints;
-
-            for (int i = 0; i < path.Count; i++)
+            // === Tạo lại checkpoint GameObject từ room.checkpoints
+            List<GameObject> loopGO = new List<GameObject>();
+            foreach (var pt in room.checkpoints)
             {
-                Vector3 worldPos = new Vector3(path[i].x, 0, path[i].y);
-                GameObject checkpoint = Instantiate(checkpointPrefab, worldPos, Quaternion.identity, modelRoot);
-                checkpointsForRoom.Add(checkpoint);
+                Vector3 worldPos = new Vector3(pt.x, 0.01f, pt.y); // Nâng nhẹ lên để đè line
+                GameObject cp = Instantiate(checkpointPrefab, worldPos, Quaternion.identity, modelRoot);
+                cp.name = $"Checkpoint_{pt.x}_{pt.y}";
+                SetLayerRecursively(cp, modelRoot.gameObject.layer);
 
-                if (i > 0)
+                loopGO.Add(cp);
+            }
+
+            // === Lưu vào ánh xạ checkpoint<->RoomID
+            allCheckpoints.Add(loopGO);
+            loopMappings.Add(new LoopMap(room.ID, loopGO));
+
+            // === Vẽ lại các wallLines
+            foreach (var wl in room.wallLines)
+            {
+                Drawing2D.currentLineType = wl.type;
+                Drawing2D.DrawLineAndDistance(wl.start, wl.end); // Nếu có tạo GameObject line, hãy gán parent = modelRoot trong hàm này
+
+                // Nếu là cửa hoặc cửa sổ: tạo 2 điểm đầu/cuối riêng
+                if (wl.type == LineType.Door || wl.type == LineType.Window)
                 {
-                    Drawing2D.DrawLineAndDistance(checkpointsForRoom[i - 1].transform.position, worldPos, modelRoot);
+                    GameObject p1 = Instantiate(checkpointPrefab, wl.start + new Vector3(0, 0.01f, 0), Quaternion.identity, modelRoot);
+                    GameObject p2 = Instantiate(checkpointPrefab, wl.end + new Vector3(0, 0.01f, 0), Quaternion.identity, modelRoot);
+                    p1.name = $"{wl.type}_P1_{room.ID}";
+                    p2.name = $"{wl.type}_P2_{room.ID}";
+
+                    SetLayerRecursively(p1, modelRoot.gameObject.layer);
+                    SetLayerRecursively(p2, modelRoot.gameObject.layer);
+
+                    if (!checkPointManager.tempDoorWindowPoints.ContainsKey(room.ID))
+                        checkPointManager.tempDoorWindowPoints[room.ID] = new List<(WallLine, GameObject, GameObject)>();
+
+                    checkPointManager.tempDoorWindowPoints[room.ID].Add((wl, p1, p2));
                 }
             }
+        }
 
-            if (checkpointsForRoom.Count > 2)
-            {
-                Drawing2D.DrawLineAndDistance(
-                    checkpointsForRoom[^1].transform.position,
-                    checkpointsForRoom[0].transform.position,
-                    modelRoot
-                );
-            }
+        Debug.Log($"[LoadPointsFromRoomStorage] Đã load lại {rooms.Count} phòng, {allCheckpoints.Count} loop.");
+    }
 
-            Debug.Log($"[LoadPoints] Loaded Room ID: {room.ID} với {path.Count} điểm");
+    // === add layer cho các object trong modelRoot
+    void SetLayerRecursively(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+        foreach (Transform child in obj.transform)
+        {
+            SetLayerRecursively(child.gameObject, layer);
         }
     }
 
-    Bounds GetModelBounds()
+    void onclickFloorPlan()
     {
-        Bounds bounds = new Bounds(modelRoot.position, Vector3.zero);
-        foreach (Transform child in modelRoot)
-            bounds.Encapsulate(child.position);
-        return bounds;
+        if (PreviewCamera != null)
+        {
+            PreviewCamera.transform.position = new Vector3(0f, 10f, 0f);
+            PreviewCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            Debug.Log("[Camera] FloorPlan mode");
+        }
     }
 
-    void FitCameraToFloorPlan()
+    void onclick3DView()
     {
-        Bounds bounds = GetModelBounds();
-        float size = Mathf.Max(bounds.size.x, bounds.size.z) * padding;
-        float fovRad = sceneCamera.fieldOfView * Mathf.Deg2Rad;
-        float requiredY = (size / 2f) / Mathf.Tan(fovRad / 2f);
-
-        sceneCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-        sceneCamera.transform.position = new Vector3(bounds.center.x, requiredY, bounds.center.z);
-
-        Debug.Log("[Camera] Floor Plan: Top-down view");
+        if (PreviewCamera != null)
+        {
+            PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
+            PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.Log("[Camera] 3D View mode");
+        }
     }
 
-    void FitCameraTo3DView()
+    void onclickInfo()
     {
-        Bounds bounds = GetModelBounds();
-        float size = Mathf.Max(bounds.size.x, bounds.size.z) * padding;
-        float fovRad = sceneCamera.fieldOfView * Mathf.Deg2Rad;
-        float requiredY = (size / 2f) / Mathf.Tan(fovRad / 2f);
-
-        sceneCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-        sceneCamera.transform.position = new Vector3(bounds.center.x, requiredY / 2f, bounds.center.z - 10f);
-
-        Debug.Log("[Camera] 3D View: Perspective");
+        if (PreviewCamera != null)
+        {
+            PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
+            PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.Log("[Camera] Info mode");
+        }
     }
 
-    void FitCameraToInfo()
-    {
-        Bounds bounds = GetModelBounds();
-        float size = Mathf.Max(bounds.size.x, bounds.size.z) * padding;
-        float fovRad = sceneCamera.fieldOfView * Mathf.Deg2Rad;
-        float requiredY = (size / 2f) / Mathf.Tan(fovRad / 2f);
-
-        sceneCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-        sceneCamera.transform.position = new Vector3(bounds.center.x, requiredY / 2f, bounds.center.z + 10f);
-
-        Debug.Log("[Camera] Info View: Perspective");
-    }
 }

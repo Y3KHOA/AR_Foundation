@@ -33,13 +33,12 @@ public class CheckpointManager : MonoBehaviour
     public bool isPreviewing = false; // Trạng thái preview
     public bool isClosedLoop = false; // Biến kiểm tra xem mạch đã khép kín chưa 
 
-    public List<List<GameObject>> AllCheckpoints =>
-        allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
-
     public bool IsDraggingRoom = false;
     public GameObject previewCheckpoint = null;
 
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
+    public List<List<GameObject>> AllCheckpoints =>
+        allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
     public Dictionary<string, List<GameObject>> placedPointsByRoom = new();
     public Dictionary<string, GameObject> RoomFloorMap = new(); // roomID → floor GameObject
 
@@ -648,7 +647,7 @@ public class CheckpointManager : MonoBehaviour
                                 line.end = selectedCheckpoint.transform.position;
                         }
 
-                        RoomStorage.UpdateOrAddRoom(room);
+                        RoomStorage.UpdateOrAddRoom(room); 
                         DrawingTool.ClearAllLines();
                         RedrawAllRooms();
                         return;
