@@ -216,7 +216,7 @@ public class PdfExporter
                     DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
                 }
 
-                // vẽ point box
+                // vẽ point chính
                 foreach (var point in polygon)
                 {
                     Vector2 cpoint = Convert(point);

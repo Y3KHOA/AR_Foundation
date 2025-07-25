@@ -22,7 +22,7 @@ public class UIController : MonoBehaviour
     public GameObject objectPanelLoadFile;
     public GameObject objecHome;
     public GameObject objecbackground;
-
+    public GameObject objectDrawing;
     [Header("Objects Panel")]
     public GameObject objecAbout;
     public GameObject objecCreate;
@@ -63,6 +63,7 @@ public class UIController : MonoBehaviour
         objecCreate.SetActive(false);
         objecCloud.SetActive(false);
         objecSearch.SetActive(false);
+        objectDrawing.SetActive(false);
     }
 
     public void OnCancelPressed()
@@ -87,6 +88,7 @@ public class UIController : MonoBehaviour
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
         objecbackground.SetActive(false);
+        objectDrawing.SetActive(true);
     }
     
     public void ResetUIToInitialState2()
@@ -105,6 +107,7 @@ public class UIController : MonoBehaviour
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
+        objectDrawing.gameObject.SetActive(true);
     }
 
     // Tuỳ chọn: mở/đóng panel giới thiệu
