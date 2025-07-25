@@ -110,6 +110,25 @@ public class UIController : MonoBehaviour
         objectDrawing.gameObject.SetActive(true);
     }
 
+    public void HideAll()
+    {
+        buttonStart.SetActive(false);
+        buttonCancel.SetActive(false);
+
+        // Ẩn toàn bộ các object hoạt động
+        panelHome.SetActive(false);
+        objectStart.SetActive(false);
+        objectDraw.SetActive(false);
+        objectCreateNew.SetActive(false);
+        objectMyDrawing.SetActive(false);
+        objectByCamera.SetActive(false);
+        objectUnit.SetActive(false);
+        objectPanelRecords.SetActive(false);
+        objectPanelLoadFile.SetActive(false);
+        objecbackground.SetActive(false);
+        objectDrawing.SetActive(false);
+    }
+    
     // Tuỳ chọn: mở/đóng panel giới thiệu
     public void OnAboutPressed()
     {
