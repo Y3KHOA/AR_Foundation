@@ -20,14 +20,16 @@ public class UIController : MonoBehaviour
     public GameObject objectUnit;
     public GameObject objectPanelRecords;
     public GameObject objectPanelLoadFile;
-    public GameObject objecHome;
-    public GameObject objecbackground;
+    public GameObject objectHome;
+    public GameObject objectbackground;
     public GameObject objectDrawing;
     [Header("Objects Panel")]
-    public GameObject objecAbout;
-    public GameObject objecCreate;
-    public GameObject objecCloud;
-    public GameObject objecSearch;
+    public GameObject objectAbout;
+    public GameObject objectCreate;
+    public GameObject objectCloud;
+    public GameObject objectSearch;
+    public GameObject objectCreateDrawing;
+    public GameObject objectSharedDrawing;
 
     [Header("Panels")]
     public GameObject panelAbout;
@@ -59,10 +61,10 @@ public class UIController : MonoBehaviour
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
 
-        objecAbout.SetActive(false);
-        objecCreate.SetActive(false);
-        objecCloud.SetActive(false);
-        objecSearch.SetActive(false);
+        objectAbout.SetActive(false);
+        objectCreate.SetActive(false);
+        objectCloud.SetActive(false);
+        objectSearch.SetActive(false);
         objectDrawing.SetActive(false);
     }
 
@@ -87,7 +89,9 @@ public class UIController : MonoBehaviour
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
-        objecbackground.SetActive(false);
+        objectbackground.SetActive(false);
+        objectCreateDrawing.SetActive(false);
+        objectSharedDrawing.SetActive(false);
         objectDrawing.SetActive(true);
     }
     
@@ -113,7 +117,7 @@ public class UIController : MonoBehaviour
     public void HideAll()
     {
         buttonStart.SetActive(false);
-        buttonCancel.SetActive(false);
+        buttonCancel.SetActive(true);
 
         // Ẩn toàn bộ các object hoạt động
         panelHome.SetActive(false);
@@ -125,7 +129,7 @@ public class UIController : MonoBehaviour
         objectUnit.SetActive(false);
         objectPanelRecords.SetActive(false);
         objectPanelLoadFile.SetActive(false);
-        objecbackground.SetActive(false);
+        objectbackground.SetActive(false);
         objectDrawing.SetActive(false);
     }
     
@@ -134,7 +138,7 @@ public class UIController : MonoBehaviour
     {
         bool isActive = !panelAbout.activeSelf;
         panelAbout.SetActive(isActive);
-        objecHome.SetActive(!isActive); // nếu panelAbout bật thì objecHome tắt
+        objectHome.SetActive(!isActive); // nếu panelAbout bật thì objecHome tắt
         // panelMid.SetActive(!isActive);
     }
 }
