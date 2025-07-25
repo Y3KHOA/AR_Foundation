@@ -20,6 +20,11 @@ public class UndoRedoController : MonoBehaviour
         {
             Undo();
         }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Redo();
+        }
     }
 
     public void AddToRedo(IUndoRedoCommand undoRedoCommand)
@@ -33,6 +38,11 @@ public class UndoRedoController : MonoBehaviour
         ExtractFunc(undoStack, redoStack, true);
     }
 
+    public void Redo()
+    {
+        ExtractFunc(redoStack, undoStack, false);
+    }
+
     private void ExtractFunc(List<IUndoRedoCommand> sourceStack, List<IUndoRedoCommand> takeStack, bool isUndo)
     {
         if (sourceStack.Count > 0)
@@ -43,6 +53,11 @@ public class UndoRedoController : MonoBehaviour
                 Debug.Log("Undo");
                 undoRedoCommand.Undo();
             }
+            else
+            {
+                undoRedoCommand.Redo();
+            }
+
             sourceStack.Remove(undoRedoCommand);
             takeStack.Add(undoRedoCommand);
         }

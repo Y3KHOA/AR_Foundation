@@ -8,20 +8,47 @@ public class MoveRetangularUndoRedoCommand : IUndoRedoCommand
 
     public MoveRetangularUndoRedoCommand(MoveRoomData moveRoomData)
     {
-        this.data = moveRoomData;
+        this._data = moveRoomData;
         checkPointManager = CheckpointManager.Instance;
     }
 
-    private MoveRoomData data;
+    private MoveRoomData _data;
 
     public void Undo()
     {
+        Debug.Log("Undo");
+        var data = _data;
         data.MovingObject.position = data.OldPosition;
         RoomStorage.UpdateOrAddRoom(data.OldRoom);
-        Refresh();
+        checkPointManager.DrawingTool.ClearAllLines();
+        checkPointManager.RedrawAllRooms();
         UpdateCheckPoint(RoomStorage.GetRoomByID(data.RoomID));
-        LoadCheckPointPositions(data.oldCheckPointPos, data.RoomID);
+        LoadCheckPointPositions(data.OldCheckPointPos, data.RoomID);
         data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(data.OldRoom.checkpoints);
+    }
+
+    public void Redo()
+    {
+        var data = _data;
+        data.MovingObject.position = data.CurrentPosition;
+        RoomStorage.UpdateOrAddRoom(data.NewRoom);
+        checkPointManager.DrawingTool.ClearAllLines();
+        checkPointManager.RedrawAllRooms();
+        UpdateCheckPoint(RoomStorage.GetRoomByID(data.RoomID));
+        LoadCheckPointPositions(data.CurrentCheckPointPos, data.RoomID);
+        data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(data.NewRoom.checkpoints);
+    }
+
+    private void SnapObject(Room room, List<(Vector3,Vector3)> checkPointList)
+    {
+        RoomStorage.UpdateOrAddRoom(room);
+        checkPointManager.DrawingTool.ClearAllLines();
+        checkPointManager.RedrawAllRooms();
+        
+        UpdateCheckPoint(RoomStorage.GetRoomByID(room.ID));
+        LoadCheckPointPositions(checkPointList, room.ID);
+        
+        _data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(room.checkpoints);
     }
 
     private void UpdateCheckPoint(Room room)
@@ -53,9 +80,4 @@ public class MoveRetangularUndoRedoCommand : IUndoRedoCommand
         }
     }
     
-    private void Refresh()
-    {
-        checkPointManager.DrawingTool.ClearAllLines();
-        checkPointManager.RedrawAllRooms();
-    }
 }
