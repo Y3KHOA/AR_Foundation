@@ -10,6 +10,7 @@ public class ButtonOk : MonoBehaviour
     private static bool isOkButtonShown = false;    // Đảm bảo chỉ hiện một lần
     public static bool IsOkButtonShown { set { isOkButtonShown = value; } get { return isOkButtonShown; } }
 
+
     void Start()
     {
         if (okButton != null)
@@ -34,7 +35,6 @@ public class ButtonOk : MonoBehaviour
     {
         isOkButtonShown = true;
         Debug.Log("[ButtonOk] OK Button hien thi do flag=1");
-        TransData.Instance.TransferData();
         SceneManager.LoadScene("FlatExampleScene");
     }
 }

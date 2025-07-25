@@ -8,12 +8,15 @@ public class TutorialHandle : MonoBehaviour
     public GameObject inputPanel;
     [SerializeField] private float originalSize = 5;
     [SerializeField] private float ratio = 5;
+    [SerializeField] private Vector3 offset;
 
+    private Vector3 originalScale = Vector3.one;
+    
     public float Ratio => ratio;
     
     public void Play()
     {
-        tutorial.transform.position = GetCenterPos(tutorial.transform);
+        tutorial.transform.position = GetCenterPos(tutorial.transform) + offset;
         ProcessRatio();
         tutorial.SetRatio(ratio);
         tutorial?.PlayTutorial();
@@ -29,18 +32,16 @@ public class TutorialHandle : MonoBehaviour
     private void Start()
     {
         mainCam = Camera.main;
-        Play();
+        originalScale = tutorial.transform.localScale;
         originalSize = mainCam.orthographicSize;
+        Play();
     }
 
     private void ProcessRatio()
     {
         ratio = mainCam.orthographicSize / originalSize;
-        tutorial.transform.localScale = Vector3.one * ratio;
+        tutorial.transform.localScale = originalScale * ratio;
     }
-
-
-    
     
     private void Update()
     {

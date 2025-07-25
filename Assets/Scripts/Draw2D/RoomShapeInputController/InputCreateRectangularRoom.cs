@@ -16,6 +16,23 @@ public class InputCreateRectangularRoom : MonoBehaviour
     public CheckpointManager checkpointManager; // Script vẽ
 
     [SerializeField] private PanelToggleController panelToggleController;
+
+
+    private TMP_InputField _lengthInputField;
+    private TMP_InputField _widthInputField;
+
+    private const int LIMIT_CHARACTER_COUNT = 9;
+    
+
+    private void Awake()
+    {
+        _lengthInputField = lengthInputField.GetComponentInChildren<TMP_InputField>();
+        _widthInputField = widthInputField.GetComponentInChildren<TMP_InputField>();
+        
+        _lengthInputField.characterLimit = LIMIT_CHARACTER_COUNT;
+        _widthInputField.characterLimit = LIMIT_CHARACTER_COUNT;
+    }
+
     void Start()
     {
         if (createButton != null)
@@ -26,17 +43,32 @@ public class InputCreateRectangularRoom : MonoBehaviour
         failedPopup.DescriptionText = "";
         panelToggleController = GetComponent<PanelToggleController>();
         // Tự động focus vào chiều dài sau 1 frame
-        StartCoroutine(FocusLengthInputNextFrame());
     }
-    private IEnumerator FocusLengthInputNextFrame()
+
+    public void FocusOnInputField()
+    {
+        Debug.Log("Da goi method focus khi bật lên");
+        if (string.IsNullOrWhiteSpace(_lengthInputField.text))
+        {
+            StartCoroutine(FocusLengthInputNextFrame(_lengthInputField));
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(_widthInputField.text))
+        {
+            StartCoroutine(FocusLengthInputNextFrame(_widthInputField));
+            return;
+        }
+    }
+
+    private IEnumerator FocusLengthInputNextFrame(TMP_InputField inputField)
     {
         yield return null; // Đợi 1 frame
-        TMP_InputField field = lengthInputField.GetComponentInChildren<TMP_InputField>();
-        if (field != null)
+
+        if (inputField != null)
         {
             // Set selected game object để Unity UI focus đúng
-            EventSystem.current.SetSelectedGameObject(field.gameObject);
-            field.OnPointerClick(new PointerEventData(EventSystem.current)); // kích hoạt caret
+            EventSystem.current.SetSelectedGameObject(inputField.gameObject);
+            inputField.OnPointerClick(new PointerEventData(EventSystem.current)); // kích hoạt caret
         }
     }
 

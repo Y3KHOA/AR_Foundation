@@ -13,6 +13,8 @@ public class WallLine
     public Vector3 end;
     public LineType type; // Wall, Door, Window
     public WallLine() { }
+    
+    public bool isManualConnection = false;
 
     // Dùng cho cửa sổ:
     public float distanceHeight = 0f;   // độ cao bắt đầu từ mặt đất
@@ -32,8 +34,10 @@ public class WallLine
         this.start = other.start;
         this.end = other.end;
         this.type = other.type;
-        this.distanceHeight = other.distanceHeight ;
-        this.Height = other.Height ;
+        this.distanceHeight = other.distanceHeight;
+        this.Height = other.Height;
+        
+        this.isManualConnection = other.isManualConnection;
     }
 }
 
@@ -45,7 +49,8 @@ public class Room
 {
     public string ID { get; private set; }  // ID chỉ đọc từ bên ngoài
 
-    public List<Vector2> checkpoints = new List<Vector2>();
+    public List<Vector2> checkpoints = new List<Vector2>(); // polygon chính
+    public List<Vector2> extraCheckpoints = new List<Vector2>(); // điểm lẻ trong phòng
     public List<WallLine> wallLines = new List<WallLine>();
     public List<float> heights = new List<float>();
 
@@ -76,6 +81,7 @@ public class Room
 
         checkpoints = new List<Vector2>(other.checkpoints);
         wallLines = new List<WallLine>(other.wallLines.Select(w => new WallLine(w))); // clone từng wall
+        extraCheckpoints = new List<Vector2>(other.extraCheckpoints);
         heights = new List<float>(other.heights);
     }
 }

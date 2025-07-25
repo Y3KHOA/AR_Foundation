@@ -38,17 +38,17 @@ public class BackgroundUI : MonoBehaviour
 
     private void SceneManagerOnsceneUnloaded(Scene arg0)
     {
-        background.transform.parent = null;
+        if(background)
+            background.transform.parent = null;
     }
 
     private void SceneManagerOnsceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
+        TryInitBackground();
         canvas = GameObject.FindFirstObjectByType<Canvas>();
         background.gameObject.transform.parent = canvas.transform;
         ResetEverything();
     }
-
-    private bool isInit = false;
 
     public void Show(GameObject target, Action onClickCallback)
     {
@@ -58,7 +58,28 @@ public class BackgroundUI : MonoBehaviour
 
     private IEnumerator PlayDelay(GameObject target)
     {
-        if (!isInit)
+        TryInitBackground();
+
+        if (target)
+        {
+            background.transform.SetParent(target.transform.parent.transform);
+            int targetIndex = target.transform.GetSiblingIndex();
+            int newIndex = Mathf.Max(0, targetIndex - (background.transform.GetSiblingIndex() < targetIndex ? 1 : 0));
+            background.transform.SetSiblingIndex(newIndex);
+
+        }
+        else
+        {
+            Debug.Log("Target is null, please checkout");
+        }
+
+        SetBackgroundActive(true);
+        yield return null;
+    }
+
+    private void TryInitBackground()
+    {
+        if (!background)
         {
             background = new GameObject().AddComponent<Image>();
             background.color = new Color(0, 0, 0, 0.7f);
@@ -78,8 +99,8 @@ public class BackgroundUI : MonoBehaviour
             backgroundRect.anchorMax = Vector2.one;
             backgroundRect.sizeDelta = Vector2.zero;
 
-            backgroundRect.offsetMax = Vector2.zero;
-            backgroundRect.offsetMin = Vector2.zero;
+            backgroundRect.offsetMax = new Vector2(500,500);
+            backgroundRect.offsetMin = new Vector2(-500,-500);
 
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerClick;
@@ -90,22 +111,8 @@ public class BackgroundUI : MonoBehaviour
             
             SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
             SceneManager.sceneUnloaded += SceneManagerOnsceneUnloaded;
-
-            isInit = true;
+            backgroundRect.gameObject.SetActive(false);
         }
-
-        if (target)
-        {
-            background.transform.SetParent(target.transform.parent.transform);
-            background.transform.SetSiblingIndex(target.transform.GetSiblingIndex() - 1);
-        }
-        else
-        {
-            Debug.Log("Target is null, please checkout");
-        }
-
-        SetBackgroundActive(true);
-        yield return null;
     }
 
     private void OnClick(PointerEventData data)

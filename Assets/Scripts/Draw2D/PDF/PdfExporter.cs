@@ -216,13 +216,30 @@ public class PdfExporter
                     DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
                 }
 
-                // vẽ point box
+                // vẽ point chính
                 foreach (var point in polygon)
                 {
                     Vector2 cpoint = Convert(point);
 
                     float boxSize = 0.2f;   // Bạn muốn box 0.2f
                     float halfSize = boxSize * scale * 0.35f; // Phải nhân `scale` vì Convert() đã scale!
+
+                    cb.SetRGBColorFill(0, 0, 0);
+
+                    cb.MoveTo(cpoint.x - halfSize, cpoint.y - halfSize);
+                    cb.LineTo(cpoint.x + halfSize, cpoint.y - halfSize);
+                    cb.LineTo(cpoint.x + halfSize, cpoint.y + halfSize);
+                    cb.LineTo(cpoint.x - halfSize, cpoint.y + halfSize);
+                    cb.ClosePath();
+                    cb.Fill();
+                }
+                // === Vẽ các điểm phụ (extraCheckpoints) ===
+                foreach (var point in room.extraCheckpoints)
+                {
+                    Vector2 cpoint = Convert(point);
+
+                    float boxSize = 0.15f;  // nhỏ hơn chút
+                    float halfSize = boxSize * scale * 0.35f;
 
                     cb.SetRGBColorFill(0, 0, 0);
 

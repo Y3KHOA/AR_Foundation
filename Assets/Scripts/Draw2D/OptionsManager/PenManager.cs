@@ -15,7 +15,7 @@ public class PenManager : MonoBehaviour
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển vẽ
     private DrawingTool DrawTool; // Tham chiếu đến DrawingTool để điều khiển vẽ
 
-    private ToggleColor toggleColor;
+    private ToggleColorImage toggleColorImage;
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
     private Vector3 previewPosition; // Vị trí preview
     [SerializeField] private ToggleGroupUI toggleGroupUI;
@@ -24,8 +24,8 @@ public class PenManager : MonoBehaviour
         mainCamera = Camera.main;
         // Gán sự kiện click vào Button
         penButton.onClick.AddListener(TogglePen);
-        toggleColor = penButton.GetComponent<ToggleColor>();
-        toggleColor.Toggle(isPenActive);
+        toggleColorImage = penButton.GetComponent<ToggleColorImage>();
+        toggleColorImage.Toggle(isPenActive);
         // Lấy tham chiếu đến CheckpointManager
         checkpointManager = FindFirstObjectByType<CheckpointManager>();
 
@@ -49,7 +49,7 @@ public class PenManager : MonoBehaviour
             // Nếu mesh sàn đang drag ➜ khóa bàn cờ
             if (isRoomFloorBeingDragged)
             {
-                Debug.Log("RoomFloor drag đang hoạt động ➜ Khóa pan/zoom");
+                // Debug.Log("RoomFloor drag đang hoạt động ➜ Khóa pan/zoom");
                 HandleZoomAndPan(false);
             }
             else
@@ -85,7 +85,7 @@ public class PenManager : MonoBehaviour
 
         if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
         {
-            Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
+            // Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
             return;
         }
 
@@ -152,6 +152,13 @@ public class PenManager : MonoBehaviour
     void TogglePen()
     {
         var newActivePenState = !isPenActive;
+
+        if (!newActivePenState && RoomStorage.rooms.Count == 0)
+        {
+            // Show popup
+            return;
+        }
+        
         ChangeState(newActivePenState);
         HandleToggleGroupUI(newActivePenState);
     }
@@ -174,7 +181,7 @@ public class PenManager : MonoBehaviour
     {
         isPenActive = state;  // Chuyển trạng thái Pen
         UpdatePenState();            // Cập nhật trạng thái Pen
-        toggleColor.Toggle(isPenActive);
+        toggleColorImage.Toggle(isPenActive);
     }
 
     // Cập nhật trạng thái Pen
