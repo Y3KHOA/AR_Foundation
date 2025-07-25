@@ -6662,13 +6662,15 @@ MonoBehaviour:
   objectUnit: {fileID: 1783039095511939883}
   objectPanelRecords: {fileID: 408603738139859127}
   objectPanelLoadFile: {fileID: 6239730835810794328}
-  objecHome: {fileID: 1747668548237581556}
-  objecbackground: {fileID: 915909145277367442}
+  objectHome: {fileID: 0}
+  objectbackground: {fileID: 0}
   objectDrawing: {fileID: 6754284923631810248}
-  objecAbout: {fileID: 1993041624178082751}
-  objecCreate: {fileID: 6330902717604267481}
-  objecCloud: {fileID: 4344395395729021829}
-  objecSearch: {fileID: 4469385333019217777}
+  objectAbout: {fileID: 0}
+  objectCreate: {fileID: 0}
+  objectCloud: {fileID: 0}
+  objectSearch: {fileID: 0}
+  objectCreateDrawing: {fileID: 0}
+  objectSharedDrawing: {fileID: 0}
   panelAbout: {fileID: 1993041624178082751}
 --- !u!1 &1781866213470350992
 GameObject:
@@ -28073,9 +28075,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
       propertyPath: m_fontSizeBase
       value: 55
       objectReference: {fileID: 0}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_enableAutoSizing
@@ -28885,9 +28898,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
       propertyPath: m_fontSizeBase
       value: 55
       objectReference: {fileID: 0}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_enableAutoSizing
@@ -28896,7 +28920,7 @@ PrefabInstance:
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_hasFontAssetChanged
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4640603603002490087, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
@@ -29902,9 +29926,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
       propertyPath: m_fontSizeBase
       value: 55
       objectReference: {fileID: 0}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_enableAutoSizing
@@ -32269,9 +32304,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
       propertyPath: m_fontSizeBase
       value: 55
       objectReference: {fileID: 0}
+    - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_enableAutoSizing
