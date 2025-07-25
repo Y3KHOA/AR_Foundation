@@ -21,14 +21,18 @@ public class Show2DModel : MonoBehaviour
     public Camera PreviewCamera;
 
     [Header("Buttons")]
-    public Button ButtonFloorPlan;
-    public Button Button3DView;
-    public Button ButtonInfo;
+    public ToggleButtonUI ButtonFloorPlan;
+    public ToggleButtonUI Button3DView;
+    public ToggleButtonUI ButtonInfo;
 
     private List<LoopMap> loopMappings = new List<LoopMap>();
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     public List<List<GameObject>> AllCheckpoints =>
         allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+
+    [SerializeField] private List<ToggleButtonUI> togglesButtonList = new();
+    
+    private ToggleButtonUI currentButton;
 
     private CheckpointManager checkPointManager;
 
@@ -38,9 +42,40 @@ public class Show2DModel : MonoBehaviour
 
         LoadPointsFromRoomStorage();
 
-        ButtonFloorPlan.onClick.AddListener(onclickFloorPlan);
-        Button3DView.onClick.AddListener(onclick3DView);
-        ButtonInfo.onClick.AddListener(onclickInfo);
+        InitToggleButton();
+    }
+
+    private void InitToggleButton()
+    {
+        foreach (var item in togglesButtonList)
+        {
+            item.btn.onClick.AddListener(() => OnClickBtn(item));
+        }
+
+        // Gán sự kiện ActiveEvent cho mỗi ToggleButtonUI
+        ButtonFloorPlan.ActiveEvent = () => onclickFloorPlan(ButtonFloorPlan.gameObject);
+        Button3DView.ActiveEvent = () => onclick3DView(Button3DView.gameObject);
+        ButtonInfo.ActiveEvent = () => onclickInfo(ButtonInfo.gameObject);
+
+        // Khởi động với nút mặc định
+        OnClickBtn(ButtonFloorPlan); // hoặc Button3DView nếu bạn muốn mở mặc định dạng 3D
+    }
+
+    private void OnClickBtn(ToggleButtonUI toggleButtonUI)
+    {
+        foreach (var item in togglesButtonList)
+        {
+            var state = item == toggleButtonUI ? ToggleButtonUI.State.Active : ToggleButtonUI.State.DeActive;
+            if (item == toggleButtonUI)
+            {
+                if (item == currentButton) break;
+                // set current button
+                currentButton = toggleButtonUI;
+                currentButton.OnActive();
+            }
+            
+            item.ChangeState(state);
+        }
     }
 
     // === Load points from RoomStorage
@@ -111,27 +146,27 @@ public class Show2DModel : MonoBehaviour
         }
     }
 
-    void onclickFloorPlan()
+    void onclickFloorPlan(GameObject selectedPanel)
     {
         if (PreviewCamera != null)
         {
             PreviewCamera.transform.position = new Vector3(0f, 10f, 0f);
             PreviewCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            Debug.Log("[Camera] FloorPlan mode");
+            Debug.Log($"[CameraFloorPlan] position: {PreviewCamera.transform.position}, rotation: {PreviewCamera.transform.rotation}");
         }
     }
 
-    void onclick3DView()
+    void onclick3DView(GameObject selectedPanel)
     {
         if (PreviewCamera != null)
         {
             PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
             PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-            Debug.Log("[Camera] 3D View mode");
+            Debug.Log($"[Camera3D] position: {PreviewCamera.transform.position}, rotation: {PreviewCamera.transform.rotation}");
         }
     }
 
-    void onclickInfo()
+    void onclickInfo(GameObject selectedPanel)
     {
         if (PreviewCamera != null)
         {
