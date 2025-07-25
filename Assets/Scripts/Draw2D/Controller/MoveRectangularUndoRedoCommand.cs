@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveRetangularUndoRedoCommand : IUndoRedoCommand
+public class MoveRectangularUndoRedoCommand : IUndoRedoCommand
 {
     private CheckpointManager checkPointManager;
 
 
-    public MoveRetangularUndoRedoCommand(MoveRoomData moveRoomData)
+    public MoveRectangularUndoRedoCommand(MoveRoomData moveRoomData)
     {
         this._data = moveRoomData;
         checkPointManager = CheckpointManager.Instance;
@@ -17,37 +17,23 @@ public class MoveRetangularUndoRedoCommand : IUndoRedoCommand
     public void Undo()
     {
         Debug.Log("Undo");
-        var data = _data;
-        data.MovingObject.position = data.OldPosition;
-        RoomStorage.UpdateOrAddRoom(data.OldRoom);
-        checkPointManager.DrawingTool.ClearAllLines();
-        checkPointManager.RedrawAllRooms();
-        UpdateCheckPoint(RoomStorage.GetRoomByID(data.RoomID));
-        LoadCheckPointPositions(data.OldCheckPointPos, data.RoomID);
-        data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(data.OldRoom.checkpoints);
+        SnapObject(_data.OldRoom, _data.OldPosition, _data.OldCheckPointPos);
     }
 
     public void Redo()
     {
-        var data = _data;
-        data.MovingObject.position = data.CurrentPosition;
-        RoomStorage.UpdateOrAddRoom(data.NewRoom);
-        checkPointManager.DrawingTool.ClearAllLines();
-        checkPointManager.RedrawAllRooms();
-        UpdateCheckPoint(RoomStorage.GetRoomByID(data.RoomID));
-        LoadCheckPointPositions(data.CurrentCheckPointPos, data.RoomID);
-        data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(data.NewRoom.checkpoints);
+        SnapObject(_data.NewRoom, _data.CurrentPosition, _data.CurrentCheckPointPos);
     }
 
-    private void SnapObject(Room room, List<(Vector3,Vector3)> checkPointList)
+    private void SnapObject(Room room, Vector3 position, List<(Vector3,Vector3)> checkPointList)
     {
+        _data.MovingObject.transform.position = position;
         RoomStorage.UpdateOrAddRoom(room);
         checkPointManager.DrawingTool.ClearAllLines();
         checkPointManager.RedrawAllRooms();
         
         UpdateCheckPoint(RoomStorage.GetRoomByID(room.ID));
         LoadCheckPointPositions(checkPointList, room.ID);
-        
         _data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(room.checkpoints);
     }
 
@@ -81,3 +67,4 @@ public class MoveRetangularUndoRedoCommand : IUndoRedoCommand
     }
     
 }
+

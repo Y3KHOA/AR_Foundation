@@ -330,7 +330,7 @@ public class RoomMeshController : MonoBehaviour
         moveObject.OldCheckPointPos = new List<(Vector3, Vector3)>(oldCheckPointList);
         moveObject.CurrentCheckPointPos = SaveCheckPointPosition(RoomID);
         
-        var command = new MoveRetangularUndoRedoCommand(moveObject);
+        var command = new MoveRectangularUndoRedoCommand(moveObject);
 
         UndoRedoController.Instance.AddToRedo(command);
     }

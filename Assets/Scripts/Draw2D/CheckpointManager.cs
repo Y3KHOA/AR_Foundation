@@ -1344,7 +1344,6 @@ public class CheckpointManager : MonoBehaviour
         }
 
         // Xoá dữ liệu tạm nếu đang vẽ dở
-        DeleteCurrentDrawingData();
 
         // Tìm center trên mặt phẳng y=0 theo camera
         Camera cam = drawingCamera != null ? drawingCamera : Camera.main;
@@ -1366,6 +1365,13 @@ public class CheckpointManager : MonoBehaviour
         Debug.Log($"Tâm room (rectangle) tại: {center}");
 
         // Tính 4 đỉnh hình chữ nhật quanh center
+        CreateRectangleRoom(width, height, center);
+    }
+
+    public void CreateRectangleRoom(float width, float height, Vector3 center)
+    {
+        DeleteCurrentDrawingData();
+        
         Vector3 p1 = new Vector3(center.x - width / 2, 0, center.z - height / 2);
         Vector3 p2 = new Vector3(center.x - width / 2, 0, center.z + height / 2);
         Vector3 p3 = new Vector3(center.x + width / 2, 0, center.z + height / 2);
