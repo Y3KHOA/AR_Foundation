@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 public class CheckpointManager : MonoBehaviour
 {
     public static CheckpointManager Instance;
+
     [Header("Prefabs")]
     public GameObject checkpointPrefab;
 
@@ -20,7 +21,7 @@ public class CheckpointManager : MonoBehaviour
     public LineType currentLineType = LineType.Wall;
     public List<WallLine> wallLines = new List<WallLine>();
     public List<Room> rooms = new List<Room>();
-    
+
     [Header("Camera")]
     public Camera drawingCamera; // Gán Camera chính vẽ 2D
 
@@ -37,8 +38,10 @@ public class CheckpointManager : MonoBehaviour
     public GameObject previewCheckpoint = null;
 
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
+
     public List<List<GameObject>> AllCheckpoints =>
         allCheckpoints; // Truy cập danh sách tất cả các checkpoint từ bên ngoài
+
     public Dictionary<string, List<GameObject>> placedPointsByRoom = new();
     public Dictionary<string, GameObject> RoomFloorMap = new(); // roomID → floor GameObject
 
@@ -151,6 +154,7 @@ public class CheckpointManager : MonoBehaviour
             return;
         }
     }
+
     public void HandleWallLoopPlacement(Vector3 position)
     {
         if (selectedCheckpoint != null) return;
@@ -173,7 +177,8 @@ public class CheckpointManager : MonoBehaviour
             checkpoint.transform.SetParent(parentFloor.transform);
             checkpoint.tag = "CheckpointExtra";
 
-            Debug.Log($"CheckpointExtra tag: {checkpoint.tag}, Name: {checkpoint.name}, Parent: {checkpoint.transform.parent.name}");
+            Debug.Log(
+                $"CheckpointExtra tag: {checkpoint.tag}, Name: {checkpoint.name}, Parent: {checkpoint.transform.parent.name}");
 
             Room existingRoom = RoomStorage.GetRoomByID(roomID);
             if (existingRoom != null)
@@ -458,8 +463,10 @@ public class CheckpointManager : MonoBehaviour
         Room room = RoomStorage.GetRoomByID(roomID);
         if (room == null) return;
 
-        Vector2 localA = new Vector2(start.x, start.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
-        Vector2 localB = new Vector2(end.x, end.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+        Vector2 localA = new Vector2(start.x, start.z) -
+                         new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+        Vector2 localB = new Vector2(end.x, end.z) -
+                         new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
 
         // === Thêm điểm phụ nếu chưa có ===
         if (!room.extraCheckpoints.Any(p => Vector2.Distance(p, localA) < 0.01f))
@@ -486,7 +493,6 @@ public class CheckpointManager : MonoBehaviour
             WallLine manualLine = new WallLine(start, end, LineType.Wall);
             manualLine.isManualConnection = true; // <--- bạn cần thêm biến này vào class WallLine
             room.wallLines.Add(manualLine);
-
         }
 
         RoomStorage.UpdateOrAddRoom(room);
@@ -514,7 +520,8 @@ public class CheckpointManager : MonoBehaviour
                 {
                     Vector2 new2D = new Vector2(newPosition.x, newPosition.z);
                     Vector2 local2D = new2D - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
-                    Vector2 oldLocal2D = new Vector2(oldWorldPos.x, oldWorldPos.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+                    Vector2 oldLocal2D = new Vector2(oldWorldPos.x, oldWorldPos.z) -
+                                         new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
 
                     if (!IsPointInPolygon(new2D, room.checkpoints))
                     {
@@ -554,13 +561,15 @@ public class CheckpointManager : MonoBehaviour
                                 nearestIndex = i;
                             }
                         }
+
                         if (nearestIndex != -1)
                         {
                             room.extraCheckpoints.RemoveAt(nearestIndex);
                         }
 
                         // Update vị trí vật lý
-                        selectedCheckpoint.transform.position = new Vector3(local2D.x, 0, local2D.y) + floorGO.transform.position;
+                        selectedCheckpoint.transform.position =
+                            new Vector3(local2D.x, 0, local2D.y) + floorGO.transform.position;
                         selectedCheckpoint.tag = "Untagged";
                         selectedCheckpoint.transform.SetParent(null);
 
@@ -647,7 +656,7 @@ public class CheckpointManager : MonoBehaviour
                                 line.end = selectedCheckpoint.transform.position;
                         }
 
-                        RoomStorage.UpdateOrAddRoom(room); 
+                        RoomStorage.UpdateOrAddRoom(room);
                         DrawingTool.ClearAllLines();
                         RedrawAllRooms();
                         return;
@@ -757,11 +766,13 @@ public class CheckpointManager : MonoBehaviour
                 if (!line.isManualConnection) continue;
 
                 // Đảm bảo chỉ update đúng point liên quan
-                if (Vector3.Distance(line.start, oldWorldPos) < 0.01f && Vector3.Distance(line.end, newWorldPos) > 0.01f)
+                if (Vector3.Distance(line.start, oldWorldPos) < 0.01f &&
+                    Vector3.Distance(line.end, newWorldPos) > 0.01f)
                 {
                     line.start = newWorldPos;
                 }
-                else if (Vector3.Distance(line.end, oldWorldPos) < 0.01f && Vector3.Distance(line.start, newWorldPos) > 0.01f)
+                else if (Vector3.Distance(line.end, oldWorldPos) < 0.01f &&
+                         Vector3.Distance(line.start, newWorldPos) > 0.01f)
                 {
                     line.end = newWorldPos;
                 }
@@ -779,7 +790,7 @@ public class CheckpointManager : MonoBehaviour
                     if (wall.type != LineType.Wall) continue;
 
                     float dist = GetDistanceFromSegment(door.start, wall.start, wall.end)
-                                + GetDistanceFromSegment(door.end, wall.start, wall.end);
+                                 + GetDistanceFromSegment(door.end, wall.start, wall.end);
 
                     if (dist < minDistance)
                     {
@@ -840,6 +851,7 @@ public class CheckpointManager : MonoBehaviour
             }
         }
     }
+
     Vector3 RoomToWorld(Vector2 localPos, GameObject floorGO)
     {
         return new Vector3(localPos.x, 0, localPos.y) + floorGO.transform.position;
@@ -889,7 +901,7 @@ public class CheckpointManager : MonoBehaviour
 
         visuals[index].transform.position = new Vector3(local2D.x, 0f, local2D.y) + floor.transform.position;
     }
-    
+
     void RebuildWallLinesPreservingDoors(Room room)
     {
         // 1. Backup all old wall lines
@@ -902,8 +914,8 @@ public class CheckpointManager : MonoBehaviour
             {
                 WallLine parent = oldWalls
                     .FirstOrDefault(w => w.type == LineType.Wall &&
-                                        GetDistanceFromSegment(dw.start, w.start, w.end) +
-                                        GetDistanceFromSegment(dw.end, w.start, w.end) < 0.1f);
+                                         GetDistanceFromSegment(dw.start, w.start, w.end) +
+                                         GetDistanceFromSegment(dw.end, w.start, w.end) < 0.1f);
 
                 if (parent == null) return (null, 0f, 0f, dw);
 
@@ -1364,13 +1376,13 @@ public class CheckpointManager : MonoBehaviour
         Debug.Log($"Tâm room (rectangle) tại: {center}");
 
         // Tính 4 đỉnh hình chữ nhật quanh center
-        CreateRectangleRoom(width, height, center);
+        CreateRectangleRoom(width, height, center,null,true);
     }
 
-    public void CreateRectangleRoom(float width, float height, Vector3 center)
+    public void CreateRectangleRoom(float width, float height, Vector3 center,string ID,bool isCreateCommand)
     {
         DeleteCurrentDrawingData();
-        
+
         Vector3 p1 = new Vector3(center.x - width / 2, 0, center.z - height / 2);
         Vector3 p2 = new Vector3(center.x - width / 2, 0, center.z + height / 2);
         Vector3 p3 = new Vector3(center.x + width / 2, 0, center.z + height / 2);
@@ -1399,6 +1411,11 @@ public class CheckpointManager : MonoBehaviour
 
         // Tạo Room & lưu
         Room newRoom = new Room();
+        if (!string.IsNullOrEmpty(ID))
+        {
+            newRoom.SetID(ID);
+        }
+        
         foreach (GameObject cp in currentCheckpoints)
         {
             Vector3 pos = cp.transform.position;
@@ -1428,7 +1445,18 @@ public class CheckpointManager : MonoBehaviour
         wallLines.Clear();
 
         DrawingTool.DrawAllLinesFromRoomStorage();
-
+        storedRoomMeshControllers[newRoom.ID] = meshCtrl;
         Debug.Log($"Đã tạo Room hình chữ nhật: {width} x {height} m, RoomID: {newRoom.ID}");
+
+        if (!isCreateCommand) return;
+        
+        var data = new RectangularCreatingData();
+        data.width = width;
+        data.heigh = height;
+        data.RoomID = newRoom.ID;
+        data.position = center;
+        UndoRedoController.Instance.AddToUndo(new CreateRectangularCommand(data));
     }
+
+    public Dictionary<string, RoomMeshController> storedRoomMeshControllers = new();
 }
