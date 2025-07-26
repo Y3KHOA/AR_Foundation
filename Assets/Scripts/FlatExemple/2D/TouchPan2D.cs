@@ -3,9 +3,11 @@ using UnityEngine.EventSystems;
 
 public class TouchPan2D : MonoBehaviour
 {
-    public Transform modelRoot;
     public float zoomSpeed = 0.01f;
-    public float panSpeed = 0.005f;
+    public float panSpeed = 0.01f;
+
+    [Header("PreviewCamera")]
+    public Camera PreviewCamera;
 
     private bool isPanningMode = false;
     private float lastTapTime = 0f;
@@ -15,7 +17,7 @@ public class TouchPan2D : MonoBehaviour
 
     void Update()
     {
-        if (modelRoot == null) return;
+        if (PreviewCamera == null) return;
         int touchCount = Input.touchCount;
 
         if (touchCount == 0) return;
@@ -42,30 +44,18 @@ public class TouchPan2D : MonoBehaviour
 
     void HandleOneFinger(Touch touch)
     {
-        // Double tap toggle Pan
-        if (touch.tapCount == 2 && Time.time - lastTapTime < doubleTapThreshold)
+        if (touch.phase == TouchPhase.Began)
+            lastTouchPos = touch.position;
+
+        if (touch.phase == TouchPhase.Moved)
         {
-            isPanningMode = !isPanningMode;
-            Debug.Log($"[TouchPan2D] Double Tap: PanMode={isPanningMode}");
-            lastTapTime = 0f;
-            return;
-        }
+            Vector2 delta = touch.position - lastTouchPos;
 
-        if (touch.phase == TouchPhase.Ended)
-            lastTapTime = Time.time;
+            // Di chuyển camera theo mặt phẳng xz (x: trái/phải, z: lên/xuống)
+            Vector3 move = new Vector3(-delta.x * panSpeed, 0, -delta.y * panSpeed);
+            PreviewCamera.transform.Translate(move, Space.World);
 
-        if (isPanningMode)
-        {
-            if (touch.phase == TouchPhase.Began)
-                lastTouchPos = touch.position;
-
-            if (touch.phase == TouchPhase.Moved)
-            {
-                Vector2 delta = touch.position - lastTouchPos;
-                Vector3 move = new Vector3(delta.x, 0, delta.y) * panSpeed;
-                modelRoot.Translate(move, Space.World);
-                lastTouchPos = touch.position;
-            }
+            lastTouchPos = touch.position;
         }
     }
 
@@ -75,8 +65,11 @@ public class TouchPan2D : MonoBehaviour
         float currentDistance = (touch0.position - touch1.position).magnitude;
         float zoomDelta = currentDistance - prevDistance;
 
-        Vector3 scaleChange = Vector3.one * (1f + zoomDelta * zoomSpeed);
-        modelRoot.localScale = Vector3.Scale(modelRoot.localScale, scaleChange);
+        // Zoom bằng cách thay đổi position Y
+        Vector3 camPos = PreviewCamera.transform.position;
+        camPos.y -= zoomDelta * zoomSpeed;
+        camPos.y = Mathf.Clamp(camPos.y, 1f, 100f); // clamp tránh lật trục hoặc quá gần
+        PreviewCamera.transform.position = camPos;
 
         Debug.Log($"[TouchPan2D] Zoom delta: {zoomDelta}");
     }

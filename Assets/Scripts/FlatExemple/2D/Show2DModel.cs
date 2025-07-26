@@ -17,14 +17,6 @@ public class Show2DModel : MonoBehaviour
     [Header("Parent")]
     public Transform modelRoot;
 
-    [Header("Camera")]
-    public Camera PreviewCamera;
-
-    [Header("Buttons")]
-    public ToggleButtonUI ButtonFloorPlan;
-    public ToggleButtonUI Button3DView;
-    public ToggleButtonUI ButtonInfo;
-
     private List<LoopMap> loopMappings = new List<LoopMap>();
     private List<List<GameObject>> allCheckpoints = new List<List<GameObject>>();
     public List<List<GameObject>> AllCheckpoints =>
@@ -38,27 +30,9 @@ public class Show2DModel : MonoBehaviour
 
     void Start()
     {
-        modelRoot.gameObject.layer = LayerMask.NameToLayer("PreviewModel"); //add layer to modelRoot
+        // InitToggleButton();
 
         LoadPointsFromRoomStorage();
-
-        InitToggleButton();
-    }
-
-    private void InitToggleButton()
-    {
-        foreach (var item in togglesButtonList)
-        {
-            item.btn.onClick.AddListener(() => OnClickBtn(item));
-        }
-
-        // Gán sự kiện ActiveEvent cho mỗi ToggleButtonUI
-        ButtonFloorPlan.ActiveEvent = () => onclickFloorPlan(ButtonFloorPlan.gameObject);
-        Button3DView.ActiveEvent = () => onclick3DView(Button3DView.gameObject);
-        ButtonInfo.ActiveEvent = () => onclickInfo(ButtonInfo.gameObject);
-
-        // Khởi động với nút mặc định
-        OnClickBtn(ButtonFloorPlan); // hoặc Button3DView nếu bạn muốn mở mặc định dạng 3D
     }
 
     private void OnClickBtn(ToggleButtonUI toggleButtonUI)
@@ -81,6 +55,8 @@ public class Show2DModel : MonoBehaviour
     // === Load points from RoomStorage
     void LoadPointsFromRoomStorage()
     {
+        modelRoot.gameObject.layer = LayerMask.NameToLayer("PreviewModel"); //add layer to modelRoot
+
         checkPointManager = FindFirstObjectByType<CheckpointManager>();
 
         var rooms = RoomStorage.rooms;
@@ -143,36 +119,6 @@ public class Show2DModel : MonoBehaviour
         foreach (Transform child in obj.transform)
         {
             SetLayerRecursively(child.gameObject, layer);
-        }
-    }
-
-    void onclickFloorPlan(GameObject selectedPanel)
-    {
-        if (PreviewCamera != null)
-        {
-            PreviewCamera.transform.position = new Vector3(0f, 10f, 0f);
-            PreviewCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-            Debug.Log($"[CameraFloorPlan] position: {PreviewCamera.transform.position}, rotation: {PreviewCamera.transform.rotation}");
-        }
-    }
-
-    void onclick3DView(GameObject selectedPanel)
-    {
-        if (PreviewCamera != null)
-        {
-            PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
-            PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-            Debug.Log($"[Camera3D] position: {PreviewCamera.transform.position}, rotation: {PreviewCamera.transform.rotation}");
-        }
-    }
-
-    void onclickInfo(GameObject selectedPanel)
-    {
-        if (PreviewCamera != null)
-        {
-            PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
-            PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-            Debug.Log("[Camera] Info mode");
         }
     }
 

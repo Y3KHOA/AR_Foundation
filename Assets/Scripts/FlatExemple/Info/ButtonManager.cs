@@ -26,6 +26,9 @@ public class ButtonManager : MonoBehaviour
     public GameObject previewTexture;
     public GameObject Draw2D;
 
+    [Header("PreviewCamera")]
+    public Camera PreviewCamera;
+
     [SerializeField] private List<ToggleButtonUI> togglesButtonList = new();
 
     private void Start()
@@ -102,6 +105,13 @@ public class ButtonManager : MonoBehaviour
         btnEdit.gameObject.SetActive(true);
         btnSave.gameObject.SetActive(false);
         Draw2D.gameObject.SetActive(true);
+
+        if (PreviewCamera != null)
+        {
+            PreviewCamera.transform.position = new Vector3(0f, 10f, 0f);
+            PreviewCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            Debug.Log($"[CameraFloorPlan] position: {PreviewCamera.transform.position}, rotation: {PreviewCamera.transform.rotation}");
+        }
     }
 
     private void OnButton3D(GameObject selectedPanel)
@@ -113,6 +123,13 @@ public class ButtonManager : MonoBehaviour
         btnEdit.gameObject.SetActive(false);
         btnSave.gameObject.SetActive(false);
         Draw2D.gameObject.SetActive(false);
+
+        if (PreviewCamera != null)
+        {
+            PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
+            PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.Log($"[Camera3D] position: {PreviewCamera.transform.position}, rotation: {PreviewCamera.transform.rotation}");
+        }
     }
 
     private void OnButtonInfo(GameObject selectedPanel)
@@ -124,6 +141,13 @@ public class ButtonManager : MonoBehaviour
         btnEdit.gameObject.SetActive(false);
         btnSave.gameObject.SetActive(true);
         Draw2D.gameObject.SetActive(false);
+
+        if (PreviewCamera != null)
+        {
+            PreviewCamera.transform.position = new Vector3(0f, 0f, -10f);
+            PreviewCamera.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.Log("[Camera] Info mode");
+        }
     }
 
     IEnumerator SafeLoadScene(string sceneName)
