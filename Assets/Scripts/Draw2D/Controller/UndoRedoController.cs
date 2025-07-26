@@ -25,10 +25,13 @@ public class UndoRedoController : MonoBehaviour
         {
             Redo();
         }
+        Debug.Log($"{nameof(undoStack)} command count is {undoStack.Count}");
+        Debug.Log($"{nameof(redoStack)} command count is {redoStack.Count}");
     }
 
-    public void AddToRedo(IUndoRedoCommand undoRedoCommand)
+    public void AddToUndo(IUndoRedoCommand undoRedoCommand)
     {
+        Debug.Log("Add to undo stack");
         undoStack.Add(undoRedoCommand);
         redoStack.Clear();
     }
@@ -55,9 +58,10 @@ public class UndoRedoController : MonoBehaviour
             }
             else
             {
+                Debug.Log("Redo");
                 undoRedoCommand.Redo();
             }
-
+            
             sourceStack.Remove(undoRedoCommand);
             takeStack.Add(undoRedoCommand);
         }

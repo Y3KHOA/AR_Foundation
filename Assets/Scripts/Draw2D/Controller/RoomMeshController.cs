@@ -26,36 +26,6 @@ public class RoomMeshController : MonoBehaviour
         checkPointManager = CheckpointManager.Instance;
     }
 
-#if UNITY_STANDALONE
-    // PC: vẫn dùng OnMouseDown/Drag/Up
-#else
-    void Update()
-    {
-        if (!PenManager.isPenActive) return;
-
-        if (Input.touchCount == 1)
-        {
-            Touch touch = Input.GetTouch(0);
-            switch (touch.phase)
-            {
-                case TouchPhase.Began:
-                    OnStartDrag(touch.position);
-
-                    break;
-
-                case TouchPhase.Moved:
-                    if (!isDragging) return;
-                    DragRoom(touch.position);
-                    break;
-
-                case TouchPhase.Ended:
-                case TouchPhase.Canceled:
-                    OnEndDrag();
-                    break;
-            }
-        }
-    }
-#endif
     private bool CheckTouchHitThisObject(Vector2 screenPos)
     {
         Ray ray = mainCam.ScreenPointToRay(screenPos);
@@ -250,7 +220,7 @@ public class RoomMeshController : MonoBehaviour
             checkPointManager.IsDraggingRoom = true;
         }
 
-        Ray ray = Camera.main.ScreenPointToRay(startDragPosition);
+        Ray ray = mainCam.ScreenPointToRay(startDragPosition);
         if (floorPlane.Raycast(ray, out float distance))
         {
             dragStartWorldPos = ray.GetPoint(distance);
@@ -278,7 +248,7 @@ public class RoomMeshController : MonoBehaviour
 
 
     
-    private void OnEndDrag()
+    private void OnEndDrag(Vector2 screenPosition)
     {
         isDragging = false;
 
@@ -288,21 +258,25 @@ public class RoomMeshController : MonoBehaviour
             checkPointManager.IsDraggingRoom = false;
         }
 
+        if (!CheckTouchHitThisObject(screenPosition))
+        {
+            return;
+        }
         CreateUndoCommand();
     }
 
     private void OnMouseDown()
     {
         if (!PenManager.isPenActive) return;
-
+    
         OnStartDrag(Input.mousePosition);
     }
-
+    
     private void OnMouseUp()
     {
-        OnEndDrag();
+        OnEndDrag(Input.mousePosition);
     }
-
+    
     private void OnMouseDrag()
     {
         if (!PenManager.isPenActive) return;
@@ -332,6 +306,6 @@ public class RoomMeshController : MonoBehaviour
         
         var command = new MoveRectangularUndoRedoCommand(moveObject);
 
-        UndoRedoController.Instance.AddToRedo(command);
+        UndoRedoController.Instance.AddToUndo(command);
     }
 }
