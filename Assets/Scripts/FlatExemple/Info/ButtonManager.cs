@@ -95,7 +95,7 @@ public class ButtonManager : MonoBehaviour
 
     private void OnButtonFloor(GameObject selectedPanel)
     {
-        previewTexture.SetActive(false);
+        previewTexture.SetActive(true);
         panelFloor.SetActive(true);
         panel3D.SetActive(false);
         panelInfo.SetActive(false);
