@@ -162,7 +162,9 @@ public class ButtonManager : MonoBehaviour
             eventSystem.SetSelectedGameObject(null);
 
             // Nếu đang dùng InputSystemUIInputModule, có thể disable 1 frame để tránh xử lý pointer đang active
-            var inputModule = FindObjectOfType<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+            // var inputModule = FindObjectOfType<UnityEngine.InputSystem.UI.InputSystemUIInputModule>(); //cũ rồi
+            var inputModule = Object.FindFirstObjectByType<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+        
             if (inputModule != null)
                 inputModule.enabled = false;
         }
@@ -171,7 +173,9 @@ public class ButtonManager : MonoBehaviour
         yield return null;
 
         // Bật lại InputModule nếu cần (tuỳ game bạn có dùng tiếp hay không)
-        var reInputModule = FindObjectOfType<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+        // var reInputModule = FindObjectOfType<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+        var reInputModule = Object.FindFirstObjectByType<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+        
         if (reInputModule != null)
             reInputModule.enabled = true;
 

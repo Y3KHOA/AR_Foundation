@@ -11,6 +11,8 @@ public class PenManager : MonoBehaviour
     public float panSpeed = 0.5f;     // Tốc độ di chuyển
     public static bool isRoomFloorBeingDragged = false;
 
+    public GameObject ActionSpace;
+
     public static bool isPenActive = true; // Trạng thái của Pen (bật/tắt)
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển vẽ
     private DrawingTool DrawTool; // Tham chiếu đến DrawingTool để điều khiển vẽ

@@ -9,10 +9,6 @@ public class TouchPan2D : MonoBehaviour
     [Header("PreviewCamera")]
     public Camera PreviewCamera;
 
-    private bool isPanningMode = false;
-    private float lastTapTime = 0f;
-    private float doubleTapThreshold = 0.3f;
-
     private Vector2 lastTouchPos;
 
     void Update()
@@ -30,7 +26,7 @@ public class TouchPan2D : MonoBehaviour
         }
 
         if (touchCount == 1)
-        {
+        {   
             Touch touch = Input.GetTouch(0);
             HandleOneFinger(touch);
         }
