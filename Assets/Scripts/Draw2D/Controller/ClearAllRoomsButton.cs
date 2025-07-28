@@ -12,7 +12,9 @@ public class ClearAllRoomsButton : MonoBehaviour
     [SerializeField] private ToggleGroupUI toggleGroupUI;
     [SerializeField] private PenManager penManager;
     [SerializeField] private DrawingTool drawingTool;
-    
+
+
+    private const string CLEAR_ALL_WARNING = "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!";
     
     private bool isClearingAll = false;
     void Start()
@@ -32,7 +34,7 @@ public class ClearAllRoomsButton : MonoBehaviour
     {
         var popup = Instantiate(ModularPopup.Prefab);
         popup.AutoFindCanvasAndSetup();
-        popup.Header = "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!";
+        popup.Header = CLEAR_ALL_WARNING;
         popup.ClickYesEvent = () =>
         {
             Debug.Log("Người dùng xác nhận: Xóa tất cả!");
@@ -69,7 +71,8 @@ public class ClearAllRoomsButton : MonoBehaviour
 
     void ClearEverything()
     {
-        roomInfoDisplay= FindFirstObjectByType<RoomInfoDisplay>();
+        if(!roomInfoDisplay)
+            roomInfoDisplay = FindFirstObjectByType<RoomInfoDisplay>();
 
         // 1) Xóa Room trong RoomStorage
         RoomStorage.rooms.Clear();
@@ -102,5 +105,7 @@ public class ClearAllRoomsButton : MonoBehaviour
         // roomInfoDisplay.ClearText();
         Debug.Log("Đã xóa toàn bộ Room, checkpoint, mesh, line!");
         drawingTool.currentLineType = LineType.Wall;
+
+        UndoRedoController.Instance.ClearData();
     }
 }

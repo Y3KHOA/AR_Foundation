@@ -14,7 +14,7 @@ public class UndoRedoController : MonoBehaviour
         undoStack = new Stack<IUndoRedoCommand>();
         redoStack = new Stack<IUndoRedoCommand>();
     }
-
+#if UNITY_EDITOR
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
@@ -32,7 +32,7 @@ public class UndoRedoController : MonoBehaviour
             RoomStorage.CheckDuplicateRoomID();
         }
     }
-
+#endif
     public void AddToUndo(IUndoRedoCommand command)
     {
         Debug.Log("Add to undo stack");
@@ -58,5 +58,11 @@ public class UndoRedoController : MonoBehaviour
         Debug.Log("Redo");
         command.Redo();
         undoStack.Push(command);
+    }
+
+    public void ClearData()
+    {
+        undoStack.Clear();
+        redoStack.Clear();
     }
 }
