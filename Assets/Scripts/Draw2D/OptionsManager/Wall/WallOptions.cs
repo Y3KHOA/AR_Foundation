@@ -34,10 +34,10 @@ public class PanelToggleController : MonoBehaviour
         if (isPanelOpen)
         {
             inputCreateRectangularRoom.FocusOnInputField();
-             BackgroundUI.Instance.Show(targetPanel, () =>
-             {
-                 HideWhenOk();
-             });
+            BackgroundUI.Instance.Show(targetPanel, () =>
+            {
+                HideWhenOk();
+            });
             
         }
     }

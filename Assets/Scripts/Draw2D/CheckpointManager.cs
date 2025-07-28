@@ -496,6 +496,12 @@ public class CheckpointManager : MonoBehaviour
 
     public void MoveSelectedCheckpoint()
     {
+        if (IsClickingOnBackgroundBlackUI(Input.mousePosition))
+        {
+            Debug.Log("Đang nhấn Background Black ➜ Không move checkpoint");
+            return;
+        }
+        
         if (selectedCheckpoint == null) return;
 
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
@@ -1232,6 +1238,28 @@ public class CheckpointManager : MonoBehaviour
 
         // Nếu đang không chọn gì nhưng vẫn có room đã chọn trước đó → giữ nguyên
         return lastSelectedRoomID;
+    }
+
+    private bool IsClickingOnBackgroundBlackUI(Vector2 screenPosition)
+    {
+        var pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+
+        var results = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (var result in results)
+        {
+            if (result.gameObject.name == "Background Black")
+            {
+                Debug.Log("Click UI trên Background Black ➜ Không cho move point");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void CreateRegularPolygonRoom(int sides, float edgeLength)
