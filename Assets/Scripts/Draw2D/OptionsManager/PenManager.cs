@@ -2,12 +2,14 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class PenManager : MonoBehaviour
 {
     public Button penButton;          // Button để bật/tắt chức năng pen
     public static Camera mainCamera;  // Camera chính để di chuyển và phóng to
-    public float zoomSpeed = 2f;      // Tốc độ zoom
+        public float zoomSpeed = 2f;      // Tốc độ zoom
     public float panSpeed = 0.5f;     // Tốc độ di chuyển
     public static bool isRoomFloorBeingDragged = false;
 
@@ -16,6 +18,8 @@ public class PenManager : MonoBehaviour
     public static bool isPenActive = true; // Trạng thái của Pen (bật/tắt)
     private CheckpointManager checkpointManager; // Tham chiếu đến CheckpointManager để điều khiển vẽ
     private DrawingTool DrawTool; // Tham chiếu đến DrawingTool để điều khiển vẽ
+    private bool isTouchStartedInActionSpace = false;
+
 
     private ToggleColorImage toggleColorImage;
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
@@ -30,6 +34,13 @@ public class PenManager : MonoBehaviour
         toggleColorImage.Toggle(isPenActive);
         // Lấy tham chiếu đến CheckpointManager
         checkpointManager = FindFirstObjectByType<CheckpointManager>();
+
+        // // Tự gán Collider nếu chưa có
+        // GameObject bg = GameObject.Find("Background Black");
+        // if (bg != null && bg.GetComponent<Collider>() == null)
+        // {
+        //     bg.AddComponent<BoxCollider>();
+        // }
 
         // Đảm bảo trạng thái ban đầu của Pen là tắt
         UpdatePenState();
@@ -80,10 +91,65 @@ public class PenManager : MonoBehaviour
         }
     }
 
+    private bool IsPointerInActionSpace(Vector2 screenPosition)
+    {
+        if (ActionSpace == null) return false;
+
+        RectTransform rt = ActionSpace.GetComponent<RectTransform>();
+
+        // Nếu canvas là Overlay, camera nên là null
+        Canvas canvas = ActionSpace.GetComponentInParent<Canvas>();
+        Camera cam = (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay) ? null : mainCamera;
+
+        return RectTransformUtility.RectangleContainsScreenPoint(rt, screenPosition, cam);
+    }
+
+    private bool IsClickingOnBackgroundBlackUI(Vector2 screenPosition)
+    {
+        var pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+
+        var results = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (var result in results)
+        {
+            if (result.gameObject.name == "Background Black")
+            {
+                Debug.Log("Click UI trên Background Black ➜ Không cho pan/zoom");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // Hàm xử lý zoom và di chuyển camera
     public void HandleZoomAndPan(bool canZoomAndPan)
     {
         if (!canZoomAndPan) return;
+
+        // kiểm tra thao tác bắt đầu trong ActionSpace
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetMouseButtonDown(0))
+        {
+            isTouchStartedInActionSpace = IsPointerInActionSpace(Input.mousePosition);
+
+            if (IsClickingOnBackgroundBlackUI(Input.mousePosition))
+                isTouchStartedInActionSpace = false;
+        }
+#else
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            isTouchStartedInActionSpace = IsPointerInActionSpace(Input.GetTouch(0).position);
+
+            if (IsClickingOnBackgroundBlackUI(Input.GetTouch(0).position))
+                isTouchStartedInActionSpace = false;
+        }
+#endif
+        if (!isTouchStartedInActionSpace) return;
 
         if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
         {
@@ -93,7 +159,7 @@ public class PenManager : MonoBehaviour
 
         if (IsTouchOverRoomFloor())
         {
-            Debug.Log("Đang chạm RoomFloor ➜ KHÔNG zoom/pan!");
+            Debug.Log("Đang chạm   ➜ KHÔNG zoom/pan!");
             return;
         }
 
@@ -106,6 +172,11 @@ public class PenManager : MonoBehaviour
                 Ray ray = mainCamera.ScreenPointToRay(touch.position);
                 if (Physics.Raycast(ray, out RaycastHit hit))
                 {
+                    if (hit.collider.gameObject.name == "Background Black")
+                    {
+                        Debug.Log("Raycast hit Background Black ➜ Không cho pan/zoom");
+                        return;
+                    }
                     if (hit.collider.gameObject.CompareTag("RoomFloor"))
                     {
                         Debug.Log("Raycast đang hit RoomFloor ➜ Bỏ pan/zoom bàn cờ!");
