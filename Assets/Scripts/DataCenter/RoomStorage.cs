@@ -15,7 +15,7 @@ public static class RoomStorage
                 Debug.Log("[ROOM_STORAGE] RoomID da bi thay doi" + rooms[i].ID);
                 rooms[i].checkpoints = new List<Vector2>(updatedRoom.checkpoints);
                 rooms[i].wallLines = new List<WallLine>(updatedRoom.wallLines);
-                rooms[i].wallLines = new List<WallLine>(updatedRoom.wallLines.Select(w => new WallLine(w)));
+                // rooms[i].wallLines = new List<WallLine>(updatedRoom.wallLines.Select(w => new WallLine(w)));
                 // rooms[i].heights = new List<float>(updatedRoom.heights);
                 // rooms[i].Compass = updatedRoom.Compass;
                 // rooms[i].headingCompass = updatedRoom.headingCompass;
