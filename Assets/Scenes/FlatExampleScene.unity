@@ -4033,7 +4033,7 @@ PrefabInstance:
     - target: {fileID: 3752591618068695026, guid: 9ed23d3081d66b64a8e4dd11094cfae8,
         type: 3}
       propertyPath: m_text
-      value: "B\u1EA3n v\u1EBD 2D"
+      value: "B\u1EA3n v\u1EBD 2D111"
       objectReference: {fileID: 0}
     - target: {fileID: 3752591618068695026, guid: 9ed23d3081d66b64a8e4dd11094cfae8,
         type: 3}
@@ -9680,6 +9680,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1403869045}
     m_Modifications:
+    - target: {fileID: 1750647123925395874, guid: 11f91332eeee1c84baf01b524fe13ea9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2196511627978761973, guid: 11f91332eeee1c84baf01b524fe13ea9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3124093750872714460, guid: 11f91332eeee1c84baf01b524fe13ea9,
         type: 3}
       propertyPath: m_Name
@@ -10419,6 +10429,7 @@ MonoBehaviour:
   panelInfo: {fileID: 1332278075}
   previewTexture: {fileID: 1783189539}
   Draw2D: {fileID: 1620621391}
+  PreviewCamera: {fileID: 402001921}
   togglesButtonList:
   - {fileID: 511767870}
   - {fileID: 97550033}
@@ -12072,10 +12083,6 @@ MonoBehaviour:
     type: 3}
   Drawing2D: {fileID: 1620621394}
   modelRoot: {fileID: 1316727653}
-  PreviewCamera: {fileID: 402001921}
-  ButtonFloorPlan: {fileID: 511767870}
-  Button3DView: {fileID: 97550033}
-  ButtonInfo: {fileID: 44001195}
   togglesButtonList: []
 --- !u!114 &1620621394
 MonoBehaviour:
@@ -12128,14 +12135,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1620621391}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 330adc9c3a15a554f95a6e547f7b9e03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  modelRoot: {fileID: 1316727653}
   zoomSpeed: 0.01
   panSpeed: 0.005
+  PreviewCamera: {fileID: 402001921}
 --- !u!1 &1638424186
 GameObject:
   m_ObjectHideFlags: 0
@@ -13291,10 +13298,6 @@ MonoBehaviour:
     type: 3}
   Drawing2D: {fileID: 1783806884}
   modelRoot: {fileID: 0}
-  PreviewCamera: {fileID: 0}
-  ButtonFloorPlan: {fileID: 0}
-  Button3DView: {fileID: 0}
-  ButtonInfo: {fileID: 0}
   togglesButtonList: []
 --- !u!114 &1783806884
 MonoBehaviour:

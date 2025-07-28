@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 public class RoomMeshController : MonoBehaviour
 {
@@ -42,6 +43,12 @@ public class RoomMeshController : MonoBehaviour
     // Hàm di chuyển Room theo vị trí chạm for Android
     void DragRoom(Vector2 screenPos)
     {
+        if (IsClickingOnBackgroundBlackUI(Input.mousePosition))
+        {
+            Debug.Log("Đang nhấn Background Black ➜ Không move Mesh");
+            return;
+        }
+
         Ray ray = mainCam.ScreenPointToRay(screenPos);
         if (floorPlane.Raycast(ray, out float distance))
         {
@@ -232,7 +239,7 @@ public class RoomMeshController : MonoBehaviour
         oldCheckPointList = SaveCheckPointPosition(RoomID);
     }
 
-    private List<(Vector3,Vector3)> SaveCheckPointPosition(string RoomID)
+    private List<(Vector3, Vector3)> SaveCheckPointPosition(string RoomID)
     {
         var checkPointList = new List<(Vector3, Vector3)>();
         if (checkPointManager.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
@@ -307,5 +314,27 @@ public class RoomMeshController : MonoBehaviour
         var command = new MoveRectangularUndoRedoCommand(moveObject);
 
         UndoRedoController.Instance.AddToUndo(command);
+    }
+    
+    private bool IsClickingOnBackgroundBlackUI(Vector2 screenPosition)
+    {
+        var pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+
+        var results = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (var result in results)
+        {
+            if (result.gameObject.name == "Background Black")
+            {
+                Debug.Log("Click UI trên Background Black ➜ Không cho move point");
+                return true;
+            }
+        }
+
+        return false;
     }
 }
