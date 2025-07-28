@@ -315,7 +315,6 @@ public class RoomMeshController : MonoBehaviour
         DragRoom(Input.mousePosition);
     }
 
-
     private Vector2 oldPosition;
     private List<(Vector3, Vector3)> oldCheckPointList = new List<(Vector3, Vector3)>();
 
@@ -334,7 +333,8 @@ public class RoomMeshController : MonoBehaviour
 
         UndoRedoController.Instance.AddToRedo(command);
     }
-    
+
+    // === Hàm ko cho move trên UI
     private bool IsClickingOnBackgroundBlackUI(Vector2 screenPosition)
     {
         var pointerData = new PointerEventData(EventSystem.current)

@@ -501,7 +501,7 @@ public class CheckpointManager : MonoBehaviour
             Debug.Log("Đang nhấn Background Black ➜ Không move checkpoint");
             return;
         }
-        
+
         if (selectedCheckpoint == null) return;
 
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
@@ -1240,6 +1240,7 @@ public class CheckpointManager : MonoBehaviour
         return lastSelectedRoomID;
     }
 
+    // === Hàm ko cho move trên UI
     private bool IsClickingOnBackgroundBlackUI(Vector2 screenPosition)
     {
         var pointerData = new PointerEventData(EventSystem.current)
