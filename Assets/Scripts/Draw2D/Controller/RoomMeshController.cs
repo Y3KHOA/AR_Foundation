@@ -75,7 +75,7 @@ public class RoomMeshController : MonoBehaviour
                     room.wallLines[i].end += delta;
                 }
 
-                RoomStorage.UpdateOrAddRoom(room);
+                // RoomStorage.UpdateOrAddRoom(room);
 
                 // Cập nhật checkpoint GameObjects bên ngoài
                 // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();

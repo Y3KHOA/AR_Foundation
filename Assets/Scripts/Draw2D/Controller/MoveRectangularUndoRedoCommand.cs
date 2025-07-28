@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MoveRectangularUndoRedoCommand : IUndoRedoCommand
 {
     private CheckpointManager checkPointManager;
-
+    private string ID = String.Empty;
 
     public MoveRectangularUndoRedoCommand(MoveRoomData moveRoomData)
     {
+        this.ID = Guid.NewGuid().ToString();
         this._data = moveRoomData;
         checkPointManager = CheckpointManager.Instance;
     }
@@ -29,15 +31,14 @@ public class MoveRectangularUndoRedoCommand : IUndoRedoCommand
     {
         var movingObject = checkPointManager.RoomFloorMap[room.ID].transform;
         movingObject.transform.position = position;
-        
+
         RoomStorage.UpdateOrAddRoom(room);
-        
         checkPointManager.DrawingTool.ClearAllLines();
         checkPointManager.RedrawAllRooms();
 
         UpdateCheckPoint(RoomStorage.GetRoomByID(room.ID));
         LoadCheckPointPositions(checkPointList, room.ID);
-        
+
         movingObject.GetComponent<RoomMeshController>().GenerateMesh(room.checkpoints);
     }
 
