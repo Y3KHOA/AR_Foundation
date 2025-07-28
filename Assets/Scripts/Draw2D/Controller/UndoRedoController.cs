@@ -24,9 +24,10 @@ public class UndoRedoController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.G))
         {
             Redo();
+        } if (Input.GetKeyDown(KeyCode.H))
+        {
+            RoomStorage.CheckDuplicateRoomID();
         }
-        Debug.Log($"{nameof(undoStack)} command count is {undoStack.Count}");
-        Debug.Log($"{nameof(redoStack)} command count is {redoStack.Count}");
     }
 
     public void AddToUndo(IUndoRedoCommand undoRedoCommand)

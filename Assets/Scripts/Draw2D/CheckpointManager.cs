@@ -1445,7 +1445,6 @@ public class CheckpointManager : MonoBehaviour
         wallLines.Clear();
 
         DrawingTool.DrawAllLinesFromRoomStorage();
-        storedRoomMeshControllers[newRoom.ID] = meshCtrl;
         Debug.Log($"Đã tạo Room hình chữ nhật: {width} x {height} m, RoomID: {newRoom.ID}");
 
         if (!isCreateCommand) return;
@@ -1458,5 +1457,4 @@ public class CheckpointManager : MonoBehaviour
         UndoRedoController.Instance.AddToUndo(new CreateRectangularCommand(data));
     }
 
-    public Dictionary<string, RoomMeshController> storedRoomMeshControllers = new();
 }

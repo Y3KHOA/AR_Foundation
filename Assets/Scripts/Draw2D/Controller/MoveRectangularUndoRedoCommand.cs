@@ -27,14 +27,18 @@ public class MoveRectangularUndoRedoCommand : IUndoRedoCommand
 
     private void SnapObject(Room room, Vector3 position, List<(Vector3, Vector3)> checkPointList)
     {
-        _data.MovingObject.transform.position = position;
+        var movingObject = checkPointManager.RoomFloorMap[room.ID].transform;
+        movingObject.transform.position = position;
+        
         RoomStorage.UpdateOrAddRoom(room);
+        
         checkPointManager.DrawingTool.ClearAllLines();
         checkPointManager.RedrawAllRooms();
 
         UpdateCheckPoint(RoomStorage.GetRoomByID(room.ID));
         LoadCheckPointPositions(checkPointList, room.ID);
-        _data.MovingObject.GetComponent<RoomMeshController>().GenerateMesh(room.checkpoints);
+        
+        movingObject.GetComponent<RoomMeshController>().GenerateMesh(room.checkpoints);
     }
 
     private void UpdateCheckPoint(Room room)
@@ -63,52 +67,6 @@ public class MoveRectangularUndoRedoCommand : IUndoRedoCommand
                 item.p1.transform.position = positions[index].Item1;
                 item.p2.transform.position = positions[index].Item2;
             }
-        }
-    }
-}
-
-public class CreateRectangularCommand : IUndoRedoCommand
-{
-    private CheckpointManager checkPointManager;
-    private RectangularCreatingData data;
-
-    public CreateRectangularCommand(RectangularCreatingData data)
-    {
-        checkPointManager = CheckpointManager.Instance;
-        this.data = data;
-    }
-
-    public void Undo()
-    {
-        var roomID = data.RoomID;
-        var room = RoomStorage.GetRoomByID(roomID);
-        ClearCheckPoint(room.ID);
-        RoomStorage.rooms.Remove(room);
-        checkPointManager.DrawingTool.ClearAllLines();
-        checkPointManager.RedrawAllRooms();
-    }
-
-    public void Redo()
-    {
-        CheckpointManager.Instance.
-        CreateRectangleRoom(data.width, data.heigh, data.position, data.RoomID, false);
-
-        var roomMesh = CheckpointManager.Instance.storedRoomMeshControllers[data.RoomID];
-        GameObject.Destroy(roomMesh.gameObject);
-    }
-
-    private void ClearCheckPoint(string RoomID)
-    {
-        var mapping =
-            checkPointManager.AllCheckpoints.Find(loop => checkPointManager.FindRoomIDForLoop(loop) == RoomID);
-        if (mapping != null)
-        {
-            for (int index = 0; index < mapping.Count; index++)
-            {
-                GameObject.Destroy(mapping[index].gameObject);
-            }
-
-            checkPointManager.AllCheckpoints.Remove(mapping);
         }
     }
 }

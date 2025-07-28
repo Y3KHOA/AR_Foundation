@@ -35,4 +35,20 @@ public static class RoomStorage
         Debug.LogWarning($"RoomStorage: Không tìm thấy Room với ID: {id}");
         return null;
     }
+
+    public static void CheckDuplicateRoomID()
+    {
+        HashSet<string> roomIDCheck = new();
+
+        foreach (var item in rooms)
+        {
+            if (roomIDCheck.Contains(item.ID))
+            {
+                Debug.Log("DuplicateRoomID: "+item.ID);
+                continue;
+            }
+
+            roomIDCheck.Add(item.ID);
+        }
+    }
 }        
