@@ -138,6 +138,7 @@ public class GridGenerator : MonoBehaviour
     LineRenderer Create()
     {
         GameObject line = new GameObject("GridLine");
+        line.transform.parent = transform;
         LineRenderer lr = line.AddComponent<LineRenderer>();
 
         lr.sortingOrder = -1000;

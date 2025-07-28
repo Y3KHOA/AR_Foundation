@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Text;
 
 /// <summary>
 /// Một đoạn đường thẳng đại diện cho tường, cửa hoặc cửa sổ

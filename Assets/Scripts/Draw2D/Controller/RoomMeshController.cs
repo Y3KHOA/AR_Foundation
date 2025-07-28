@@ -27,36 +27,6 @@ public class RoomMeshController : MonoBehaviour
         checkPointManager = CheckpointManager.Instance;
     }
 
-#if UNITY_STANDALONE
-    // PC: vẫn dùng OnMouseDown/Drag/Up
-#else
-    void Update()
-    {
-        if (!PenManager.isPenActive) return;
-
-        if (Input.touchCount == 1)
-        {
-            Touch touch = Input.GetTouch(0);
-            switch (touch.phase)
-            {
-                case TouchPhase.Began:
-                    OnStartDrag(touch.position);
-
-                    break;
-
-                case TouchPhase.Moved:
-                    if (!isDragging) return;
-                    DragRoom(touch.position);
-                    break;
-
-                case TouchPhase.Ended:
-                case TouchPhase.Canceled:
-                    OnEndDrag();
-                    break;
-            }
-        }
-    }
-#endif
     private bool CheckTouchHitThisObject(Vector2 screenPos)
     {
         Ray ray = mainCam.ScreenPointToRay(screenPos);
@@ -112,7 +82,7 @@ public class RoomMeshController : MonoBehaviour
                     room.wallLines[i].end += delta;
                 }
 
-                RoomStorage.UpdateOrAddRoom(room);
+                // RoomStorage.UpdateOrAddRoom(room);
 
                 // Cập nhật checkpoint GameObjects bên ngoài
                 // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
@@ -257,7 +227,7 @@ public class RoomMeshController : MonoBehaviour
             checkPointManager.IsDraggingRoom = true;
         }
 
-        Ray ray = Camera.main.ScreenPointToRay(startDragPosition);
+        Ray ray = mainCam.ScreenPointToRay(startDragPosition);
         if (floorPlane.Raycast(ray, out float distance))
         {
             dragStartWorldPos = ray.GetPoint(distance);
@@ -283,7 +253,9 @@ public class RoomMeshController : MonoBehaviour
         return checkPointList;
     }
 
-    private void OnEndDrag()
+
+    
+    private void OnEndDrag(Vector2 screenPosition)
     {
         isDragging = false;
 
@@ -293,21 +265,25 @@ public class RoomMeshController : MonoBehaviour
             checkPointManager.IsDraggingRoom = false;
         }
 
+        if (!CheckTouchHitThisObject(screenPosition))
+        {
+            return;
+        }
         CreateUndoCommand();
     }
 
     private void OnMouseDown()
     {
         if (!PenManager.isPenActive) return;
-
+    
         OnStartDrag(Input.mousePosition);
     }
-
+    
     private void OnMouseUp()
     {
-        OnEndDrag();
+        OnEndDrag(Input.mousePosition);
     }
-
+    
     private void OnMouseDrag()
     {
         if (!PenManager.isPenActive) return;
@@ -326,12 +302,17 @@ public class RoomMeshController : MonoBehaviour
         moveObject.MovingObject = transform;
 
         moveObject.OldPosition = oldPosition;
+        moveObject.CurrentPosition = transform.position;
+        
         moveObject.OldRoom = new Room(oldRoom);
-        moveObject.oldCheckPointPos = new List<(Vector3, Vector3)>(oldCheckPointList);
+        moveObject.NewRoom = new Room(RoomStorage.GetRoomByID(RoomID));
+        
+        moveObject.OldCheckPointPos = new List<(Vector3, Vector3)>(oldCheckPointList);
+        moveObject.CurrentCheckPointPos = SaveCheckPointPosition(RoomID);
+        
+        var command = new MoveRectangularUndoRedoCommand(moveObject);
 
-        var command = new MoveRetangularUndoRedoCommand(moveObject);
-
-        UndoRedoController.Instance.AddToRedo(command);
+        UndoRedoController.Instance.AddToUndo(command);
     }
 
     // === Hàm ko cho move trên UI

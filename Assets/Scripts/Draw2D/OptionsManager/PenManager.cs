@@ -25,8 +25,11 @@ public class PenManager : MonoBehaviour
     // public bool IsPenActive => isPenActive;  // Getter để cung cấp trạng thái Pen
     private Vector3 previewPosition; // Vị trí preview
     [SerializeField] private ToggleGroupUI toggleGroupUI;
+
+    
     void Start()
     {
+        isPenActive = true;
         mainCamera = Camera.main;
         // Gán sự kiện click vào Button
         penButton.onClick.AddListener(TogglePen);

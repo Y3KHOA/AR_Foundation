@@ -4,14 +4,15 @@ using System.Collections.Generic;
 public class UndoRedoController : MonoBehaviour
 {
     public static UndoRedoController Instance;
-    private List<IUndoRedoCommand> undoStack;
-    private List<IUndoRedoCommand> redoStack;
+
+    private Stack<IUndoRedoCommand> undoStack;
+    private Stack<IUndoRedoCommand> redoStack;
 
     private void Awake()
     {
         Instance = this;
-        undoStack = new List<IUndoRedoCommand>();
-        redoStack = new List<IUndoRedoCommand>();
+        undoStack = new Stack<IUndoRedoCommand>();
+        redoStack = new Stack<IUndoRedoCommand>();
     }
 
     private void Update()
@@ -20,31 +21,42 @@ public class UndoRedoController : MonoBehaviour
         {
             Undo();
         }
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Redo();
+        }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            RoomStorage.CheckDuplicateRoomID();
+        }
     }
 
-    public void AddToRedo(IUndoRedoCommand undoRedoCommand)
+    public void AddToUndo(IUndoRedoCommand command)
     {
-        undoStack.Add(undoRedoCommand);
-        redoStack.Clear();
+        Debug.Log("Add to undo stack");
+        undoStack.Push(command);
+        redoStack.Clear(); // Clear redo khi có hành động mới
     }
 
     public void Undo()
     {
-        ExtractFunc(undoStack, redoStack, true);
+        if (undoStack.Count == 0) return;
+
+        var command = undoStack.Pop();
+        Debug.Log("Undo");
+        command.Undo();
+        redoStack.Push(command);
     }
 
-    private void ExtractFunc(List<IUndoRedoCommand> sourceStack, List<IUndoRedoCommand> takeStack, bool isUndo)
+    public void Redo()
     {
-        if (sourceStack.Count > 0)
-        {
-            IUndoRedoCommand undoRedoCommand = sourceStack[^1];
-            if (isUndo)
-            {
-                Debug.Log("Undo");
-                undoRedoCommand.Undo();
-            }
-            sourceStack.Remove(undoRedoCommand);
-            takeStack.Add(undoRedoCommand);
-        }
+        if (redoStack.Count == 0) return;
+
+        var command = redoStack.Pop();
+        Debug.Log("Redo");
+        command.Redo();
+        undoStack.Push(command);
     }
 }
