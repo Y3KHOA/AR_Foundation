@@ -3486,6 +3486,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1200374685}
+    - targetCorrespondingSourceObject: {fileID: 3663977189931741126, guid: 56d1117d9e482db4390a426d371d2486,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 158950661}
     - targetCorrespondingSourceObject: {fileID: 2317517977252156808, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
       insertIndex: -1
@@ -3519,6 +3523,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &158950659 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3663977189931741126, guid: 56d1117d9e482db4390a426d371d2486,
+    type: 3}
+  m_PrefabInstance: {fileID: 158950656}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &158950660 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6413963432227506671, guid: 56d1117d9e482db4390a426d371d2486,
+    type: 3}
+  m_PrefabInstance: {fileID: 158950656}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 158950659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &158950661
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 158950659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fd13ab56bae7ca409d6b0fa5d5fb88d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  preset: {fileID: 0}
+  isUsingPreset: 0
+  deActiveColor: {r: 1, g: 1, b: 1, a: 1}
+  activeColor: {r: 1, g: 1, b: 1, a: 1}
+  toggleColorImage: {fileID: 0}
+  toggleSprite: {fileID: 158950660}
+  deActiveSprite: {fileID: 21300000, guid: 3a0ca62b6de02c542b1b6ff7f5949c34, type: 3}
+  activeSprite: {fileID: 21300000, guid: 759615b6a6486a84da5d49b468b9ec8d, type: 3}
 --- !u!1 &166704345
 GameObject:
   m_ObjectHideFlags: 0
@@ -18535,6 +18577,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2060100581}
   - component: {fileID: 2060100582}
+  - component: {fileID: 2060100583}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -18573,6 +18616,22 @@ MonoBehaviour:
   viewRange: 100
   lineMaterial: {fileID: 2100000, guid: cd7dca5a511d3b4459837ed38d677d49, type: 2}
   lineMesh: {fileID: 0}
+--- !u!114 &2060100583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060100579}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90abdae3f4e50cc4bb02d24f6e88881b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cellSize: 1
+  viewRange: 100
+  backgroundMaterial: {fileID: 0}
+  test: {fileID: 2100000, guid: 4f0e321d584d29e4e9a17bcfd2f73caa, type: 2}
 --- !u!1 &2076597172
 GameObject:
   m_ObjectHideFlags: 0
