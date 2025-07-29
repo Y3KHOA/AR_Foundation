@@ -17,6 +17,7 @@ public class SavedWallLine
     public LineType type;
     public float distanceHeight;
     public float Height;
+    public bool isManualConnection;
 }
 
 [Serializable]

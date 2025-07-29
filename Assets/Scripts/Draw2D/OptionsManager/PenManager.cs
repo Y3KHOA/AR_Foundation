@@ -84,6 +84,7 @@ public class PenManager : MonoBehaviour
                 // if (checkpointManager.IsInSavedLoop(checkpointManager.selectedCheckpoint) || checkpointManager.isClosedLoop)
                 if (checkpointManager.selectedCheckpoint != null)
                 {
+                    checkpointManager.isMovingCheckpoint = true;
                     checkpointManager.MoveSelectedCheckpoint();
                     checkpointManager.isDragging = true;
                 }
@@ -92,6 +93,7 @@ public class PenManager : MonoBehaviour
             {
                 checkpointManager.DeselectCheckpoint();
                 checkpointManager.isDragging = false;
+                checkpointManager.isMovingCheckpoint = false;
             }
         }
     }
@@ -156,9 +158,15 @@ public class PenManager : MonoBehaviour
 #endif
         if (!isTouchStartedInActionSpace) return;
 
-        if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
+        // if (checkpointManager != null && checkpointManager.isMovingCheckpoint)
+        // {
+        //     // Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
+        //     return;
+        // }
+
+        if (checkpointManager != null && checkpointManager.selectedCheckpoint != null && checkpointManager.isDragging)
         {
-            // Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
+            Debug.Log("Đang move checkpoint ➜ KHÔNG pan/zoom!");
             return;
         }
 

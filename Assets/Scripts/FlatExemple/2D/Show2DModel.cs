@@ -27,6 +27,8 @@ public class Show2DModel : MonoBehaviour
     private ToggleButtonUI currentButton;
 
     private CheckpointManager checkPointManager;
+    public Dictionary<string, List<(WallLine, GameObject, GameObject)>> tempDoorWindowPoints = new();
+
 
     void Start()
     {
@@ -101,10 +103,10 @@ public class Show2DModel : MonoBehaviour
                     SetLayerRecursively(p1, modelRoot.gameObject.layer);
                     SetLayerRecursively(p2, modelRoot.gameObject.layer);
 
-                    if (!checkPointManager.tempDoorWindowPoints.ContainsKey(room.ID))
-                        checkPointManager.tempDoorWindowPoints[room.ID] = new List<(WallLine, GameObject, GameObject)>();
+                    if (!tempDoorWindowPoints.ContainsKey(room.ID))
+                        tempDoorWindowPoints[room.ID] = new List<(WallLine, GameObject, GameObject)>();
 
-                    checkPointManager.tempDoorWindowPoints[room.ID].Add((wl, p1, p2));
+                    tempDoorWindowPoints[room.ID].Add((wl, p1, p2));
                 }
             }
         }
