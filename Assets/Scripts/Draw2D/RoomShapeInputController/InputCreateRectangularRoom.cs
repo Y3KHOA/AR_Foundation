@@ -113,7 +113,7 @@ public class InputCreateRectangularRoom : MonoBehaviour
         checkpointManager.CreateRectangleRoom(length, width);
 
         Debug.Log($"[RoomShapeInputController] Gửi yêu cầu tạo Room hình chữ nhật chiều dài {length}m , cạnh rộng {width}m");
-        panelToggleController.HideWhenOk();
+        panelToggleController.Show(false);
     }
 
     private void ShowInformationToast(string descriptionText)
