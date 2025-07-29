@@ -26,6 +26,36 @@ public class RoomMeshController : MonoBehaviour
 
         checkPointManager = CheckpointManager.Instance;
     }
+#if UNITY_STANDALONE
+    // PC: vẫn dùng OnMouseDown/Drag/Up
+#else
+    void Update()
+    {
+        if (!PenManager.isPenActive) return;
+
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    OnStartDrag(touch.position);
+
+                    break;
+
+                case TouchPhase.Moved:
+                    if (!isDragging) return;
+                    DragRoom(touch.position);
+                    break;
+
+                case TouchPhase.Ended:
+                case TouchPhase.Canceled:
+                    OnEndDrag(touch.position);
+                    break;
+            }
+        }
+    }
+#endif
 
     private bool CheckTouchHitThisObject(Vector2 screenPos)
     {
@@ -271,7 +301,7 @@ public class RoomMeshController : MonoBehaviour
         }
         CreateUndoCommand();
     }
-
+#if UNITY_EDITOR
     private void OnMouseDown()
     {
         if (!PenManager.isPenActive) return;
@@ -290,7 +320,7 @@ public class RoomMeshController : MonoBehaviour
         if (!isDragging) return;
         DragRoom(Input.mousePosition);
     }
-
+#endif
     private Vector2 oldPosition;
     private List<(Vector3, Vector3)> oldCheckPointList = new List<(Vector3, Vector3)>();
 

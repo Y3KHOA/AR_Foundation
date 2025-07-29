@@ -2242,6 +2242,11 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1385407380633325814, guid: 56d1117d9e482db4390a426d371d2486,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1636015709438701252, guid: 56d1117d9e482db4390a426d371d2486,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -18507,6 +18512,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2060100581}
   - component: {fileID: 2060100580}
+  - component: {fileID: 2060100582}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -18521,7 +18527,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2060100579}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90abdae3f4e50cc4bb02d24f6e88881b, type: 3}
   m_Name: 
@@ -18545,6 +18551,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2060100582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060100579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8a53aa51bb3489bbb755036201f3b44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cellSize: 1
+  viewRange: 100
+  lineMaterial: {fileID: 2100000, guid: cd7dca5a511d3b4459837ed38d677d49, type: 2}
+  lineMesh: {fileID: 0}
 --- !u!1 &2076597172
 GameObject:
   m_ObjectHideFlags: 0
