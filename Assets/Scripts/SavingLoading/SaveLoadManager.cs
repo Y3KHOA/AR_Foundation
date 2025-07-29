@@ -35,7 +35,8 @@ public static class SaveLoadManager
                     end = w.end,
                     type = w.type,
                     distanceHeight = w.distanceHeight,
-                    Height = w.Height
+                    Height = w.Height,
+                    isManualConnection = w.isManualConnection
                 }),
                 compass = new Vector2Serializable(room.Compass),
                 headingCompass = room.headingCompass
@@ -77,7 +78,13 @@ public static class SaveLoadManager
             room.SetID(path.roomID);
             room.checkpoints = path.points.ConvertAll(p => p.ToVector2());
             room.heights = new List<float>(path.heights);
-            room.wallLines = path.wallLines.ConvertAll(w => new WallLine(w.start, w.end, w.type, w.distanceHeight, w.Height));
+            // room.wallLines = path.wallLines.ConvertAll(w => new WallLine(w.start, w.end, w.type, w.distanceHeight, w.Height));
+            room.wallLines = path.wallLines.ConvertAll(w => {
+                            var line = new WallLine(w.start, w.end, w.type, w.distanceHeight, w.Height);
+                            line.isManualConnection = w.isManualConnection; // <--- quan trọng
+                            return line;
+                        });
+
             room.Compass = path.compass.ToVector2();
             room.headingCompass = path.headingCompass;
             RoomStorage.rooms.Add(room);

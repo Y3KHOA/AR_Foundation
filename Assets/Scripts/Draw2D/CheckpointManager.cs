@@ -507,15 +507,14 @@ public class CheckpointManager : MonoBehaviour
         if (selectedCheckpoint == null) return;
 
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
-        Vector3 oldWorldPos = selectedCheckpoint.transform.position;
 
-        // MoveSelectedCheckpointExtra();      
+        // === Nếu là checkpoint phụ (CheckpointExtra) ===
         if (selectedCheckpoint.CompareTag("CheckpointExtra"))
         {
             if (MoveSelectedCheckpointExtra()) return;
-        }  
+        }
 
-        // === Điểm cửa/cửa sổ
+        // === Nếu là điểm cửa/cửa sổ ===
         foreach (var kvp in tempDoorWindowPoints)
         {
             foreach (var (line, p1GO, p2GO) in kvp.Value)
@@ -536,7 +535,7 @@ public class CheckpointManager : MonoBehaviour
             }
         }
 
-        // === Di chuyển điểm chính trong polygon ===
+        // === Nếu là checkpoint chính trong polygon ===
         selectedCheckpoint.transform.position = newPosition;
 
         foreach (var loop in allCheckpoints)
@@ -548,93 +547,52 @@ public class CheckpointManager : MonoBehaviour
             Room room = RoomStorage.GetRoomByID(roomID);
             if (room == null) return;
 
-            // Cập nhật line thủ công liên quan khi point chính di chuyển
-            foreach (var line in room.wallLines)
-            {
-                if (!line.isManualConnection) continue;
-
-                // Nếu start nối tới point chính
-                if (Vector3.Distance(line.start, oldWorldPos) < 0.01f)
-                {
-                    line.start = newPosition;
-
-                    // Kiểm tra end có phải đang nối tới một point phụ?
-                    foreach (var extra in currentCheckpoints.Where(p => p.CompareTag("CheckpointExtra")))
-                    {
-                        if (Vector3.Distance(line.end, extra.transform.position) < 0.01f)
-                        {
-                            line.end = extra.transform.position; // fix lại cho khớp đúng
-                            break;
-                        }
-                    }
-                }
-                // Nếu end nối tới point chính
-                else if (Vector3.Distance(line.end, oldWorldPos) < 0.01f)
-                {
-                    line.end = newPosition;
-
-                    // Kiểm tra start có phải đang nối tới một point phụ?
-                    foreach (var extra in currentCheckpoints.Where(p => p.CompareTag("CheckpointExtra")))
-                    {
-                        if (Vector3.Distance(line.start, extra.transform.position) < 0.01f)
-                        {
-                            line.start = extra.transform.position; // fix lại
-                            break;
-                        }
-                    }
-                }
-            }
-
+            // Cập nhật dữ liệu checkpoint
             for (int i = 0; i < loop.Count; i++)
             {
                 Vector3 pos = loop[i].transform.position;
                 room.checkpoints[i] = new Vector2(pos.x, pos.z);
             }
 
-            // Cập nhật wallLine chính (bỏ qua line thủ công)
-            int wallCount = room.checkpoints.Count;
+            // Cập nhật wallLine chính
             int wallLineIndex = 0;
+            int wallCount = room.checkpoints.Count;
             for (int i = 0; i < room.wallLines.Count; i++)
             {
-                if (room.wallLines[i].type != LineType.Wall) continue;
-                if (room.wallLines[i].isManualConnection) continue;
+                if (room.wallLines[i].type != LineType.Wall || room.wallLines[i].isManualConnection) continue;
 
                 Vector2 p1 = room.checkpoints[wallLineIndex % wallCount];
                 Vector2 p2 = room.checkpoints[(wallLineIndex + 1) % wallCount];
 
                 room.wallLines[i].start = new Vector3(p1.x, 0, p1.y);
                 room.wallLines[i].end = new Vector3(p2.x, 0, p2.y);
-
                 wallLineIndex++;
             }
 
-            // Cập nhật line thủ công liên quan
-            Vector3 newWorldPos = selectedCheckpoint.transform.position;
-
-            foreach (var line in room.wallLines)
+            // Cập nhật manual lines (kết nối tay)
+            foreach (var line in room.wallLines.Where(w => w.isManualConnection))
             {
-                if (!line.isManualConnection) continue;
-
-                // Đảm bảo chỉ update đúng point liên quan
-                if (Vector3.Distance(line.start, oldWorldPos) < 0.01f &&
-                    Vector3.Distance(line.end, newWorldPos) > 0.01f)
+                // Snap line.start vào checkpoint nếu gần
+                foreach (var cp in allCheckpoints.SelectMany(x => x))
                 {
-                    line.start = newWorldPos;
+                    float d = Vector3.Distance(cp.transform.position, line.start);
+                    if (d < 0.1f) { line.start = cp.transform.position; break; }
                 }
-                else if (Vector3.Distance(line.end, oldWorldPos) < 0.01f &&
-                        Vector3.Distance(line.start, newWorldPos) > 0.01f)
+
+                // Snap line.end vào checkpoint nếu gần
+                foreach (var cp in allCheckpoints.SelectMany(x => x))
                 {
-                    line.end = newWorldPos;
+                    float d = Vector3.Distance(cp.transform.position, line.end);
+                    if (d < 0.1f) { line.end = cp.transform.position; break; }
                 }
             }
 
-            // Cập nhật cửa sổ/cửa
-            foreach (var door in room.wallLines)
+            // Cập nhật vị trí cửa/cửa sổ dựa trên wall gần nhất
+            foreach (var door in room.wallLines.Where(w => w.type != LineType.Wall))
             {
-                if (door.type == LineType.Wall) continue;
-
                 WallLine parentWall = null;
                 float minDistance = float.MaxValue;
+
                 foreach (var wall in room.wallLines)
                 {
                     if (wall.type != LineType.Wall) continue;
@@ -681,6 +639,7 @@ public class CheckpointManager : MonoBehaviour
             break;
         }
     }
+
     public bool MoveSelectedCheckpointExtra()
     {
         Vector3 newPosition = GetWorldPositionFromScreen(Input.mousePosition);
