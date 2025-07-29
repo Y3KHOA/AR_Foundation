@@ -1322,8 +1322,8 @@ public class CheckpointManager : MonoBehaviour
             DeleteCurrentDrawingData();
         };
         popup.ClickNoEvent = () => { Debug.Log("Người dùng chọn NO: Tiếp tục vẽ để khép kín."); };
-        popup.EventWhenClickButtons = () => { BackgroundUI.Instance.Hide(); };
-        BackgroundUI.Instance.Show(popup.gameObject, null);
+        // popup.EventWhenClickButtons = () => { BackgroundUI.Instance.Hide(); };
+        // BackgroundUI.Instance.Show(popup.gameObject, null);
 
         popup.autoClearWhenClick = true;
     }

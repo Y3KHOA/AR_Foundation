@@ -38,11 +38,11 @@ public class BackButton : MonoBehaviour
         popup.ClickYesEvent = OnClickYes;
         popup.EventWhenClickButtons = () =>
         {
-            BackgroundUI.Instance.Hide();
+            // BackgroundUI.Instance.Hide();
             isShow = false;
         };
         popup.autoClearWhenClick = true;
-        BackgroundUI.Instance.Show(popup.gameObject, null);
+        // BackgroundUI.Instance.Show(popup.gameObject, null);
     }
 
 

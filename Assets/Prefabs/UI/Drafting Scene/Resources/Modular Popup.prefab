@@ -96,6 +96,7 @@ GameObject:
   - component: {fileID: 8163680321130730339}
   - component: {fileID: 1738658175757674730}
   - component: {fileID: 1081241185047158441}
+  - component: {fileID: 6252229527556177403}
   m_Layer: 5
   m_Name: Modular Popup
   m_TagString: Untagged
@@ -170,6 +171,18 @@ MonoBehaviour:
   yesBtn: {fileID: 8167343500339938026}
   noBtn: {fileID: 8014769540558264569}
   autoClearWhenClick: 0
+--- !u!114 &6252229527556177403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727990230625871173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22279588c42e4c76aef8264161ccc458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1611364614618763850
 GameObject:
   m_ObjectHideFlags: 0
@@ -359,7 +372,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
+  m_fontSize: 18
   m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -497,7 +510,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36.35
+  m_fontSize: 23.55
   m_fontSizeBase: 35
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1303,7 +1316,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
+  m_fontSize: 18
   m_fontSizeBase: 28
   m_fontWeight: 400
   m_enableAutoSizing: 1
