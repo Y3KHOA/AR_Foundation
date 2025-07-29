@@ -94,7 +94,8 @@ public class DrawingTool : MonoBehaviour
             lr.sortingOrder = 10;
 
         // Lưu line đã vẽ
-        lines.Add(lr);
+        if(!lines.Contains(lr))
+            lines.Add(lr);
 
         // Khoảng cách và text
         float distanceInM = len * 1f;

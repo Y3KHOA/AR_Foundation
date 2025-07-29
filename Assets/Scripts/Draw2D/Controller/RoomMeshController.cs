@@ -39,7 +39,10 @@ public class RoomMeshController : MonoBehaviour
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    OnStartDrag(touch.position);
+                    if (CheckTouchHitThisObject(touch.position))
+                    {
+                        OnStartDrag(touch.position);
+                    }
 
                     break;
 
@@ -305,7 +308,7 @@ public class RoomMeshController : MonoBehaviour
     private void OnMouseDown()
     {
         if (!PenManager.isPenActive) return;
-    
+        if (isDragging) return;
         OnStartDrag(Input.mousePosition);
     }
     
