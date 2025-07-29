@@ -10,12 +10,10 @@ public class ToggleColorImage : ToggleColorBase
     [SerializeField] private Sprite activeSprite;
     public override void Toggle(bool isActive)
     {
-        if (toggleColorImage == null)
+        if (toggleColorImage)
         {
-            Debug.Log("Image is null", gameObject);
-            return;
+            toggleColorImage.color = isActive ? activeColor : deActiveColor;
         }
-        toggleColorImage.color = isActive ? activeColor : deActiveColor;
 
         if (!toggleSprite|| !activeSprite || !deActiveSprite)
         {
