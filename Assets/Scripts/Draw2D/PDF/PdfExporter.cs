@@ -105,6 +105,7 @@ public class PdfExporter
             Vector2 globalSize = globalMax - globalMin;
 
             drawingCenter = (globalMin + globalMax) / 2f;
+            Debug.Log($"drawingCenter ALL: {drawingCenter}");
 
             // === TRỪ RA VÙNG CHỮ ĐÔNG TÂY NAM BẮC ===
             float compassMarginTop = 80f;    // Phần trên (S)
@@ -223,9 +224,8 @@ public class PdfExporter
 
                     if (!IsAlreadyDrawn(p1, p2, drawnDimensionLines))
                     {
-                        DrawDimensionLine(cb, cp1, cp2, -20f, $"{Vector2.Distance(p1, p2):0.00}");
+                        DrawDimensionLine(cb, cp1, cp2, -15f, $"{Vector2.Distance(p1, p2):0.00}", drawingCenter,true);
                     }
-                    // DrawDimensionLine(cb, cp1, cp2, -30f, $"{Vector2.Distance(p1, p2):0.00m}");
 
                     // Đo chiều dày tường
                     // DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
@@ -315,9 +315,8 @@ public class PdfExporter
 
                     if (!IsAlreadyDrawn(p1, p2, drawnDimensionLines))
                     {
-                        DrawDimensionLine(cb, cp1, cp2, -10f, $"{Vector2.Distance(p1, p2):0.00}");
+                        DrawDimensionLine(cb, cp1, cp2, -10f, $"{Vector2.Distance(p1, p2):0.00}", drawingCenter,true);
                     }
-                    // DrawDimensionLine(cb, cp1, cp2, -30f, $"{Vector2.Distance(p1, p2):0.00m}");
 
                     // Đo chiều dày tường
                     // DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
@@ -375,7 +374,6 @@ public class PdfExporter
                         DrawSymbol(cb, Convert, start2D, end2D, wall.type.ToString().ToLower());
                     }
                 }
-
 
                 // Sau khi tính xong shift, scale, offsetX/Y:
                 float minX = offsetX;
@@ -474,7 +472,6 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
     drawnSet.Add(k1);
     return false;
 }
-
     
     static bool LineSegmentsIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, out Vector2 intersection)
     {
@@ -497,7 +494,6 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
         }
         return false;
     }
-
 
     //hàm vẽ cửa và cửa sổ
     static void DrawSymbol(PdfContentByte cb, System.Func<Vector2, Vector2> Convert, Vector2 p1, Vector2 p2, string type)
@@ -599,7 +595,7 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
             float doorLength = Vector2.Distance(p1, p2);
             string doorLabel = $"{doorLength:0.00}";
 
-            DrawDimensionLine(cb, cp1, cp2, -5f, doorLabel);
+            DrawDimensionLine(cb, cp1, cp2, -5f, doorLabel, drawingCenter,false);
         }
 
         else if (type == "window")
@@ -648,7 +644,7 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
             float doorLength = Vector2.Distance(p1, p2);
             string doorLabel = $"{doorLength:0.00}";
 
-            DrawDimensionLine(cb, cp1, cp2, -5f, doorLabel);
+            DrawDimensionLine(cb, cp1, cp2, -5f, doorLabel, drawingCenter,false);
         }
 
         cb.SetRGBColorStroke(0, 0, 0); // Reset màu
@@ -656,71 +652,153 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
 
     // public static Vector2 drawingCenter;
 
-static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label)
-{
-    Vector2 dir = (p2 - p1).normalized;
-    Vector2 perp = new Vector2(-dir.y, dir.x);
-
-    if (Mathf.Abs(offsetDistance) < 0.01f)
-        offsetDistance = Mathf.Clamp(Vector2.Distance(p1, p2) * 0.08f, 20f, 40f);
-
-    Vector2 mid = (p1 + p2) * 0.5f;
-    Vector2 toCenter = (drawingCenter - mid).normalized;
-
-    // Điều chỉnh perp sao cho hướng ra ngoài
-    if (Vector2.Dot(perp, toCenter) > 0)
-        perp *= -1;
-
-    Vector2 p1Offset = p1 + perp * offsetDistance;
-    Vector2 p2Offset = p2 + perp * offsetDistance;
-
-    cb.SetLineWidth(0.5f);
-    cb.MoveTo(p1Offset.x, p1Offset.y);
-    cb.LineTo(p2Offset.x, p2Offset.y);
-    cb.Stroke();
-
-    cb.MoveTo(p1.x, p1.y); cb.LineTo(p1Offset.x, p1Offset.y);
-    cb.MoveTo(p2.x, p2.y); cb.LineTo(p2Offset.x, p2Offset.y);
-    cb.Stroke();
-
-    float arrowSize = 3f;
-    void DrawArrow(Vector2 pos, Vector2 direction)
+    static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label, Vector2 drawingCenter, bool isFixedOffset)
     {
-        Vector2 dir2 = -direction.normalized;
-        Vector2 left = pos - dir2 * arrowSize + new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
-        Vector2 right = pos - dir2 * arrowSize - new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
-        cb.MoveTo(left.x, left.y); cb.LineTo(pos.x, pos.y); cb.LineTo(right.x, right.y);
+        Vector2 dir = (p2 - p1).normalized;
+        Vector2 perp = new Vector2(-dir.y, dir.x); // vector vuông góc
+
+        Vector2 mid = (p1 + p2) * 0.5f;
+        Vector2 toCenter = (mid - drawingCenter).normalized;
+
+        if ((drawingCenter - mid).y < 0)
+            perp *= -1;
+
+        if (Mathf.Abs(offsetDistance) < 0.01f)
+            offsetDistance = Mathf.Clamp(Vector2.Distance(p1, p2) * 0.08f, 20f, 40f);
+
+        Vector2 p1Offset = p1 + perp * offsetDistance;
+        Vector2 p2Offset = p2 + perp * offsetDistance;
+
+        // === Vẽ đường kích thước ===
+        cb.SetLineWidth(0.5f);
+        cb.MoveTo(p1Offset.x, p1Offset.y);
+        cb.LineTo(p2Offset.x, p2Offset.y);
         cb.Stroke();
+
+        // === Vẽ đường gióng ===
+        cb.MoveTo(p1.x, p1.y); cb.LineTo(p1Offset.x, p1Offset.y);
+        cb.MoveTo(p2.x, p2.y); cb.LineTo(p2Offset.x, p2Offset.y);
+        cb.Stroke();
+
+        // === Mũi tên ===
+        float arrowSize = 3f;
+        void DrawArrow(Vector2 pos, Vector2 direction)
+        {
+            Vector2 dir2 = -direction.normalized;
+            Vector2 left = pos - dir2 * arrowSize + new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
+            Vector2 right = pos - dir2 * arrowSize - new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
+            cb.MoveTo(left.x, left.y); cb.LineTo(pos.x, pos.y); cb.LineTo(right.x, right.y);
+            cb.Stroke();
+        }
+        DrawArrow(p1Offset, dir);
+        DrawArrow(p2Offset, -dir);
+
+        // === Vẽ text ===
+        Vector2 midPoint = (p1Offset + p2Offset) * 0.5f;
+        BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
+        cb.BeginText();
+        cb.SetFontAndSize(bf, 7);
+
+        float angle = Mathf.Atan2(perp.y, perp.x) * Mathf.Rad2Deg - 90f;
+        Vector2 textToCenter = (drawingCenter - midPoint).normalized;
+        if (Vector2.Dot(perp, textToCenter) > 0)
+            angle += 180f;
+
+        float textWidth = bf.GetWidthPoint(label, 7);
+        float textHeight = 7f;
+
+        Vector2 finalMidPoint = midPoint;
+        TextRect labelRect;
+
+        if (!isFixedOffset)
+        {
+            int tryCount = 0;
+            int maxTries = 20;
+            float wallClearance = 2f;
+            float spacingStep = 1f;
+            float paddingMargin = 1f;
+
+            Vector2 initialMidPoint = midPoint;
+            Vector2 bestMidPoint = midPoint;
+            float bestDist = float.MinValue;
+            bool success = false;
+
+            for (int pass = 0; pass < 2; pass++)
+            {
+                tryCount = 0;
+                midPoint = initialMidPoint;
+                if (pass == 1) perp *= -1;
+
+                while (tryCount++ < maxTries)
+                {
+                    midPoint = initialMidPoint + perp * (wallClearance + tryCount * spacingStep);
+                    labelRect = new TextRect(
+                        midPoint.x - textWidth / 2f - paddingMargin,
+                        midPoint.y - textHeight / 2f - paddingMargin,
+                        textWidth + 2 * paddingMargin,
+                        textHeight + 2 * paddingMargin
+                    );
+
+                    bool overlapsText = usedTextRects.Any(r => r.Intersects(labelRect));
+                    bool tooCloseToWall = IsTextTooCloseToLine(labelRect, p1, p2);
+
+                    if (!overlapsText && !tooCloseToWall)
+                    {
+                        finalMidPoint = midPoint;
+                        success = true;
+                        break;
+                    }
+
+                    Vector2 center = new Vector2(labelRect.x + labelRect.width / 2f, labelRect.y + labelRect.height / 2f);
+                    Vector2 closest = ClosestPointOnSegment(p1, p2, center);
+                    float dist = Vector2.Distance(center, closest);
+                    if (dist > bestDist)
+                    {
+                        bestDist = dist;
+                        bestMidPoint = midPoint;
+                    }
+                }
+
+                if (success) break;
+            }
+
+            if (!success)
+                finalMidPoint = bestMidPoint;
+        }
+
+        labelRect = new TextRect(
+            finalMidPoint.x - textWidth / 2f,
+            finalMidPoint.y - textHeight / 2f,
+            textWidth,
+            textHeight
+        );
+
+        usedTextRects.Add(labelRect);
+        cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, finalMidPoint.x, finalMidPoint.y, angle);
+        cb.EndText();
     }
 
-    DrawArrow(p1Offset, dir);
-    DrawArrow(p2Offset, -dir);
-
-    // === Vẽ Text ===
-    Vector2 midPoint = (p1Offset + p2Offset) * 0.5f;
-    BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
-    cb.BeginText();
-    cb.SetFontAndSize(bf, 7);
-
-    // === Góc xoay: luôn hướng chữ ra phía cùng với vector `perp` ===
-    float angle = Mathf.Atan2(perp.y, perp.x) * Mathf.Rad2Deg - 90f;
-
-    float textWidth = bf.GetWidthPoint(label, 7);
-    float textHeight = 7f;
-
-    TextRect labelRect = new TextRect(midPoint.x - textWidth / 2f, midPoint.y - textHeight / 2f, textWidth, textHeight);
-    int tryCount = 0;
-    while (usedTextRects.Any(r => r.Intersects(labelRect)) && tryCount++ < 10)
+    static bool IsTextTooCloseToLine(TextRect rect, Vector2 lineStart, Vector2 lineEnd)
     {
-        midPoint += perp * (5f + tryCount * 1.5f);
-        labelRect = new TextRect(midPoint.x - textWidth / 2f, midPoint.y - textHeight / 2f, textWidth, textHeight);
+        float padding = 5f; // ngưỡng khoảng cách tối thiểu cần tránh tường
+
+        // Tính tâm chữ
+        Vector2 textCenter = new Vector2(rect.x + rect.width / 2f, rect.y + rect.height / 2f);
+
+        // Tính khoảng cách từ textCenter đến đoạn thẳng
+        Vector2 closest = ClosestPointOnSegment(lineStart, lineEnd, textCenter);
+        float dist = Vector2.Distance(textCenter, closest);
+
+        return dist < padding;
     }
 
-    usedTextRects.Add(labelRect);
-    cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, midPoint.x, midPoint.y, angle);
-    cb.EndText();
-}
-
+    static Vector2 ClosestPointOnSegment(Vector2 a, Vector2 b, Vector2 p)
+    {
+        Vector2 ab = b - a;
+        float t = Vector2.Dot(p - a, ab) / ab.sqrMagnitude;
+        t = Mathf.Clamp01(t);
+        return a + ab * t;
+    }
 
     static void DrawGridLines(PdfContentByte cb, float spacingX, float spacingY, int countX, int countY,
                     float minX, float minY, float maxX, float maxY)
