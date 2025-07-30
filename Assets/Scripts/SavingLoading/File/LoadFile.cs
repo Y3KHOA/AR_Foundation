@@ -25,16 +25,25 @@ public class LoadFile : MonoBehaviour
 
         foreach (var file in files)
         {
+            string displayName = Path.GetFileNameWithoutExtension(file.fileName);
+            if (dataItemPrefab.TryGetComponent(out StoredDrawUI storedDrawUIPrefab))
+            {
+                StoredDrawUI storedUI = Instantiate(storedDrawUIPrefab, contentParent);
+                string fileName = file.fileName;
+                
+                Setup(storedUI, displayName, fileName);
+
+                continue;
+            }
             GameObject item = Instantiate(dataItemPrefab, contentParent);
 
-            string nameOnly = Path.GetFileNameWithoutExtension(file.fileName);
 
             var texts = item.GetComponentsInChildren<TextMeshProUGUI>();
 
             foreach (var txt in texts)
             {
                 if (txt.name.Contains("Name"))
-                    txt.text = nameOnly;
+                    txt.text = displayName;
                 else if (txt.name.Contains("Date"))
                     txt.text = "Date: " + file.timestamp;
             }
@@ -52,5 +61,23 @@ public class LoadFile : MonoBehaviour
                 
             }
         }
+    }
+
+    private static void Setup(StoredDrawUI storedUI, string displayName, string fileName)
+    {
+        storedUI.nameText.text = displayName;
+        storedUI.fileName = displayName;
+        storedUI.loadBtn.onClick.AddListener(() =>
+        {
+            SaveLoadManager.Load(fileName);
+        });
+        storedUI.editNameBtn.onClick.AddListener(() =>
+        {
+            StoredDrawManager.Instance.ShowChangeNamePanel(storedUI);
+        });
+        storedUI.deleteFileBtn.onClick.AddListener(() =>
+        {
+            StoredDrawManager.Instance.ShowDeletePanel(storedUI);
+        });
     }
 }
