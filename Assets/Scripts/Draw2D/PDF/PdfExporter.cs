@@ -714,24 +714,28 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
         {
             int tryCount = 0;
             int maxTries = 20;
-            float wallClearance = 2f;
-            float spacingStep = 1f;
-            float paddingMargin = 1f;
+            float wallClearance = 4f;      
+            float spacingStep = 1.5f;      // Đẩy xa đều hơn
+            float paddingMargin = 2f;      // Mở rộng vùng né text
+
 
             Vector2 initialMidPoint = midPoint;
             Vector2 bestMidPoint = midPoint;
             float bestDist = float.MinValue;
             bool success = false;
 
+            Vector2 perpOriginal = perp; // ← lưu lại hướng gốc
+
             for (int pass = 0; pass < 2; pass++)
             {
                 tryCount = 0;
+                perp = (pass == 0) ? perpOriginal : -perpOriginal; // dùng lại hướng đúng
                 midPoint = initialMidPoint;
-                if (pass == 1) perp *= -1;
 
                 while (tryCount++ < maxTries)
                 {
                     midPoint = initialMidPoint + perp * (wallClearance + tryCount * spacingStep);
+
                     labelRect = new TextRect(
                         midPoint.x - textWidth / 2f - paddingMargin,
                         midPoint.y - textHeight / 2f - paddingMargin,
@@ -752,6 +756,7 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
                     Vector2 center = new Vector2(labelRect.x + labelRect.width / 2f, labelRect.y + labelRect.height / 2f);
                     Vector2 closest = ClosestPointOnSegment(p1, p2, center);
                     float dist = Vector2.Distance(center, closest);
+
                     if (dist > bestDist)
                     {
                         bestDist = dist;
