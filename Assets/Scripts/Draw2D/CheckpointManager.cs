@@ -452,62 +452,63 @@ public class CheckpointManager : MonoBehaviour
     }
 
     void ToggleConnectionBetweenCheckpoints(GameObject pointA, GameObject pointB)
-{
-    Vector3 start = pointA.transform.position;
-    Vector3 end = pointB.transform.position;
-
-    // === Tìm room chứa cả 2 điểm ===
-    string roomID = FindRoomIDByPoint(start);
-    if (string.IsNullOrEmpty(roomID)) return;
-
-    if (!RoomFloorMap.TryGetValue(roomID, out GameObject floorGO)) return;
-    Room room = RoomStorage.GetRoomByID(roomID);
-    if (room == null) return;
-
-    Vector2 floorOrigin = new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
-    Vector2 localA = new Vector2(start.x, start.z) - floorOrigin;
-    Vector2 localB = new Vector2(end.x, end.z) - floorOrigin;
-
-    // === Thêm vào extraCheckpoints nếu là điểm phụ ===
-    if (pointA.CompareTag("CheckpointExtra") && !room.extraCheckpoints.Any(p => Vector2.Distance(p, localA) < 0.01f))
-        room.extraCheckpoints.Add(localA);
-
-    if (pointB.CompareTag("CheckpointExtra") && !room.extraCheckpoints.Any(p => Vector2.Distance(p, localB) < 0.01f))
-        room.extraCheckpoints.Add(localB);
-
-    // === Kiểm tra xem đã tồn tại line thủ công chưa ===
-    WallLine existingLine = room.wallLines.FirstOrDefault(w =>
-        w.isManualConnection && (
-            (Vector3.Distance(w.start, start) < 0.01f && Vector3.Distance(w.end, end) < 0.01f) ||
-            (Vector3.Distance(w.start, end) < 0.01f && Vector3.Distance(w.end, start) < 0.01f)
-        )
-    );
-
-    if (existingLine != null)
     {
-        room.wallLines.Remove(existingLine);
-        Debug.Log($"[Disconnect] Gỡ nối thủ công {pointA.name} ↔ {pointB.name}");
-    }
-    else
-    {
-        float length = Vector3.Distance(start, end);
-        if (length < 0.01f)
+        Vector3 start = pointA.transform.position;
+        Vector3 end = pointB.transform.position;
+
+        // === Tìm room chứa cả 2 điểm ===
+        string roomID = FindRoomIDByPoint(start);
+        if (string.IsNullOrEmpty(roomID)) return;
+
+        if (!RoomFloorMap.TryGetValue(roomID, out GameObject floorGO)) return;
+        Room room = RoomStorage.GetRoomByID(roomID);
+        if (room == null) return;
+
+        Vector2 localA = new Vector2(start.x, start.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+        Vector2 localB = new Vector2(end.x, end.z) - new Vector2(floorGO.transform.position.x, floorGO.transform.position.z);
+
+        // === Thêm điểm phụ nếu chưa có ===
+        if (!room.extraCheckpoints.Any(p => Vector2.Distance(p, localA) < 0.01f))
+            room.extraCheckpoints.Add(localA);
+        if (!room.extraCheckpoints.Any(p => Vector2.Distance(p, localB) < 0.01f))
+            room.extraCheckpoints.Add(localB);
+
+        // === Kiểm tra xem đã tồn tại line chưa ===
+        WallLine existingLine = room.wallLines.FirstOrDefault(w =>
+            w.isManualConnection && (
+                (Vector3.Distance(w.start, start) < 0.01f && Vector3.Distance(w.end, end) < 0.01f) ||
+                (Vector3.Distance(w.start, end) < 0.01f && Vector3.Distance(w.end, start) < 0.01f)
+            )
+        );
+
+        if (existingLine != null)
         {
-            Debug.LogWarning($"[BỎ QUA] Không tạo line vì độ dài quá nhỏ ({length:F4})");
-            return;
+            float length = Vector3.Distance(existingLine.start, existingLine.end);
+
+            // Nếu độ dài > ngưỡng thì cho phép gỡ, còn nếu =0 thì giữ nguyên
+            if (length > 0.01f)
+            {
+                room.wallLines.Remove(existingLine);
+                Debug.Log($"[Disconnect] Gỡ nối {pointA.name} ↔ {pointB.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"[GIỮ LẠI] Không gỡ vì line = {length:F2} ➜ giữ kết nối.");
+            }
+        }
+        else
+        {
+            // Luôn cho phép tạo line kể cả khi khoảng cách = 0 (do là nối thủ công)
+            WallLine manualLine = new WallLine(start, end, LineType.Wall);
+            manualLine.isManualConnection = true;
+            room.wallLines.Add(manualLine);
+            Debug.Log($"[Connect] Nối thủ công {pointA.name} ↔ {pointB.name}");
         }
 
-        WallLine manualLine = new WallLine(start, end, LineType.Wall);
-        manualLine.isManualConnection = true;
-        room.wallLines.Add(manualLine);
-        Debug.Log($"[Connect] Tạo line thủ công {pointA.name} ↔ {pointB.name}");
+        RoomStorage.UpdateOrAddRoom(room);
+        DrawingTool.ClearAllLines();
+        RedrawAllRooms();
     }
-
-    RoomStorage.UpdateOrAddRoom(room);
-    DrawingTool.ClearAllLines();
-    RedrawAllRooms();
-}
-
 
     public void MoveSelectedCheckpoint()
     {
