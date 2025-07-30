@@ -616,6 +616,7 @@ GameObject:
   - component: {fileID: 6385867396171266789}
   - component: {fileID: 8335248444269868406}
   - component: {fileID: 76539422264461783}
+  - component: {fileID: 7598078273889577569}
   m_Layer: 5
   m_Name: Collapsable Window
   m_TagString: Untagged
@@ -680,6 +681,20 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
+--- !u!114 &7598078273889577569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4564261718865309702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0598e7c5bbfa5c84d8c7ef80b297a211, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  widthScale: 1
+  gridLayoutGroup: {fileID: 76539422264461783}
 --- !u!1 &8249414379763813974
 GameObject:
   m_ObjectHideFlags: 0

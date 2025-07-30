@@ -59,8 +59,8 @@ public class btnByCam : MonoBehaviour
         // if (background != null)
         //     background.SetActive(true); // Hiện GameObject background
 
-        if (buttonBar != null)
-            buttonBar.SetActive(false); // Ẩn toàn bộ Button Bar
+        // if (buttonBar != null)
+        //     buttonBar.SetActive(false); // Ẩn toàn bộ Button Bar
     }
 
     public void OnMeasureClicked()
