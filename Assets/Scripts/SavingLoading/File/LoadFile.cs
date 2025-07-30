@@ -44,7 +44,12 @@ public class LoadFile : MonoBehaviour
             if (btn != null)
             {
                 string fname = file.fileName; // cần copy vào biến để tránh closure bug
-                btn.onClick.AddListener(() => SaveLoadManager.Load(fname));
+                btn.onClick.AddListener(() =>
+                {
+                    SaveLoadManager.Load(fname);
+                    transform.gameObject.SetActive(false);
+                });
+                
             }
         }
     }
