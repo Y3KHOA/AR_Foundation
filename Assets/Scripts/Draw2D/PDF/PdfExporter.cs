@@ -654,78 +654,73 @@ static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
         cb.SetRGBColorStroke(0, 0, 0); // Reset màu
     }
 
-    static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label)
+    // public static Vector2 drawingCenter;
+
+static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label)
+{
+    Vector2 dir = (p2 - p1).normalized;
+    Vector2 perp = new Vector2(-dir.y, dir.x);
+
+    if (Mathf.Abs(offsetDistance) < 0.01f)
+        offsetDistance = Mathf.Clamp(Vector2.Distance(p1, p2) * 0.08f, 20f, 40f);
+
+    Vector2 mid = (p1 + p2) * 0.5f;
+    Vector2 toCenter = (drawingCenter - mid).normalized;
+
+    // Điều chỉnh perp sao cho hướng ra ngoài
+    if (Vector2.Dot(perp, toCenter) > 0)
+        perp *= -1;
+
+    Vector2 p1Offset = p1 + perp * offsetDistance;
+    Vector2 p2Offset = p2 + perp * offsetDistance;
+
+    cb.SetLineWidth(0.5f);
+    cb.MoveTo(p1Offset.x, p1Offset.y);
+    cb.LineTo(p2Offset.x, p2Offset.y);
+    cb.Stroke();
+
+    cb.MoveTo(p1.x, p1.y); cb.LineTo(p1Offset.x, p1Offset.y);
+    cb.MoveTo(p2.x, p2.y); cb.LineTo(p2Offset.x, p2Offset.y);
+    cb.Stroke();
+
+    float arrowSize = 3f;
+    void DrawArrow(Vector2 pos, Vector2 direction)
     {
-        // Tính toán hướng chính và vuông góc
-        Vector2 dir = (p2 - p1).normalized;
-        Vector2 perp = new Vector2(-dir.y, dir.x); // vuông góc 90 độ
-
-        // Tự động đẩy ra ngoài nếu offsetDistance không hợp lý
-        if (Mathf.Abs(offsetDistance) < 0.01f)
-            offsetDistance = Mathf.Clamp(Vector2.Distance(p1, p2) * 0.08f, 20f, 40f); // auto 8% chiều dài
-
-        Vector2 p1Offset = p1 + perp * offsetDistance;
-        Vector2 p2Offset = p2 + perp * offsetDistance;
-
-        // Nếu hướng offset đang đi vào trong (Dot < 0), đảo hướng ra ngoài
-        if (Vector2.Dot(perp, (p1 + p2) / 2f) < 0)
-        {
-            perp *= -1;
-            p1Offset = p1 + perp * offsetDistance;
-            p2Offset = p2 + perp * offsetDistance;
-        }
-
-        // === Vẽ đường kích thước ===
-        cb.SetLineWidth(0.5f);
-        cb.MoveTo(p1Offset.x, p1Offset.y);
-        cb.LineTo(p2Offset.x, p2Offset.y);
+        Vector2 dir2 = -direction.normalized;
+        Vector2 left = pos - dir2 * arrowSize + new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
+        Vector2 right = pos - dir2 * arrowSize - new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
+        cb.MoveTo(left.x, left.y); cb.LineTo(pos.x, pos.y); cb.LineTo(right.x, right.y);
         cb.Stroke();
-
-        // === Vẽ đường gióng ===
-        cb.MoveTo(p1.x, p1.y); cb.LineTo(p1Offset.x, p1Offset.y);
-        cb.MoveTo(p2.x, p2.y); cb.LineTo(p2Offset.x, p2Offset.y);
-        cb.Stroke();
-
-        // === Mũi tên ===
-        float arrowSize = 3f;
-
-        void DrawArrow(Vector2 pos, Vector2 direction)
-        {
-            Vector2 dir2 = -direction.normalized;
-            Vector2 left = pos - dir2 * arrowSize + new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
-            Vector2 right = pos - dir2 * arrowSize - new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
-            cb.MoveTo(left.x, left.y); cb.LineTo(pos.x, pos.y); cb.LineTo(right.x, right.y);
-            cb.Stroke();
-        }
-
-        DrawArrow(p1Offset, dir);
-        DrawArrow(p2Offset, -dir);
-
-        // === Vẽ Text ===
-        Vector2 midPoint = (p1Offset + p2Offset) / 2f;
-        BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
-        cb.BeginText();
-        cb.SetFontAndSize(bf, 7);
-
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-        if (angle > 90f || angle < -90f) angle += 180f;
-
-        // Né chữ đè nhau
-        float textWidth = bf.GetWidthPoint(label, 7);
-        float textHeight = 7f;
-
-        TextRect labelRect = new TextRect(midPoint.x - textWidth / 2f, midPoint.y - textHeight / 2f, textWidth, textHeight);
-        int tryCount = 0;
-        while (usedTextRects.Any(r => r.Intersects(labelRect)) && tryCount++ < 10)
-        {
-            midPoint += perp * (5f + tryCount * 1.5f);
-            labelRect = new TextRect(midPoint.x - textWidth / 2f, midPoint.y - textHeight / 2f, textWidth, textHeight);
-        }
-
-        usedTextRects.Add(labelRect);
-        cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, midPoint.x, midPoint.y, angle);
-        cb.EndText();
     }
+
+    DrawArrow(p1Offset, dir);
+    DrawArrow(p2Offset, -dir);
+
+    // === Vẽ Text ===
+    Vector2 midPoint = (p1Offset + p2Offset) * 0.5f;
+    BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
+    cb.BeginText();
+    cb.SetFontAndSize(bf, 7);
+
+    // === Góc xoay: luôn hướng chữ ra phía cùng với vector `perp` ===
+    float angle = Mathf.Atan2(perp.y, perp.x) * Mathf.Rad2Deg - 90f;
+
+    float textWidth = bf.GetWidthPoint(label, 7);
+    float textHeight = 7f;
+
+    TextRect labelRect = new TextRect(midPoint.x - textWidth / 2f, midPoint.y - textHeight / 2f, textWidth, textHeight);
+    int tryCount = 0;
+    while (usedTextRects.Any(r => r.Intersects(labelRect)) && tryCount++ < 10)
+    {
+        midPoint += perp * (5f + tryCount * 1.5f);
+        labelRect = new TextRect(midPoint.x - textWidth / 2f, midPoint.y - textHeight / 2f, textWidth, textHeight);
+    }
+
+    usedTextRects.Add(labelRect);
+    cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, midPoint.x, midPoint.y, angle);
+    cb.EndText();
+}
+
 
     static void DrawGridLines(PdfContentByte cb, float spacingX, float spacingY, int countX, int countY,
                     float minX, float minY, float maxX, float maxY)
