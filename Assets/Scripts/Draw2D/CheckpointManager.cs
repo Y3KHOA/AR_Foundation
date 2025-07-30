@@ -45,7 +45,7 @@ public class CheckpointManager : MonoBehaviour
     public Dictionary<string, List<GameObject>> placedPointsByRoom = new();
     public Dictionary<string, GameObject> RoomFloorMap = new(); // roomID → floor GameObject
 
-    private float closeThreshold = 0.5f; // Khoảng cách tối đa để chọn điểm
+    private float closeThreshold = 0.1f; // Khoảng cách tối đa để chọn điểm
     private Vector3 previewPosition; // Vị trí preview
 
     private WallLine selectedWallLineForDoor; // đoạn tường được chọn
