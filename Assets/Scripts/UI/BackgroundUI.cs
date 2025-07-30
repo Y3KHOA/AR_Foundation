@@ -44,10 +44,10 @@ public class BackgroundUI : MonoBehaviour
 
     private void SceneManagerOnsceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
-        TryInitBackground();
-        canvas = GameObject.FindFirstObjectByType<Canvas>();
-        background.gameObject.transform.parent = canvas.transform;
-        ResetEverything();
+        // TryInitBackground();
+        // canvas = GameObject.FindFirstObjectByType<Canvas>();
+        // background.gameObject.transform.parent = canvas.transform;
+        // ResetEverything();
     }
 
     private Coroutine playDelayCoroutine;
