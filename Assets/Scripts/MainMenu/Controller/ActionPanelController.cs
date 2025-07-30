@@ -20,8 +20,10 @@ public class ActionPanelController : MonoBehaviour
         // btnCancelDelete.onClick.AddListener(CloseDeletePanel);
 
         // Ẩn panel lúc đầu
-        panelEdit.SetActive(false);
-        panelDelete.SetActive(false);
+        if(panelEdit)
+            panelEdit.SetActive(false);
+        if(panelDelete)
+            panelDelete.SetActive(false);
     }
 
     void OnEditClicked()
