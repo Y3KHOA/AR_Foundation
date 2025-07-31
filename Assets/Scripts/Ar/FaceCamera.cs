@@ -12,10 +12,10 @@ public class FaceCamera : MonoBehaviour
 
     void Update()
     {
-        if (mainCamera != null)
-        {
-            transform.LookAt(mainCamera.transform); // Nhìn về phía camera
-            transform.Rotate(0, 180, 0); // Quay ngược lại để tránh bị ngược chữ
-        }
+        // if (mainCamera != null)
+        // {
+        //     transform.LookAt(mainCamera.transform); // Nhìn về phía camera
+        //     transform.Rotate(0, 180, 0); // Quay ngược lại để tránh bị ngược chữ
+        // }
     }
 }

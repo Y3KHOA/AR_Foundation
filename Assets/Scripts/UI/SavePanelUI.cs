@@ -21,7 +21,7 @@ public class SavePanelUI : MonoBehaviour
 
     private void Awake()
     {
-        //closeBtn.onClick.AddListener(Close);
+        closeBtn.onClick.AddListener(Close);
         confirmBtn.onClick.AddListener(() => Show());
         confirmBtn.onClick.AddListener(() => Confirm());
         Close();

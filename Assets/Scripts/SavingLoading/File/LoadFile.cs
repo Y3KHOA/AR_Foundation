@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
@@ -14,7 +16,7 @@ public class LoadFile : MonoBehaviour
     {
         LoadAllSavedFiles();
     }
-
+    
     public void LoadAllSavedFiles()
     {
         // Xoá các mục cũ trong danh sách
@@ -22,7 +24,7 @@ public class LoadFile : MonoBehaviour
             Destroy(child.gameObject);
 
         List<JsonFileInfo> files = SaveLoadManager.GetAllSavedFileInfos();
-
+        files.Sort();
         foreach (var file in files)
         {
             string displayName = Path.GetFileNameWithoutExtension(file.fileName);
@@ -45,7 +47,7 @@ public class LoadFile : MonoBehaviour
                 if (txt.name.Contains("Name"))
                     txt.text = displayName;
                 else if (txt.name.Contains("Date"))
-                    txt.text = "Date: " + file.timestamp;
+                    txt.text = "Thời gian tạo: \n" + file.timestamp;
             }
 
             // Nếu prefab có Button, cho phép click để Load
