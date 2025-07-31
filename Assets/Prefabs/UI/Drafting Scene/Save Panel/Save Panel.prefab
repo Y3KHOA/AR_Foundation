@@ -9,13 +9,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8158950241249983140}
+  - component: {fileID: 7259314624254773484}
   m_Layer: 5
   m_Name: Conntaner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8158950241249983140
 RectTransform:
   m_ObjectHideFlags: 0
@@ -36,6 +37,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7259314624254773484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1750647123925395874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22279588c42e4c76aef8264161ccc458, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3124093750872714460
 GameObject:
   m_ObjectHideFlags: 0
@@ -46,7 +59,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3138909291708056695}
   - component: {fileID: 3176601182341204956}
-  - component: {fileID: 5218726811876358778}
   m_Layer: 5
   m_Name: Save Panel
   m_TagString: Untagged
@@ -94,18 +106,6 @@ MonoBehaviour:
   savePanelContainer: {fileID: 1750647123925395874}
   successPopup: {fileID: 5976365203264521915}
   failedPopup: {fileID: 2152319988455686780}
---- !u!114 &5218726811876358778
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3124093750872714460}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22279588c42e4c76aef8264161ccc458, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &2143016488772571281
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -850,6 +850,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4142184731311030385, guid: 8071bcc990bd2734d903aa5c506a1a03,
+        type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4142184731311030385, guid: 8071bcc990bd2734d903aa5c506a1a03,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: fcbea4e32a20d5245bae7a94cb8e1268,
+        type: 3}
+    - target: {fileID: 4142184731311030385, guid: 8071bcc990bd2734d903aa5c506a1a03,
+        type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1.28
+      objectReference: {fileID: 0}
     - target: {fileID: 5285982691393355026, guid: 8071bcc990bd2734d903aa5c506a1a03,
         type: 3}
       propertyPath: m_Name
@@ -859,6 +875,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 100.200195
+      objectReference: {fileID: 0}
+    - target: {fileID: 8251459096230431354, guid: 8071bcc990bd2734d903aa5c506a1a03,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8972294832497849886, guid: 8071bcc990bd2734d903aa5c506a1a03,
         type: 3}

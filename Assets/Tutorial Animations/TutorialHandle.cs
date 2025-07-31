@@ -41,6 +41,9 @@ public class TutorialHandle : MonoBehaviour
     private void Start()
     {
         mainCam = Camera.main;
+
+        if (mainCam == null) return;
+        
         originalScale = tutorial.transform.localScale;
         originalSize = mainCam.orthographicSize;
         if (HasSeenTutorial == 0)
@@ -67,6 +70,7 @@ public class TutorialHandle : MonoBehaviour
 
     private void SetToCenterOfCamera()
     {
+        if (mainCam == null) return;
         var center = mainCam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f));
     }
     

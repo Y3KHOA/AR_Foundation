@@ -14,17 +14,18 @@ public class ButtonDeleteAllRoomsHandler : MonoBehaviour
     
     public void OnClickDelete()
     {
-        var popup = Instantiate(ModularPopup.Prefab);
-        popup.AutoFindCanvasAndSetup();
-        popup.Header = PopupWarning;
-        popup.ClickYesEvent = OnConfirmDelete;
-        popup.ClickNoEvent = OnCancelDelete;
-        popup.EventWhenClickButtons = () =>
-        {
-            BackgroundUI.Instance.Hide();
-        };
-        popup.autoClearWhenClick = true;
-        BackgroundUI.Instance.Show(popup.gameObject,null);
+        panelDeleteConfirm.gameObject.SetActive(true);
+        // var popup = Instantiate(ModularPopup.Prefab);
+        // popup.AutoFindCanvasAndSetup();
+        // popup.Header = PopupWarning;
+        // popup.ClickYesEvent = OnConfirmDelete;
+        // popup.ClickNoEvent = OnCancelDelete;
+        // popup.EventWhenClickButtons = () =>
+        // {
+        //     BackgroundUI.Instance.Hide();
+        // };
+        // popup.autoClearWhenClick = true;
+        // BackgroundUI.Instance.Show(popup.gameObject,null);
     }
 
     // Gọi khi nhấn "Xác nhận" trong panel

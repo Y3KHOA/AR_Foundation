@@ -279,9 +279,9 @@ RectTransform:
   - {fileID: 8053778109031311658}
   m_Father: {fileID: 3861808825892160321}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -274, y: -154.3}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 152, y: -145}
   m_SizeDelta: {x: 200, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3169575216592553949
@@ -693,8 +693,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0598e7c5bbfa5c84d8c7ef80b297a211, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  widthScale: 1
-  gridLayoutGroup: {fileID: 76539422264461783}
+  widthPercent: 0.9
+  heightPercent: 0.09
+  useScreenSize: 0
 --- !u!1 &8249414379763813974
 GameObject:
   m_ObjectHideFlags: 0

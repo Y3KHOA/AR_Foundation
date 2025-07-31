@@ -53,7 +53,7 @@ public class LoadRoomScan : MonoBehaviour
                 {
                     PlayerPrefs.SetString("SelectedRoomID", capturedID);
                     SceneManager.LoadScene("AR");
-                    btnByCam.Instance.OnMeasureClicked();
+                    // btnByCam.Instance.OnMeasureClicked();
                 });
             }
         }
