@@ -51,6 +51,7 @@ public class CheckpointManager : MonoBehaviour
 
     private WallLine selectedWallLineForDoor; // đoạn tường được chọn
     private Room selectedRoomForDoor;
+    private Room currentRoom; // Room hiện tại vừa được tạo khi vẽ loop
 
     private Vector3? firstDoorPoint = null; // lưu P1
 
@@ -188,6 +189,8 @@ public class CheckpointManager : MonoBehaviour
                 existingRoom.extraCheckpoints.Add(local2D); // dùng local tọa độ chuẩn
                 RoomStorage.UpdateOrAddRoom(existingRoom);
                 Debug.Log($"Đã thêm checkpoint phụ vào Room {roomID}");
+
+                // currentRoom = existingRoom;
             }
         }
     }
@@ -508,6 +511,8 @@ public class CheckpointManager : MonoBehaviour
         RoomStorage.UpdateOrAddRoom(room);
         DrawingTool.ClearAllLines();
         RedrawAllRooms();
+
+        DetectAndSplitRoomIfNecessary(room);
     }
 
     public void MoveSelectedCheckpoint()
@@ -636,7 +641,7 @@ public class CheckpointManager : MonoBehaviour
                     Vector3 direction = Quaternion.Euler(0, 137f, 0) * Vector3.forward;
                     line.start = newPosition - direction * 0.001f;
                     line.end = newPosition + direction * 0.001f;
-                    Debug.LogWarning($"[⚠️ Auto-fix] Manual line degenerate (start==end). Cưỡng bức kéo rộng tại vị trí: {newPosition}");
+                    Debug.LogWarning($"[Auto-fix] Manual line degenerate (start==end). Cưỡng bức kéo rộng tại vị trí: {newPosition}");
                 }
             }
 
@@ -693,6 +698,45 @@ public class CheckpointManager : MonoBehaviour
             break;
         }
     }
+    
+    private void DetectAndSplitRoomIfNecessary(Room originalRoom)
+{
+    // B1: Tạo edges từ wallLines (chính + thủ công)
+    List<(Vector2, Vector2)> edges = new();
+    foreach (var wall in originalRoom.wallLines)
+    {
+        Vector2 a = new Vector2(wall.start.x, wall.start.z);
+        Vector2 b = new Vector2(wall.end.x, wall.end.z);
+        edges.Add((a, b));
+    }
+
+    // B2: Tìm vòng kín chỉ dựa trên edges thật sự
+    List<List<Vector2>> loops = GeometryUtils.FindClosedPolygons(edges);
+    Debug.Log($"[SSSSSSS] Số vòng kín thực tế: {loops.Count}");
+
+    // B3: Tách room nếu có vòng phụ
+    foreach (var loop in loops)
+    {
+            // if (IsSamePolygon(loop, originalRoom.checkpoints)) continue;
+        if (GeometryUtils.ArePolygonsEqual(loop, originalRoom.checkpoints)) continue;
+
+
+        Room newRoom = new Room
+        {
+            groupID = originalRoom.groupID,
+            checkpoints = loop
+        };
+
+        RoomStorage.UpdateOrAddRoom(newRoom);
+        Debug.Log($"[TÁCH ROOM] Room mới: {newRoom.ID} từ group: {newRoom.groupID}");
+    }
+}
+
+    private bool IsSamePolygon(List<Vector2> a, List<Vector2> b)
+    {
+        return GeometryUtils.ArePolygonsEqual(a, b);
+    }
+
 
     public bool MoveSelectedCheckpointExtra()
     {
@@ -773,6 +817,14 @@ public class CheckpointManager : MonoBehaviour
             if (nearestExtraIndex != -1)
                 room.extraCheckpoints.RemoveAt(nearestExtraIndex);
 
+            if (placedPointsByRoom.TryGetValue(room.ID, out var checkpointList))
+            {
+                checkpointList.RemoveAll(go =>
+                        go != null &&
+                        go.CompareTag("CheckpointExtra") &&
+                        Vector3.Distance(go.transform.position, oldWorldPos) < 0.05f
+                    );
+            }
             Vector3 worldPosAfterMove = RoomToWorld(local2D, floorGO);
 
             // Step 2: Update manual lines that connect to oldWorldPos
@@ -836,6 +888,8 @@ public class CheckpointManager : MonoBehaviour
             floorGO.GetComponent<RoomMeshController>()?.GenerateMesh(room.checkpoints);
             DrawingTool.ClearAllLines();
             RedrawAllRooms();
+            
+            DetectAndSplitRoomIfNecessary(room);
             return true;
         }
         else

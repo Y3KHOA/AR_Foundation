@@ -43,6 +43,11 @@ public static class RoomStorage
         return null;
     }
 
+    public static List<Room> GetRoomsByGroupID(string groupID)
+    {
+        return rooms.Where(r => r.groupID == groupID).ToList();
+    }
+
     public static void CheckDuplicateRoomID()
     {
         Debug.Log("Room Count: " + rooms.Count);
