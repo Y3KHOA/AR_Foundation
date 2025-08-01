@@ -30,7 +30,8 @@ public class CreateRectangularCommand : IUndoRedoCommand
         roomFloorMap.Remove(roomID);
         
         checkPointManager.RedrawAllRooms();
-        checkPointManager.DrawingTool.ClearAllLines();
+        checkPointManager.DrawingTool.DrawAllLinesFromRoomStorage();
+        // checkPointManager.DrawingTool.ClearAllLines();
         
     }
 
@@ -57,5 +58,16 @@ public class CreateRectangularCommand : IUndoRedoCommand
 
             checkPointManager.AllCheckpoints.Remove(mapping);
         }
+    }
+}
+
+public class Delete_RoomData
+{
+    public readonly Room room;
+    public Vector3 position;
+    public Delete_RoomData(Room room, Vector3 position)
+    {
+        this.room = new Room(room);
+        this.position = position;
     }
 }
