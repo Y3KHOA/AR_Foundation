@@ -204,12 +204,8 @@ public class RoomMeshController : MonoBehaviour
             gameObject.AddComponent<MeshCollider>();
 
         // Đảm bảo đăng ký lại RoomFloorMap
-        var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
-        if (checkpointMgr != null && !checkpointMgr.RoomFloorMap.ContainsKey(RoomID))
-        {
-            checkpointMgr.RoomFloorMap[RoomID] = this.gameObject;
-            Debug.Log($"Đã tự động đăng ký RoomFloorMap[{RoomID}] = {gameObject.name}");
-        }
+        checkPointManager.RoomFloorMap[RoomID] = this.gameObject;
+        Debug.Log($"Đã tự động đăng ký RoomFloorMap[{RoomID}] = {gameObject.name}");
     }
 
     public void GenerateMesh(List<Vector2> checkpoints)

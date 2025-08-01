@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -69,21 +70,30 @@ public class ClearAllRoomsButton : MonoBehaviour
         // );
     }
 
-    void ClearEverything()
+    public void ClearEverything(bool isCreateCommand = true)
     {
         if(!roomInfoDisplay)
             roomInfoDisplay = FindFirstObjectByType<RoomInfoDisplay>();
-
-        // 1) Xóa Room trong RoomStorage
-        RoomStorage.rooms.Clear();
-
+        // đảm bảo không tạo lệnh dư thừa
+        if (RoomStorage.rooms.Count == 0)
+        {
+            isCreateCommand = false;
+        }
         // 2) Xóa mesh floor
         // var floors = GameObject.FindObjectsOfType<RoomMeshController>();
+        List<Delete_RoomData> deleteRoomDataList = new();
         var floors = GameObject.FindObjectsByType<RoomMeshController>(FindObjectsSortMode.None);    
         foreach (var floor in floors)
         {
+            if (isCreateCommand)
+            {
+                var deleteRoomData = new Delete_RoomData(new Room(RoomStorage.GetRoomByID(floor.RoomID)),floor.transform.position);
+                deleteRoomDataList.Add(deleteRoomData);
+            }
             Destroy(floor.gameObject);
         }
+        // 1) Xóa Room trong RoomStorage
+        RoomStorage.rooms.Clear();
 
         // 3) Xóa checkpoints prefab
         foreach (var loop in checkpointManager.AllCheckpoints)
@@ -106,6 +116,11 @@ public class ClearAllRoomsButton : MonoBehaviour
         Debug.Log("Đã xóa toàn bộ Room, checkpoint, mesh, line!");
         drawingTool.currentLineType = LineType.Wall;
 
-        UndoRedoController.Instance.ClearData();
+        if (isCreateCommand)
+        {
+            DeleteAllRoomCommand deleteAllRoomCommand = new DeleteAllRoomCommand(deleteRoomDataList);
+            deleteAllRoomCommand.ClearAllRoom = this;
+            UndoRedoController.Instance.AddToUndo(deleteAllRoomCommand);
+        }
     }
 }

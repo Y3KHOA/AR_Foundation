@@ -1732,11 +1732,7 @@ public class CheckpointManager : MonoBehaviour
         List<Vector3> corners = new List<Vector3> { p1, p2, p3, p4 };
 
         // Tạo checkpoint prefab tại từng góc
-        foreach (Vector3 pos in corners)
-        {
-            var cp = Instantiate(checkpointPrefab, pos, Quaternion.identity);
-            currentCheckpoints.Add(cp);
-        }
+        CreateCheckPointGameObject(corners);
 
         // Tạo wallLines & vẽ line
         for (int i = 0; i < currentCheckpoints.Count; i++)
@@ -1770,17 +1766,14 @@ public class CheckpointManager : MonoBehaviour
         }
 
         newRoom.wallLines.AddRange(wallLines);
+        
         RoomStorage.rooms.Add(newRoom);
 
         // Tạo mesh sàn
-        GameObject floorGO = new GameObject($"RoomFloor_{newRoom.ID}");
-        RoomMeshController meshCtrl = floorGO.AddComponent<RoomMeshController>();
-        meshCtrl.Initialize(newRoom.ID);
+        CreateRoomMeshCtrl(newRoom,center);
 
         // Ánh xạ loop
-        List<GameObject> loopRef = new List<GameObject>(currentCheckpoints);
-        allCheckpoints.Add(loopRef);
-        loopMappings.Add(new LoopMap(newRoom.ID, loopRef));
+        AddGameObjectCheckPointToGlobalVariable(newRoom.ID, currentCheckpoints);
 
         currentCheckpoints.Clear();
         wallLines.Clear();
@@ -1796,6 +1789,64 @@ public class CheckpointManager : MonoBehaviour
         data.RoomID = newRoom.ID;
         data.position = center;
         UndoRedoController.Instance.AddToUndo(new CreateRectangularCommand(data));
+    }
+
+    public void CreateRoomByRoomData(Room room,Vector3 position)
+    {
+        // chuyển đổi list sang vector3
+        Debug.Log("Create Room by room data: "+room.ID);
+        var convertList = new List<Vector3>();
+        foreach(var item in room.checkpoints)
+        {
+            Vector3 pos = new Vector3(item.x, 0, item.y);
+            convertList.Add(pos);
+        }
+        // tạo check dạng game object
+        CreateCheckPointGameObject(convertList);
+    
+        // vẽ line dữa theo wall line
+        foreach (WallLine item in room.wallLines)
+        {
+            Debug.Log($"Start {item.start} End{item.end}");
+            DrawingTool.DrawLineAndDistance(item.start, item.end);
+        }
+        // đảm bảo data trong command độc lập với data runtime
+        RoomStorage.rooms.Add(new Room(room));
+
+        // thêm list game object check point vào global data
+        AddGameObjectCheckPointToGlobalVariable(room.ID, currentCheckpoints);
+        // init floor mesh 
+        CreateRoomMeshCtrl(room,position);
+        
+        
+        currentCheckpoints.Clear();
+        wallLines.Clear();
+        
+        DrawingTool.DrawAllLinesFromRoomStorage();
+    }
+
+    private void CreateCheckPointGameObject(List<Vector3> corners)
+    {
+        foreach (Vector3 pos in corners)
+        {
+            var cp = Instantiate(checkpointPrefab, pos, Quaternion.identity);
+            currentCheckpoints.Add(cp);
+        }
+    }
+
+    private void AddGameObjectCheckPointToGlobalVariable(string roomID,List<GameObject> checkPoints)
+    {
+        List<GameObject> loopRef = new List<GameObject>(checkPoints);
+        allCheckpoints.Add(loopRef);
+        loopMappings.Add(new LoopMap(roomID, loopRef));
+    }
+
+    private void CreateRoomMeshCtrl(Room newRoom,Vector3 position)
+    {
+        GameObject floorGO = new GameObject($"RoomFloor_{newRoom.ID}");
+        RoomMeshController meshCtrl = floorGO.AddComponent<RoomMeshController>();
+        meshCtrl.Initialize(newRoom.ID);
+        floorGO.transform.position = position;
     }
 
 }

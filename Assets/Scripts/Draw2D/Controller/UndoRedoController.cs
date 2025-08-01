@@ -5,14 +5,17 @@ public class UndoRedoController : MonoBehaviour
 {
     public static UndoRedoController Instance;
 
-    private Stack<IUndoRedoCommand> undoStack;
-    private Stack<IUndoRedoCommand> redoStack;
-
+    [SerializeField] private int maxStackCount = 20;
+    
+    private List<IUndoRedoCommand> undoList;
+    private List<IUndoRedoCommand> redoList;
+    
     private void Awake()
     {
         Instance = this;
-        undoStack = new Stack<IUndoRedoCommand>();
-        redoStack = new Stack<IUndoRedoCommand>();
+
+        undoList = new List<IUndoRedoCommand>();
+        redoList = new List<IUndoRedoCommand>();
     }
 #if UNITY_EDITOR
     private void Update()
@@ -36,33 +39,42 @@ public class UndoRedoController : MonoBehaviour
     public void AddToUndo(IUndoRedoCommand command)
     {
         Debug.Log("Add to undo stack");
-        undoStack.Push(command);
-        redoStack.Clear(); // Clear redo khi có hành động mới
+
+        undoList.Add(command);
+        
+        redoList.Clear(); // Clear redo khi có hành động mới
+     
+        if (undoList.Count > maxStackCount)
+        {
+            Debug.Log("Số lượng command vượt quá số lượng tối đa, đã xóa command trễ nhất");
+            undoList.RemoveAt(0);
+        }
+        
     }
 
     public void Undo()
     {
-        if (undoStack.Count == 0) return;
+        if (undoList.Count == 0) return;
 
-        var command = undoStack.Pop();
-        Debug.Log("Undo");
+        IUndoRedoCommand command = undoList[^1];
+        undoList.Remove(command);
         command.Undo();
-        redoStack.Push(command);
+        redoList.Add(command);
     }
 
     public void Redo()
     {
-        if (redoStack.Count == 0) return;
+        if (redoList.Count == 0) return;
 
-        var command = redoStack.Pop();
-        Debug.Log("Redo");
+        IUndoRedoCommand command = redoList[^1];
+        redoList.Remove(command);
         command.Redo();
-        undoStack.Push(command);
+        undoList.Add(command);
     }
 
     public void ClearData()
     {
-        undoStack.Clear();
-        redoStack.Clear();
+        undoList.Clear();
+        redoList.Clear();
     }
 }
