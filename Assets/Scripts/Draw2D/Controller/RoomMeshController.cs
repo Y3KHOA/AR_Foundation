@@ -76,6 +76,11 @@ public class RoomMeshController : MonoBehaviour
     // Hàm di chuyển Room theo vị trí chạm for Android
     void DragRoom(Vector2 screenPos)
     {
+        
+        if (this == null || !this) return;                // Đã bị destroy
+        if (gameObject == null || !gameObject.activeInHierarchy) return;
+        if (transform == null) return;
+
         if (IsClickingOnBackgroundBlackUI(Input.mousePosition))
         {
             Debug.Log("Đang nhấn Background Black ➜ Không move Mesh");
@@ -129,7 +134,7 @@ public class RoomMeshController : MonoBehaviour
                         {
                             if (child.CompareTag("CheckpointExtra")) // <-- tag riêng cho point phụ
                             {
-                                Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
+                                // Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
                                 // child.position += delta;
                             }
                         }
@@ -163,7 +168,7 @@ public class RoomMeshController : MonoBehaviour
         }
     }
 
-    public void Initialize(string roomID)
+    public void Initialize(string roomID, Color color = default)
     {
         RoomID = roomID;
 
@@ -187,6 +192,9 @@ public class RoomMeshController : MonoBehaviour
             // floorMaterial = new Material(Shader.Find("Standard"));
             floorMaterial = new Material(Shader.Find("Unlit/Color"));
             // floorMaterial.color = Color.red; // Đổi sang đỏ
+            Color usedColor = (color == default) ? Color.red : color;
+            floorMaterial.color = usedColor;
+
         }
 
         meshRenderer.material = floorMaterial;
@@ -319,6 +327,8 @@ public class RoomMeshController : MonoBehaviour
     
     private void OnMouseDrag()
     {
+        if (this == null || gameObject == null || transform == null)
+            return;
         if (!PenManager.isPenActive) return;
         if (!isDragging) return;
         DragRoom(Input.mousePosition);

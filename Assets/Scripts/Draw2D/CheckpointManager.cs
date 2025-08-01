@@ -447,6 +447,11 @@ public class CheckpointManager : MonoBehaviour
                 {
                     selectedNormalCheckpoint = null;
                 }
+                else                                                
+                {
+                    ToggleConnectionBetweenCheckpoints(selectedNormalCheckpoint, nearestCheckpoint);
+                    selectedNormalCheckpoint = null;
+                }
             }
             return true;
         }
@@ -570,6 +575,8 @@ public class CheckpointManager : MonoBehaviour
             bool isDuplicate = false;
 
             // ======= PHẦN 1: Cập nhật checkpoints chính =======
+            List<Vector2> newCheckpoints = new();
+
             for (int i = 0; i < loop.Count; i++)
             {
                 Vector3 pos = loop[i].transform.position;
@@ -587,7 +594,13 @@ public class CheckpointManager : MonoBehaviour
 
                 if (isDuplicate) break;
 
-                room.checkpoints[i] = new Vector2(pos.x, pos.z);
+                newCheckpoints.Add(new Vector2(pos.x, pos.z));
+            }
+
+            // Gán mới toàn bộ nếu hợp lệ
+            if (!isDuplicate)
+            {
+                room.checkpoints = newCheckpoints;
             }
 
             // ======= PHẦN 2: Nếu không duplicate, update wallLines =======
@@ -698,45 +711,155 @@ public class CheckpointManager : MonoBehaviour
             break;
         }
     }
-    
+
     private void DetectAndSplitRoomIfNecessary(Room originalRoom)
-{
-    // B1: Tạo edges từ wallLines (chính + thủ công)
-    List<(Vector2, Vector2)> edges = new();
-    foreach (var wall in originalRoom.wallLines)
     {
-        Vector2 a = new Vector2(wall.start.x, wall.start.z);
-        Vector2 b = new Vector2(wall.end.x, wall.end.z);
-        edges.Add((a, b));
-    }
+        if (originalRoom == null) return;
 
-    // B2: Tìm vòng kín chỉ dựa trên edges thật sự
-    List<List<Vector2>> loops = GeometryUtils.FindClosedPolygons(edges);
-    Debug.Log($"[SSSSSSS] Số vòng kín thực tế: {loops.Count}");
+        var allLoops = GeometryUtils.ListLoopsInRoom(originalRoom);
+        if (allLoops.Count <= 1) return;
 
-    // B3: Tách room nếu có vòng phụ
-    foreach (var loop in loops)
-    {
-            // if (IsSamePolygon(loop, originalRoom.checkpoints)) continue;
-        if (GeometryUtils.ArePolygonsEqual(loop, originalRoom.checkpoints)) continue;
+        float originalArea = GeometryUtils.AbsArea(originalRoom.checkpoints);
+        const float AREA_EPS = 0.001f;          // ± sai số m²
 
+        // Loại outer-loop & loop trùng chính xác (cw/ccw)
+        var innerLoops = allLoops
+            .Where(lp =>
+                !GeometryUtils.IsSamePolygonFlexible(lp, originalRoom.checkpoints) &&
+                Mathf.Abs(GeometryUtils.AbsArea(lp) - originalArea) > AREA_EPS)
+            .ToList();
 
-        Room newRoom = new Room
+        // Khử trùng lặp giữa các loop con
+        List<List<Vector2>> uniqueLoops = new();
+        foreach (var lp in innerLoops)
+            if (!uniqueLoops.Any(u => GeometryUtils.IsSamePolygonFlexible(u, lp)))
+                uniqueLoops.Add(lp);
+
+        if (uniqueLoops.Count == 0) return;      // không còn gì để tách
+
+        string gid = originalRoom.ID;
+        var backupWalls = originalRoom.wallLines.Select(w => new WallLine(w)).ToList();
+        var backupExtras = originalRoom.extraCheckpoints.ToList();
+
+        // Gán lại room gốc = loop[0]
+        var loop0 = uniqueLoops[0];
+        originalRoom.groupID = gid;
+        originalRoom.checkpoints = loop0;
+        originalRoom.wallLines = backupWalls
+            .Where(w => GeometryUtils.EdgeInLoop(loop0,
+                             new Vector2(w.start.x, w.start.z),
+                             new Vector2(w.end.x, w.end.z)))
+            .Select(w => new WallLine(w)).ToList();
+        originalRoom.extraCheckpoints = backupExtras
+            .Where(p => GeometryUtils.PointInPolygon(p, loop0)).ToList();
+        RoomStorage.UpdateOrAddRoom(originalRoom);
+
+        // Các room mới
+        for (int i = 1; i < uniqueLoops.Count; i++)
         {
-            groupID = originalRoom.groupID,
-            checkpoints = loop
-        };
+            var lp = uniqueLoops[i];
+            Room r = new Room();
+            r.SetID(Guid.NewGuid().ToString());
+            r.groupID = gid;
+            r.checkpoints = lp;
+            r.wallLines = backupWalls
+                .Where(w => GeometryUtils.EdgeInLoop(lp,
+                                 new Vector2(w.start.x, w.start.z),
+                                 new Vector2(w.end.x, w.end.z)))
+                .Select(w => new WallLine(w)).ToList();
+            r.extraCheckpoints = backupExtras
+                .Where(p => GeometryUtils.PointInPolygon(p, lp)).ToList();
+            RoomStorage.UpdateOrAddRoom(r);
+        }
 
-        RoomStorage.UpdateOrAddRoom(newRoom);
-        Debug.Log($"[TÁCH ROOM] Room mới: {newRoom.ID} từ group: {newRoom.groupID}");
+        // Vẽ lại
+        var rooms = RoomStorage.GetRoomsByGroupID(gid);
+        Color[] palette = { new(1f, .95f, .6f), new(.7f,1f,.7f),
+                        new(.7f,.9f,1f),    new(1f,.75f,.85f) };
+        DrawingTool.ClearAllLines();
+        ClearAllRoomVisuals();
+        RebuildSplitRoom(rooms, palette);
     }
-}
-
-    private bool IsSamePolygon(List<Vector2> a, List<Vector2> b)
+    void ClearAllRoomVisuals()
     {
-        return GeometryUtils.ArePolygonsEqual(a, b);
-    }
+        foreach (var loop in allCheckpoints)
+            foreach (var cp in loop)
+                Destroy(cp);
+        allCheckpoints.Clear();
+        loopMappings.Clear();
 
+        foreach (var go in GameObject.FindGameObjectsWithTag("RoomFloor"))
+            Destroy(go);
+
+        foreach (var kv in tempDoorWindowPoints)
+            foreach (var (_, p1, p2) in kv.Value)
+            {
+                Destroy(p1);
+                Destroy(p2);
+            }
+
+        tempDoorWindowPoints.Clear();
+    }
+    void RebuildSplitRoom(List<Room> rooms, Color[] colors = null)
+    {
+        if (rooms == null || rooms.Count == 0)
+        {
+            Debug.Log("Không có Room nào để hiển thị.");
+            return;
+        }
+
+        allCheckpoints.Clear();
+        loopMappings.Clear();
+        tempDoorWindowPoints.Clear();
+
+        for (int i = 0; i < rooms.Count; i++)
+        {
+            Room room = rooms[i];
+
+            // === Tạo lại checkpoint GameObject từ room.checkpoints
+            List<GameObject> loopGO = new List<GameObject>();
+            foreach (var pt in room.checkpoints)
+            {
+                Vector3 worldPos = new Vector3(pt.x, 0, pt.y);
+                GameObject cp = Instantiate(checkpointPrefab, worldPos, Quaternion.identity);
+                loopGO.Add(cp);
+            }
+
+            allCheckpoints.Add(loopGO);
+            loopMappings.Add(new LoopMap(room.ID, loopGO));
+
+            // === Tạo lại mesh sàn
+            GameObject floorGO = new GameObject($"RoomFloor_{room.ID}");
+            floorGO.transform.position = Vector3.zero;
+            var meshCtrl = floorGO.AddComponent<RoomMeshController>();
+
+            Color floorColor = (colors != null && i < colors.Length) ? colors[i] : Color.white;
+            meshCtrl.Initialize(room.ID, floorColor);
+
+            // === Vẽ lại wallLines
+            foreach (var wl in room.wallLines)
+            {
+                DrawingTool.currentLineType = wl.type;
+                DrawingTool.DrawLineAndDistance(wl.start, wl.end);
+
+                // Nếu là cửa/cửa sổ
+                if (wl.type == LineType.Door || wl.type == LineType.Window)
+                {
+                    GameObject p1 = Instantiate(checkpointPrefab, wl.start, Quaternion.identity);
+                    GameObject p2 = Instantiate(checkpointPrefab, wl.end, Quaternion.identity);
+                    p1.name = $"{wl.type}_P1";
+                    p2.name = $"{wl.type}_P2";
+
+                    if (!tempDoorWindowPoints.ContainsKey(room.ID))
+                        tempDoorWindowPoints[room.ID] = new List<(WallLine, GameObject, GameObject)>();
+
+                    tempDoorWindowPoints[room.ID].Add((wl, p1, p2));
+                }
+            }
+        }
+
+        Debug.Log($"[RebuildSplitRoom] Đã build lại {rooms.Count} phòng.");
+    }
 
     public bool MoveSelectedCheckpointExtra()
     {
@@ -888,8 +1011,6 @@ public class CheckpointManager : MonoBehaviour
             floorGO.GetComponent<RoomMeshController>()?.GenerateMesh(room.checkpoints);
             DrawingTool.ClearAllLines();
             RedrawAllRooms();
-            
-            DetectAndSplitRoomIfNecessary(room);
             return true;
         }
         else
