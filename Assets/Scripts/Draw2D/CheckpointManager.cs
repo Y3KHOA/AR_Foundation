@@ -354,11 +354,12 @@ public class CheckpointManager : MonoBehaviour
         float minDistance = closeThreshold;
         GameObject nearestCheckpoint = null;
 
-        // Duyệt tất cả checkpoint trong allCheckpoints
         foreach (var loop in allCheckpoints)
         {
             foreach (var checkpoint in loop)
             {
+                if (checkpoint == null) continue;
+
                 float distance = Vector3.Distance(checkpoint.transform.position, position);
                 if (distance < minDistance)
                 {
@@ -368,11 +369,12 @@ public class CheckpointManager : MonoBehaviour
             }
         }
 
-        // Nếu chưa có loop, dùng currentCheckpoints (đang vẽ)
         if (!isClosedLoop)
         {
             foreach (var checkpoint in currentCheckpoints)
             {
+                if (checkpoint == null) continue;
+
                 float distance = Vector3.Distance(checkpoint.transform.position, position);
                 if (distance < minDistance)
                 {
@@ -382,84 +384,42 @@ public class CheckpointManager : MonoBehaviour
             }
         }
 
-        // Nếu không chọn được trong loop, thử với point cửa/cửa sổ
         foreach (var kvp in tempDoorWindowPoints)
         {
             foreach (var (line, p1GO, p2GO) in kvp.Value)
             {
-                float dist1 = Vector3.Distance(p1GO.transform.position, position);
-                if (dist1 < minDistance)
+                if (p1GO != null)
                 {
-                    minDistance = dist1;
-                    nearestCheckpoint = p1GO;
+                    float dist1 = Vector3.Distance(p1GO.transform.position, position);
+                    if (dist1 < minDistance)
+                    {
+                        minDistance = dist1;
+                        nearestCheckpoint = p1GO;
+                    }
                 }
 
-                float dist2 = Vector3.Distance(p2GO.transform.position, position);
-                if (dist2 < minDistance)
+                if (p2GO != null)
                 {
-                    minDistance = dist2;
-                    nearestCheckpoint = p2GO;
+                    float dist2 = Vector3.Distance(p2GO.transform.position, position);
+                    if (dist2 < minDistance)
+                    {
+                        minDistance = dist2;
+                        nearestCheckpoint = p2GO;
+                    }
                 }
             }
         }
 
         if (nearestCheckpoint != null)
         {
-            selectedCheckpoint = nearestCheckpoint; // Luôn luôn gán vào selectedCheckpoint
-
-            bool isExtra = nearestCheckpoint.CompareTag("CheckpointExtra");
-
-            if (isExtra)
-            {
-                if (selectedExtraCheckpoint == null && selectedNormalCheckpoint == null)
-                {
-                    selectedExtraCheckpoint = nearestCheckpoint;
-                    Debug.Log($"[Extra→Chọn điểm phụ đầu]: {nearestCheckpoint.transform.position}");
-                }
-                else if (selectedExtraCheckpoint != null && selectedExtraCheckpoint != nearestCheckpoint)
-                {
-                    ToggleConnectionBetweenCheckpoints(selectedExtraCheckpoint, nearestCheckpoint);
-                    selectedExtraCheckpoint = null;
-                }
-                else if (selectedNormalCheckpoint != null)
-                {
-                    ToggleConnectionBetweenCheckpoints(selectedNormalCheckpoint, nearestCheckpoint);
-                    selectedNormalCheckpoint = null;
-                }
-                else
-                {
-                    selectedExtraCheckpoint = null;
-                }
-            }
-            else // không phải extra
-            {
-                if (selectedExtraCheckpoint != null)
-                {
-                    ToggleConnectionBetweenCheckpoints(selectedExtraCheckpoint, nearestCheckpoint);
-                    selectedExtraCheckpoint = null;
-                }
-                else if (selectedNormalCheckpoint == null)
-                {
-                    selectedNormalCheckpoint = nearestCheckpoint;
-                    Debug.Log($"[Normal→Chọn điểm chính đầu]: {nearestCheckpoint.transform.position}");
-                }
-                else if (selectedNormalCheckpoint == nearestCheckpoint)
-                {
-                    selectedNormalCheckpoint = null;
-                }
-                else                                                
-                {
-                    ToggleConnectionBetweenCheckpoints(selectedNormalCheckpoint, nearestCheckpoint);
-                    selectedNormalCheckpoint = null;
-                }
-            }
+            selectedCheckpoint = nearestCheckpoint;
             return true;
         }
 
         return false;
     }
 
-    void ToggleConnectionBetweenCheckpoints(GameObject pointA, GameObject pointB)
+    public void ToggleConnectionBetweenCheckpoints(GameObject pointA, GameObject pointB)
     {
         Vector3 start = pointA.transform.position;
         Vector3 end = pointB.transform.position;

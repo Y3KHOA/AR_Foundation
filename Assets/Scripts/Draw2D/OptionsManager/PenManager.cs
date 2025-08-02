@@ -55,6 +55,8 @@ public class PenManager : MonoBehaviour
 
     void Update()
     {
+        if (ConnectManager.isConnectActive) return;// đang nối line dừng mọi move với pen
+
         if (!isPenActive)
         {
             checkpointManager.enabled = true;
@@ -258,6 +260,7 @@ public class PenManager : MonoBehaviour
 
     private void HandleToggleGroupUI(bool currentPenState)
     {
+        if (ConnectManager.isConnectActive) return;
         if (currentPenState)
         {
             // tắt hết toggle bên kia

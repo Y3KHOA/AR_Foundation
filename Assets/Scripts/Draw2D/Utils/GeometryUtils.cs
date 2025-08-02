@@ -185,51 +185,6 @@ public static class GeometryUtils
         }
         return (crossings % 2 == 1);
     }
-
-    // ✨ Thêm vào GeometryUtils (nếu chưa có)
-    public static Vector2 GetCentroid(List<Vector2> poly)
-    {
-        float cx = 0, cy = 0;
-        foreach (var p in poly) { cx += p.x; cy += p.y; }
-        return new Vector2(cx / poly.Count, cy / poly.Count);
-    }
-    public static bool IsSamePolygon(List<Vector2> a, List<Vector2> b, float tolerance = 0.001f)
-    {
-        if (a.Count != b.Count) return false;
-
-        int startIndex = -1;
-        for (int i = 0; i < b.Count; i++)
-        {
-            if (Vector2.Distance(a[0], b[i]) < tolerance)
-            {
-                startIndex = i;
-                break;
-            }
-        }
-        if (startIndex == -1) return false;
-
-        for (int i = 0; i < a.Count; i++)
-        {
-            Vector2 aPt = a[i];
-            Vector2 bPt = b[(startIndex + i) % b.Count];
-            if (Vector2.Distance(aPt, bPt) > tolerance)
-                return false;
-        }
-
-        return true;
-    }
-    public static float ComputePolygonArea(List<Vector2> polygon)
-    {
-        float area = 0;
-        int n = polygon.Count;
-        for (int i = 0; i < n; i++)
-        {
-            Vector2 p1 = polygon[i];
-            Vector2 p2 = polygon[(i + 1) % n];
-            area += (p1.x * p2.y - p2.x * p1.y);
-        }
-        return Mathf.Abs(area) * 0.5f;
-    }
     public static bool IsSamePolygonFlexible(List<Vector2> a, List<Vector2> b, float tol = 0.001f)
     {
         if (a.Count != b.Count) return false;
@@ -269,15 +224,4 @@ public static class GeometryUtils
             area += (double)poly[j].x * poly[i].y - (double)poly[i].x * poly[j].y;
         return Mathf.Abs((float)(area * 0.5));
     }
-    public static bool PolygonInsidePolygon(List<Vector2> inner, List<Vector2> outer)
-{
-    foreach (var p in inner)
-    {
-        if (!PointInPolygon(p, outer))
-            return false;
-    }
-    return true;
-}
-
-
 }
