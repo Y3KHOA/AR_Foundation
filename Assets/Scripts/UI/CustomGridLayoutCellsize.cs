@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,16 @@ public class CustomGridLayoutCellsize : MonoBehaviour
     private GridLayoutGroup gridLayout;
     private RectTransform rectTransform;
 
+    private void Awake()
+    {
+        ScreenResizeWatcher.Instance.OnScreenResizeEvent += RunDelayFrames;
+    }
+
+    private void OnDestroy()
+    {
+        ScreenResizeWatcher.Instance.OnScreenResizeEvent -= RunDelayFrames;
+    }
+
     void Start()
     {
         gridLayout = GetComponent<GridLayoutGroup>();
@@ -18,6 +29,17 @@ public class CustomGridLayoutCellsize : MonoBehaviour
         UpdateCellSize();
     }
 
+    private void RunDelayFrames()
+    {
+        StartCoroutine(DelayFrames());
+    }
+    
+    private IEnumerator DelayFrames()
+    {
+        yield return new WaitForEndOfFrame();
+        UpdateCellSize();
+    }
+    
 
     private void OnEnable()
     {
