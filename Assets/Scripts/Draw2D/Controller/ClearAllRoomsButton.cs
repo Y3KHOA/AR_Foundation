@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,7 +13,9 @@ public class ClearAllRoomsButton : MonoBehaviour
     [SerializeField] private ToggleGroupUI toggleGroupUI;
     [SerializeField] private PenManager penManager;
     [SerializeField] private DrawingTool drawingTool;
-    
+
+
+    private const string CLEAR_ALL_WARNING = "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!";
     
     private bool isClearingAll = false;
     void Start()
@@ -32,7 +35,7 @@ public class ClearAllRoomsButton : MonoBehaviour
     {
         var popup = Instantiate(ModularPopup.Prefab);
         popup.AutoFindCanvasAndSetup();
-        popup.Header = "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!";
+        popup.Header = CLEAR_ALL_WARNING;
         popup.ClickYesEvent = () =>
         {
             Debug.Log("Người dùng xác nhận: Xóa tất cả!");
@@ -46,16 +49,16 @@ public class ClearAllRoomsButton : MonoBehaviour
                 roomInfoDisplay.ResetState();
 
             }
-            BackgroundUI.Instance.Hide();
+            // BackgroundUI.Instance.Hide();
         };
-        popup.EventWhenClickButtons = () =>
-        {
-            BackgroundUI.Instance.Hide();
-
-        };
+        // popup.EventWhenClickButtons = () =>
+        // {
+        //     BackgroundUI.Instance.Hide();
+        //
+        // };
         popup.autoClearWhenClick = true;
         
-        BackgroundUI.Instance.Show(popup.gameObject, null);
+        // BackgroundUI.Instance.Show(popup.gameObject, null);
         // PopupController.Show(
         //     "Bạn có chắc muốn xóa TẤT CẢ các Room?\nDữ liệu sẽ mất vĩnh viễn!",
         //     onYes: () =>
@@ -67,20 +70,30 @@ public class ClearAllRoomsButton : MonoBehaviour
         // );
     }
 
-    void ClearEverything()
+    public void ClearEverything(bool isCreateCommand = true)
     {
-        roomInfoDisplay= FindFirstObjectByType<RoomInfoDisplay>();
-
-        // 1) Xóa Room trong RoomStorage
-        RoomStorage.rooms.Clear();
-
+        if(!roomInfoDisplay)
+            roomInfoDisplay = FindFirstObjectByType<RoomInfoDisplay>();
+        // đảm bảo không tạo lệnh dư thừa
+        if (RoomStorage.rooms.Count == 0)
+        {
+            isCreateCommand = false;
+        }
         // 2) Xóa mesh floor
         // var floors = GameObject.FindObjectsOfType<RoomMeshController>();
+        List<Delete_RoomData> deleteRoomDataList = new();
         var floors = GameObject.FindObjectsByType<RoomMeshController>(FindObjectsSortMode.None);    
         foreach (var floor in floors)
         {
+            if (isCreateCommand)
+            {
+                var deleteRoomData = new Delete_RoomData(new Room(RoomStorage.GetRoomByID(floor.RoomID)),floor.transform.position);
+                deleteRoomDataList.Add(deleteRoomData);
+            }
             Destroy(floor.gameObject);
         }
+        // 1) Xóa Room trong RoomStorage
+        RoomStorage.rooms.Clear();
 
         // 3) Xóa checkpoints prefab
         foreach (var loop in checkpointManager.AllCheckpoints)
@@ -102,5 +115,12 @@ public class ClearAllRoomsButton : MonoBehaviour
         // roomInfoDisplay.ClearText();
         Debug.Log("Đã xóa toàn bộ Room, checkpoint, mesh, line!");
         drawingTool.currentLineType = LineType.Wall;
+
+        if (isCreateCommand)
+        {
+            DeleteAllRoomCommand deleteAllRoomCommand = new DeleteAllRoomCommand(deleteRoomDataList);
+            deleteAllRoomCommand.ClearAllRoom = this;
+            UndoRedoController.Instance.AddToUndo(deleteAllRoomCommand);
+        }
     }
 }

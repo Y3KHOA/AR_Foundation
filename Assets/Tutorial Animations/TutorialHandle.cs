@@ -1,8 +1,17 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class TutorialHandle : MonoBehaviour
 {
+    private const string HasSeenKey = "MyGame_HasSeenTutorial";
+
+    public static int HasSeenTutorial
+    {
+        get => PlayerPrefs.GetInt(HasSeenKey, 0);
+        set => PlayerPrefs.SetInt(HasSeenKey, value);
+    }
+    
     public static TutorialBase tutorial;
     private Camera mainCam;
     public GameObject inputPanel;
@@ -32,9 +41,20 @@ public class TutorialHandle : MonoBehaviour
     private void Start()
     {
         mainCam = Camera.main;
+
+        if (mainCam == null) return;
+        
         originalScale = tutorial.transform.localScale;
         originalSize = mainCam.orthographicSize;
-        Play();
+        if (HasSeenTutorial == 0)
+        {
+            HasSeenTutorial = 1;  
+            Play();
+        }
+        else
+        {
+            Stop();
+        }
     }
 
     private void ProcessRatio()
@@ -50,6 +70,7 @@ public class TutorialHandle : MonoBehaviour
 
     private void SetToCenterOfCamera()
     {
+        if (mainCam == null) return;
         var center = mainCam.ViewportToWorldPoint(new Vector3(0.5f, 0.5f));
     }
     

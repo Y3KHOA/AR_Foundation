@@ -21,20 +21,17 @@ public class GridGenerator : MonoBehaviour
     void Start()
     {
         cam = Camera.main;
-
-        background = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        background.name = "Background";
-        background.GetComponent<Renderer>().material = backgroundMaterial;
-        background.layer = LayerMask.NameToLayer("Background");
-
-        // XZ plane nên quay Quad nằm phẳng XZ
-        background.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        //
+        // background = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        // background.name = "Background";
+        // background.GetComponent<Renderer>().material = backgroundMaterial;
+        // background.layer = LayerMask.NameToLayer("Background");
+        //
+        // // XZ plane nên quay Quad nằm phẳng XZ
+        // background.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
 
         Init();
-    }
-
-    void Update()
-    {
+        
         UpdateGridAroundCamera();
 
         float width = viewRange * 2;
@@ -42,6 +39,11 @@ public class GridGenerator : MonoBehaviour
         background.transform.position =
             new Vector3(cam.transform.position.x, -5f, cam.transform.position.z); // Y thấp hơn để nằm dưới lưới
         background.transform.localScale = new Vector3(width, height, 1);
+    }
+
+    void Update()
+    {
+        
     }
 
     void UpdateGridAroundCamera()
@@ -138,6 +140,7 @@ public class GridGenerator : MonoBehaviour
     LineRenderer Create()
     {
         GameObject line = new GameObject("GridLine");
+        line.transform.parent = transform;
         LineRenderer lr = line.AddComponent<LineRenderer>();
 
         lr.sortingOrder = -1000;

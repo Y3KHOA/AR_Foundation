@@ -35,7 +35,8 @@ public static class SaveLoadManager
                     end = w.end,
                     type = w.type,
                     distanceHeight = w.distanceHeight,
-                    Height = w.Height
+                    Height = w.Height,
+                    isManualConnection = w.isManualConnection
                 }),
                 compass = new Vector2Serializable(room.Compass),
                 headingCompass = room.headingCompass
@@ -77,7 +78,14 @@ public static class SaveLoadManager
             room.SetID(path.roomID);
             room.checkpoints = path.points.ConvertAll(p => p.ToVector2());
             room.heights = new List<float>(path.heights);
-            room.wallLines = path.wallLines.ConvertAll(w => new WallLine(w.start, w.end, w.type, w.distanceHeight, w.Height));
+            // room.wallLines = path.wallLines.ConvertAll(w => new WallLine(w.start, w.end, w.type, w.distanceHeight, w.Height));
+            room.wallLines = path.wallLines.ConvertAll(w =>
+            {
+                var line = new WallLine(w.start, w.end, w.type, w.distanceHeight, w.Height);
+                line.isManualConnection = w.isManualConnection; // <--- quan trọng
+                return line;
+            });
+
             room.Compass = path.compass.ToVector2();
             room.headingCompass = path.headingCompass;
             RoomStorage.rooms.Add(room);
@@ -102,11 +110,14 @@ public static class SaveLoadManager
                 if (data.paths.Count > 0 && data.paths[0].roomID == baseName)
                     return true;
             }
-            catch { }
+            catch
+            {
+            }
         }
 
         return false;
     }
+
     public static List<JsonFileInfo> GetAllSavedFileInfos()
     {
         List<JsonFileInfo> infos = new List<JsonFileInfo>();
@@ -138,4 +149,84 @@ public static class SaveLoadManager
         return infos;
     }
 
+
+    public static bool TryDeleteFile(string fileName)
+    {
+        try
+        {
+            string fullFileName = $"{fileName}.json";
+            string fullFilePath = Path.Combine(Application.persistentDataPath, fullFileName);
+
+            Debug.Log($"Input file name {fileName}");
+            Debug.Log($"Full file name {fullFileName}");
+            Debug.Log($"Full file path {fullFilePath}");
+
+            if (!File.Exists(fullFilePath))
+            {
+                return false;
+            }
+
+            //
+            Debug.Log("Delete file");
+            File.Delete(fullFilePath);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error Log {e.Message}");
+            throw;
+        }
+    }
+
+    public static bool ChangeFileName(string currentFileName, string newFileName)
+    {
+        if (string.IsNullOrWhiteSpace(currentFileName) || string.IsNullOrWhiteSpace(newFileName))
+        {
+            Debug.LogError("[ChangeFileName] File names must not be empty or whitespace.");
+            return false;
+        }
+
+        try
+        {
+            currentFileName = EnsureJsonExtension(currentFileName);
+            newFileName = EnsureJsonExtension(newFileName);
+
+            string oldFilePath = Path.Combine(Application.persistentDataPath, currentFileName);
+            string newFilePath = Path.Combine(Application.persistentDataPath, newFileName);
+
+            if (!File.Exists(oldFilePath))
+            {
+                Debug.LogError($"[ChangeFileName] Old file path '{oldFilePath}' does not exist.");
+                return false;
+            }
+
+            if (File.Exists(newFilePath))
+            {
+                Debug.LogError($"[ChangeFileName] New file path '{newFilePath}' already exists.");
+                return false;
+            }
+
+            File.Move(oldFilePath, newFilePath);
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[ChangeFileName] Unexpected error: {e.Message}");
+            return false;
+        }
+    }
+
+
+    public static string EnsureJsonExtension(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            return null;
+
+        if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            fileName += ".json";
+        }
+
+        return fileName;
+    }
 }

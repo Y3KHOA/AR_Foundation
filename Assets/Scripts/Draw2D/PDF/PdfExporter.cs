@@ -10,8 +10,16 @@ using System;
 
 public class PdfExporter
 {
+    // static List<RectangleF> usedTextRects = new List<RectangleF>();
+    static List<TextRect> usedTextRects = new List<TextRect>();
+    public static Vector2 drawingCenter = Vector2.zero;
+
+
     public static byte[] GeneratePdfAsBytes(List<Room> rooms, float wallThickness)
     {
+        usedTextRects.Clear();
+        HashSet<string> drawnDimensionLines = new HashSet<string>();
+
         if (rooms == null || rooms.Count == 0) return null;
 
         using (MemoryStream memoryStream = new MemoryStream())
@@ -21,10 +29,10 @@ public class PdfExporter
             document.Open();
 
             PdfContentByte cb = writer.DirectContent;
-            BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);            
+            BaseFont baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
             cb.SetFontAndSize(baseFont, 10);
 
-            float wallLineWidth = 2f;
+            float wallLineWidth = 1f;
             cb.SetLineWidth(wallLineWidth);
             cb.SetRGBColorStroke(0, 0, 0);
 
@@ -95,6 +103,9 @@ public class PdfExporter
             }
 
             Vector2 globalSize = globalMax - globalMin;
+
+            drawingCenter = (globalMin + globalMax) / 2f;
+            Debug.Log($"drawingCenter ALL: {drawingCenter}");
 
             // === TRỪ RA VÙNG CHỮ ĐÔNG TÂY NAM BẮC ===
             float compassMarginTop = 80f;    // Phần trên (S)
@@ -210,10 +221,105 @@ public class PdfExporter
                     // Đo chiều dài tường
                     Vector2 cp1 = Convert(p1);
                     Vector2 cp2 = Convert(p2);
-                    DrawDimensionLine(cb, cp1, cp2, -30f, $"{Vector2.Distance(p1, p2):0.00m}");
+
+                    if (!IsAlreadyDrawn(p1, p2, drawnDimensionLines))
+                    {
+                        DrawDimensionLine(cb, cp1, cp2, -15f, $"{Vector2.Distance(p1, p2):0.00}", drawingCenter,true);
+                    }
 
                     // Đo chiều dày tường
-                    DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
+                    // DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
+                }
+                // === Vẽ tường thủ công trước, mỏng như tường chính, nhưng màu nhạt hơn để không đè
+                foreach (var wall in room.wallLines.Where(w => w.isManualConnection))
+                {
+                    Vector2 p1 = new Vector2(wall.start.x, wall.start.z);
+                    Vector2 p2 = new Vector2(wall.end.x, wall.end.z);
+
+                    Vector2 dir = (p2 - p1).normalized;
+                    Vector2 perp = new Vector2(-dir.y, dir.x);
+                    Vector2 offset = perp * wallThickness * 0.5f; // bằng tường chính
+
+                    Vector2 pa = p1 + offset;
+                    Vector2 pb = p2 + offset;
+                    Vector2 pc = p2 - offset;
+                    Vector2 pd = p1 - offset;
+
+                    Vector2 cpa = Convert(pa);
+                    Vector2 cpb = Convert(pb);
+                    Vector2 cpc = Convert(pc);
+                    Vector2 cpd = Convert(pd);
+
+                    // HATCH bên trong tường phụ
+                    Vector2 diagDir = (dir + perp).normalized;
+                    Vector2 hatchSpacingDir = new Vector2(-diagDir.y, diagDir.x);
+
+                    List<Vector2> corners = new() { pa, pb, pc, pd };
+                    float minProj = float.MaxValue;
+                    float maxProj = float.MinValue;
+                    foreach (var corner in corners)
+                    {
+                        float proj = Vector2.Dot(corner, hatchSpacingDir);
+                        minProj = Mathf.Min(minProj, proj);
+                        maxProj = Mathf.Max(maxProj, proj);
+                    }
+
+                    float hatchSpacing = 0.02f;
+
+                    cb.SetLineWidth(wallLineWidth * 0.5f);
+                    cb.SetRGBColorStroke(200, 200, 200); // Màu xám nhạt
+
+                    for (float d = minProj; d <= maxProj; d += hatchSpacing)
+                    {
+                        Vector2 linePoint = hatchSpacingDir * d;
+
+                        List<Vector2> intersections = new();
+                        Vector2 ls = linePoint - diagDir * 1000f;
+                        Vector2 le = linePoint + diagDir * 1000f;
+
+                        Vector2[] rectCorners = new Vector2[] { pa, pb, pc, pd };
+                        for (int edge = 0; edge < 4; edge++)
+                        {
+                            Vector2 r1 = rectCorners[edge];
+                            Vector2 r2 = rectCorners[(edge + 1) % 4];
+                            if (LineSegmentsIntersect(ls, le, r1, r2, out Vector2 ip))
+                            {
+                                intersections.Add(ip);
+                            }
+                        }
+
+                        if (intersections.Count == 2)
+                        {
+                            Vector2 i1 = Convert(intersections[0]);
+                            Vector2 i2 = Convert(intersections[1]);
+                            cb.MoveTo(i1.x, i1.y);
+                            cb.LineTo(i2.x, i2.y);
+                            cb.Stroke();
+                        }
+                    }
+
+                    // Viền tường thủ công
+                    cb.SetLineWidth(wallLineWidth);
+                    cb.SetRGBColorStroke(100, 100, 100); // viền xám đậm hơn nhưng không đen hẳn
+
+                    cb.MoveTo(cpa.x, cpa.y);
+                    cb.LineTo(cpb.x, cpb.y);
+                    cb.LineTo(cpc.x, cpc.y);
+                    cb.LineTo(cpd.x, cpd.y);
+                    cb.ClosePath();
+                    cb.Stroke();
+
+                    // Đo chiều dài tường
+                    Vector2 cp1 = Convert(p1);
+                    Vector2 cp2 = Convert(p2);
+
+                    if (!IsAlreadyDrawn(p1, p2, drawnDimensionLines))
+                    {
+                        DrawDimensionLine(cb, cp1, cp2, -10f, $"{Vector2.Distance(p1, p2):0.00}", drawingCenter,true);
+                    }
+
+                    // Đo chiều dày tường
+                    // DrawDimensionLine(cb, cpa, cpd, 20f, $"{wallThickness:0.0}");
                 }
 
                 // vẽ point chính
@@ -268,6 +374,7 @@ public class PdfExporter
                         DrawSymbol(cb, Convert, start2D, end2D, wall.type.ToString().ToLower());
                     }
                 }
+
                 // Sau khi tính xong shift, scale, offsetX/Y:
                 float minX = offsetX;
                 float minY = offsetY;
@@ -349,6 +456,22 @@ public class PdfExporter
             return memoryStream.ToArray();
         }
     }
+
+    static Vector2 Round(Vector2 v, int decimals = 3)
+{
+    return new Vector2((float)Math.Round(v.x, decimals), (float)Math.Round(v.y, decimals));
+}
+
+static bool IsAlreadyDrawn(Vector2 a, Vector2 b, HashSet<string> drawnSet)
+{
+    Vector2 ra = Round(a);
+    Vector2 rb = Round(b);
+    string k1 = $"{ra.x}_{ra.y}_{rb.x}_{rb.y}";
+    string k2 = $"{rb.x}_{rb.y}_{ra.x}_{ra.y}";
+    if (drawnSet.Contains(k1) || drawnSet.Contains(k2)) return true;
+    drawnSet.Add(k1);
+    return false;
+}
     
     static bool LineSegmentsIntersect(Vector2 p1, Vector2 p2, Vector2 q1, Vector2 q2, out Vector2 intersection)
     {
@@ -372,13 +495,12 @@ public class PdfExporter
         return false;
     }
 
-
     //hàm vẽ cửa và cửa sổ
     static void DrawSymbol(PdfContentByte cb, System.Func<Vector2, Vector2> Convert, Vector2 p1, Vector2 p2, string type)
     {
         if (type == "door")
         {
-            float DoorLineWidth = 2f;
+            float DoorLineWidth = 1f;
             cb.SetLineWidth(DoorLineWidth);
             cb.SetRGBColorStroke(0, 0, 0); // Blue
             cb.SetRGBColorFill(255, 255, 255); // Fill trắng
@@ -471,14 +593,14 @@ public class PdfExporter
             Vector2 cp2 = Convert(p2);
 
             float doorLength = Vector2.Distance(p1, p2);
-            string doorLabel = $"{doorLength:0.00m}";
+            string doorLabel = $"{doorLength:0.00}";
 
-            DrawDimensionLine(cb, cp1, cp2, -20f, doorLabel);
+            DrawDimensionLine(cb, cp1, cp2, -5f, doorLabel, drawingCenter,false);
         }
 
         else if (type == "window")
         {
-            float DoorLineWidth = 2f;
+            float DoorLineWidth = 1f;
             cb.SetLineWidth(DoorLineWidth);
             cb.SetRGBColorStroke(0, 0, 0); // Blue
             cb.SetRGBColorFill(255, 255, 255); // Fill trắng
@@ -520,75 +642,169 @@ public class PdfExporter
             Vector2 cp2 = Convert(p2);
 
             float doorLength = Vector2.Distance(p1, p2);
-            string doorLabel = $"{doorLength:0.00m}";
+            string doorLabel = $"{doorLength:0.00}";
 
-            DrawDimensionLine(cb, cp1, cp2, -20f, doorLabel);
+            DrawDimensionLine(cb, cp1, cp2, -5f, doorLabel, drawingCenter,false);
         }
 
         cb.SetRGBColorStroke(0, 0, 0); // Reset màu
     }
 
-    static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label)
-    {
-        // Tính toán hướng chính và vuông góc
-        Vector2 dir = (p2 - p1).normalized;
-        Vector2 perp = new Vector2(-dir.y, dir.x); // vuông góc 90 độ
+    // public static Vector2 drawingCenter;
 
-        // Offset điểm ra ngoài theo hướng vuông góc
+    static void DrawDimensionLine(PdfContentByte cb, Vector2 p1, Vector2 p2, float offsetDistance, string label, Vector2 drawingCenter, bool isFixedOffset)
+    {
+        Vector2 dir = (p2 - p1).normalized;
+        Vector2 perp = new Vector2(-dir.y, dir.x); // vector vuông góc
+
+        Vector2 mid = (p1 + p2) * 0.5f;
+        Vector2 toCenter = (mid - drawingCenter).normalized;
+
+        if ((drawingCenter - mid).y < 0)
+            perp *= -1;
+
+        if (Mathf.Abs(offsetDistance) < 0.01f)
+            offsetDistance = Mathf.Clamp(Vector2.Distance(p1, p2) * 0.08f, 20f, 40f);
+
         Vector2 p1Offset = p1 + perp * offsetDistance;
         Vector2 p2Offset = p2 + perp * offsetDistance;
 
-        // Vẽ đường kích thước
+        // === Vẽ đường kích thước ===
         cb.SetLineWidth(0.5f);
         cb.MoveTo(p1Offset.x, p1Offset.y);
         cb.LineTo(p2Offset.x, p2Offset.y);
         cb.Stroke();
 
-        // Vẽ đường gióng từ điểm thực ra điểm offset
-        cb.MoveTo(p1.x, p1.y);
-        cb.LineTo(p1Offset.x, p1Offset.y);
-        cb.MoveTo(p2.x, p2.y);
-        cb.LineTo(p2Offset.x, p2Offset.y);
+        // === Vẽ đường gióng ===
+        cb.MoveTo(p1.x, p1.y); cb.LineTo(p1Offset.x, p1Offset.y);
+        cb.MoveTo(p2.x, p2.y); cb.LineTo(p2Offset.x, p2Offset.y);
         cb.Stroke();
 
-        // Vẽ mũi tên 2 đầu
+        // === Mũi tên ===
         float arrowSize = 3f;
-
         void DrawArrow(Vector2 pos, Vector2 direction)
         {
             Vector2 dir2 = -direction.normalized;
-
             Vector2 left = pos - dir2 * arrowSize + new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
             Vector2 right = pos - dir2 * arrowSize - new Vector2(-dir2.y, dir2.x) * (arrowSize * 0.5f);
-
-            cb.MoveTo(left.x, left.y);
-            cb.LineTo(pos.x, pos.y);
-            cb.LineTo(right.x, right.y);
+            cb.MoveTo(left.x, left.y); cb.LineTo(pos.x, pos.y); cb.LineTo(right.x, right.y);
             cb.Stroke();
         }
-
         DrawArrow(p1Offset, dir);
         DrawArrow(p2Offset, -dir);
 
-        // Vẽ text
-        Vector2 midPoint = (p1Offset + p2Offset) / 2f;
-
+        // === Vẽ text ===
+        Vector2 midPoint = (p1Offset + p2Offset) * 0.5f;
         BaseFont bf = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, false);
         cb.BeginText();
         cb.SetFontAndSize(bf, 7);
 
-        // Tính góc xoay text
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
-        // Để text đứng thẳng dễ đọc, chỉnh lại góc nếu cần
-        if (angle > 90f || angle < -90f)
-        {
+        float angle = Mathf.Atan2(perp.y, perp.x) * Mathf.Rad2Deg - 90f;
+        Vector2 textToCenter = (drawingCenter - midPoint).normalized;
+        if (Vector2.Dot(perp, textToCenter) > 0)
             angle += 180f;
+
+        float textWidth = bf.GetWidthPoint(label, 7);
+        float textHeight = 7f;
+
+        Vector2 finalMidPoint = midPoint;
+        TextRect labelRect;
+
+        if (!isFixedOffset)
+        {
+            int tryCount = 0;
+            int maxTries = 20;
+            float wallClearance = 4f;      
+            float spacingStep = 1.5f;      // Đẩy xa đều hơn
+            float paddingMargin = 2f;      // Mở rộng vùng né text
+
+
+            Vector2 initialMidPoint = midPoint;
+            Vector2 bestMidPoint = midPoint;
+            float bestDist = float.MinValue;
+            bool success = false;
+
+            Vector2 perpOriginal = perp; // ← lưu lại hướng gốc
+
+            for (int pass = 0; pass < 2; pass++)
+            {
+                tryCount = 0;
+                perp = (pass == 0) ? perpOriginal : -perpOriginal; // dùng lại hướng đúng
+                midPoint = initialMidPoint;
+
+                while (tryCount++ < maxTries)
+                {
+                    midPoint = initialMidPoint + perp * (wallClearance + tryCount * spacingStep);
+
+                    labelRect = new TextRect(
+                        midPoint.x - textWidth / 2f - paddingMargin,
+                        midPoint.y - textHeight / 2f - paddingMargin,
+                        textWidth + 2 * paddingMargin,
+                        textHeight + 2 * paddingMargin
+                    );
+
+                    bool overlapsText = usedTextRects.Any(r => r.Intersects(labelRect));
+                    bool tooCloseToWall = IsTextTooCloseToLine(labelRect, p1, p2);
+
+                    if (!overlapsText && !tooCloseToWall)
+                    {
+                        finalMidPoint = midPoint;
+                        success = true;
+                        break;
+                    }
+
+                    Vector2 center = new Vector2(labelRect.x + labelRect.width / 2f, labelRect.y + labelRect.height / 2f);
+                    Vector2 closest = ClosestPointOnSegment(p1, p2, center);
+                    float dist = Vector2.Distance(center, closest);
+
+                    if (dist > bestDist)
+                    {
+                        bestDist = dist;
+                        bestMidPoint = midPoint;
+                    }
+                }
+
+                if (success) break;
+            }
+
+            if (!success)
+                finalMidPoint = bestMidPoint;
         }
 
-        cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, midPoint.x, midPoint.y, angle);
+        labelRect = new TextRect(
+            finalMidPoint.x - textWidth / 2f,
+            finalMidPoint.y - textHeight / 2f,
+            textWidth,
+            textHeight
+        );
+
+        usedTextRects.Add(labelRect);
+        cb.ShowTextAligned(PdfContentByte.ALIGN_CENTER, label, finalMidPoint.x, finalMidPoint.y, angle);
         cb.EndText();
     }
+
+    static bool IsTextTooCloseToLine(TextRect rect, Vector2 lineStart, Vector2 lineEnd)
+    {
+        float padding = 5f; // ngưỡng khoảng cách tối thiểu cần tránh tường
+
+        // Tính tâm chữ
+        Vector2 textCenter = new Vector2(rect.x + rect.width / 2f, rect.y + rect.height / 2f);
+
+        // Tính khoảng cách từ textCenter đến đoạn thẳng
+        Vector2 closest = ClosestPointOnSegment(lineStart, lineEnd, textCenter);
+        float dist = Vector2.Distance(textCenter, closest);
+
+        return dist < padding;
+    }
+
+    static Vector2 ClosestPointOnSegment(Vector2 a, Vector2 b, Vector2 p)
+    {
+        Vector2 ab = b - a;
+        float t = Vector2.Dot(p - a, ab) / ab.sqrMagnitude;
+        t = Mathf.Clamp01(t);
+        return a + ab * t;
+    }
+
     static void DrawGridLines(PdfContentByte cb, float spacingX, float spacingY, int countX, int countY,
                     float minX, float minY, float maxX, float maxY)
     {

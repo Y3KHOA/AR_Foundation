@@ -21,7 +21,7 @@ public class SavePanelUI : MonoBehaviour
 
     private void Awake()
     {
-        //closeBtn.onClick.AddListener(Close);
+        closeBtn.onClick.AddListener(Close);
         confirmBtn.onClick.AddListener(() => Show());
         confirmBtn.onClick.AddListener(() => Confirm());
         Close();
@@ -39,7 +39,7 @@ public class SavePanelUI : MonoBehaviour
     {
         EventSystem.current.SetSelectedGameObject(fileNameInputField.gameObject);
         fileNameInputField.OnPointerClick(new PointerEventData(EventSystem.current)); 
-        BackgroundUI.Instance.Show(transform.gameObject, Close);
+        // BackgroundUI.Instance.Show(transform.gameObject, Close);
         savePanelContainer.gameObject.SetActive(true);
     }
 

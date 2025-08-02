@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 public class RoomMeshController : MonoBehaviour
 {
@@ -25,7 +26,6 @@ public class RoomMeshController : MonoBehaviour
 
         checkPointManager = CheckpointManager.Instance;
     }
-
 #if UNITY_STANDALONE
     // PC: vẫn dùng OnMouseDown/Drag/Up
 #else
@@ -39,7 +39,10 @@ public class RoomMeshController : MonoBehaviour
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    OnStartDrag(touch.position);
+                    if (CheckTouchHitThisObject(touch.position))
+                    {
+                        OnStartDrag(touch.position);
+                    }
 
                     break;
 
@@ -50,12 +53,13 @@ public class RoomMeshController : MonoBehaviour
 
                 case TouchPhase.Ended:
                 case TouchPhase.Canceled:
-                    OnEndDrag();
+                    OnEndDrag(touch.position);
                     break;
             }
         }
     }
 #endif
+
     private bool CheckTouchHitThisObject(Vector2 screenPos)
     {
         Ray ray = mainCam.ScreenPointToRay(screenPos);
@@ -72,6 +76,17 @@ public class RoomMeshController : MonoBehaviour
     // Hàm di chuyển Room theo vị trí chạm for Android
     void DragRoom(Vector2 screenPos)
     {
+        
+        if (this == null || !this) return;                // Đã bị destroy
+        if (gameObject == null || !gameObject.activeInHierarchy) return;
+        if (transform == null) return;
+
+        if (IsClickingOnBackgroundBlackUI(Input.mousePosition))
+        {
+            Debug.Log("Đang nhấn Background Black ➜ Không move Mesh");
+            return;
+        }
+
         Ray ray = mainCam.ScreenPointToRay(screenPos);
         if (floorPlane.Raycast(ray, out float distance))
         {
@@ -105,7 +120,7 @@ public class RoomMeshController : MonoBehaviour
                     room.wallLines[i].end += delta;
                 }
 
-                RoomStorage.UpdateOrAddRoom(room);
+                // RoomStorage.UpdateOrAddRoom(room);
 
                 // Cập nhật checkpoint GameObjects bên ngoài
                 // CheckpointManager checkpointMgr = FindObjectOfType<CheckpointManager>();
@@ -119,7 +134,7 @@ public class RoomMeshController : MonoBehaviour
                         {
                             if (child.CompareTag("CheckpointExtra")) // <-- tag riêng cho point phụ
                             {
-                                Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
+                                // Debug.Log($"[MoveCheck] Child: {child.name}, Tag: {child.tag}");
                                 // child.position += delta;
                             }
                         }
@@ -153,7 +168,7 @@ public class RoomMeshController : MonoBehaviour
         }
     }
 
-    public void Initialize(string roomID)
+    public void Initialize(string roomID, Color color = default)
     {
         RoomID = roomID;
 
@@ -177,6 +192,9 @@ public class RoomMeshController : MonoBehaviour
             // floorMaterial = new Material(Shader.Find("Standard"));
             floorMaterial = new Material(Shader.Find("Unlit/Color"));
             // floorMaterial.color = Color.red; // Đổi sang đỏ
+            Color usedColor = (color == default) ? Color.red : color;
+            floorMaterial.color = usedColor;
+
         }
 
         meshRenderer.material = floorMaterial;
@@ -186,12 +204,8 @@ public class RoomMeshController : MonoBehaviour
             gameObject.AddComponent<MeshCollider>();
 
         // Đảm bảo đăng ký lại RoomFloorMap
-        var checkpointMgr = FindFirstObjectByType<CheckpointManager>();
-        if (checkpointMgr != null && !checkpointMgr.RoomFloorMap.ContainsKey(RoomID))
-        {
-            checkpointMgr.RoomFloorMap[RoomID] = this.gameObject;
-            Debug.Log($"Đã tự động đăng ký RoomFloorMap[{RoomID}] = {gameObject.name}");
-        }
+        checkPointManager.RoomFloorMap[RoomID] = this.gameObject;
+        Debug.Log($"Đã tự động đăng ký RoomFloorMap[{RoomID}] = {gameObject.name}");
     }
 
     public void GenerateMesh(List<Vector2> checkpoints)
@@ -250,7 +264,7 @@ public class RoomMeshController : MonoBehaviour
             checkPointManager.IsDraggingRoom = true;
         }
 
-        Ray ray = Camera.main.ScreenPointToRay(startDragPosition);
+        Ray ray = mainCam.ScreenPointToRay(startDragPosition);
         if (floorPlane.Raycast(ray, out float distance))
         {
             dragStartWorldPos = ray.GetPoint(distance);
@@ -262,7 +276,7 @@ public class RoomMeshController : MonoBehaviour
         oldCheckPointList = SaveCheckPointPosition(RoomID);
     }
 
-    private List<(Vector3,Vector3)> SaveCheckPointPosition(string RoomID)
+    private List<(Vector3, Vector3)> SaveCheckPointPosition(string RoomID)
     {
         var checkPointList = new List<(Vector3, Vector3)>();
         if (checkPointManager.tempDoorWindowPoints.TryGetValue(RoomID, out var doorsInRoom))
@@ -278,7 +292,7 @@ public class RoomMeshController : MonoBehaviour
 
 
     
-    private void OnEndDrag()
+    private void OnEndDrag(Vector2 screenPosition)
     {
         isDragging = false;
 
@@ -288,29 +302,34 @@ public class RoomMeshController : MonoBehaviour
             checkPointManager.IsDraggingRoom = false;
         }
 
+        if (!CheckTouchHitThisObject(screenPosition))
+        {
+            return;
+        }
         CreateUndoCommand();
     }
-
+#if UNITY_EDITOR
     private void OnMouseDown()
     {
         if (!PenManager.isPenActive) return;
-
+        if (isDragging) return;
         OnStartDrag(Input.mousePosition);
     }
-
+    
     private void OnMouseUp()
     {
-        OnEndDrag();
+        OnEndDrag(Input.mousePosition);
     }
-
+    
     private void OnMouseDrag()
     {
+        if (this == null || gameObject == null || transform == null)
+            return;
         if (!PenManager.isPenActive) return;
         if (!isDragging) return;
         DragRoom(Input.mousePosition);
     }
-
-
+#endif
     private Vector2 oldPosition;
     private List<(Vector3, Vector3)> oldCheckPointList = new List<(Vector3, Vector3)>();
 
@@ -322,11 +341,39 @@ public class RoomMeshController : MonoBehaviour
         moveObject.MovingObject = transform;
 
         moveObject.OldPosition = oldPosition;
-        moveObject.OldRoom = new Room(oldRoom);
-        moveObject.oldCheckPointPos = new List<(Vector3, Vector3)>(oldCheckPointList);
+        moveObject.CurrentPosition = transform.position;
         
-        var command = new MoveRetangularUndoRedoCommand(moveObject);
+        moveObject.OldRoom = new Room(oldRoom);
+        moveObject.NewRoom = new Room(RoomStorage.GetRoomByID(RoomID));
+        
+        moveObject.OldCheckPointPos = new List<(Vector3, Vector3)>(oldCheckPointList);
+        moveObject.CurrentCheckPointPos = SaveCheckPointPosition(RoomID);
+        
+        var command = new MoveRectangularUndoRedoCommand(moveObject);
 
-        UndoRedoController.Instance.AddToRedo(command);
+        UndoRedoController.Instance.AddToUndo(command);
+    }
+
+    // === Hàm ko cho move trên UI
+    private bool IsClickingOnBackgroundBlackUI(Vector2 screenPosition)
+    {
+        var pointerData = new PointerEventData(EventSystem.current)
+        {
+            position = screenPosition
+        };
+
+        var results = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerData, results);
+
+        foreach (var result in results)
+        {
+            if (result.gameObject.name == "Background Black")
+            {
+                Debug.Log("Click UI trên Background Black ➜ Không cho move point");
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -62,12 +62,6 @@ public class DrawingTool : MonoBehaviour
         lr.numCapVertices = 0;
         lr.widthMultiplier = 0.04f;
         lr.positionCount = 2;
-        // if (currentLineType == LineType.Door)
-        // {
-        //     DrawDashedLine(start, end); // tạo nét đứt
-        //     return; // Không cần vẽ line chính nữa
-        // }
-
 
         // Lấy chiều dài đoạn
         float len = Vector3.Distance(start, end);
@@ -100,7 +94,8 @@ public class DrawingTool : MonoBehaviour
             lr.sortingOrder = 10;
 
         // Lưu line đã vẽ
-        lines.Add(lr);
+        if(!lines.Contains(lr))
+            lines.Add(lr);
 
         // Khoảng cách và text
         float distanceInM = len * 1f;
@@ -116,7 +111,7 @@ public class DrawingTool : MonoBehaviour
         // TextMeshPro textMesh = GetOrCreateText();
         // textMesh.text = $"{distanceInCm:F1} cm";
         TextMeshPro textMesh = GetOrCreateText(); // Dùng pool
-        textMesh.text = $"{distanceInM:F2} m";
+        textMesh.text = $"{distanceInM:F2}";
 
         Vector3 textPosition = (aux1End + aux2End) / 2;
 
@@ -157,64 +152,6 @@ public class DrawingTool : MonoBehaviour
                 throw new ArgumentOutOfRangeException(nameof(lineType), lineType, null);
         }
     }
-
-
-    // public void UpdateLinesAndDistances(List<GameObject> checkpoints)
-    // {
-    //     int pointCount = checkpoints.Count;
-    //     if (pointCount < 2) return;
-    //
-    //     // Đảm bảo linePool có đủ line
-    //     while (linePool.Count < pointCount)
-    //     {
-    //         GameObject newLine = Instantiate(linePrefab);
-    //         LineRenderer lr = newLine.GetComponent<LineRenderer>();
-    //         linePool.Add(lr);
-    //     }
-    //
-    //     // Đảm bảo textPool có đủ text
-    //     while (textPool.Count < pointCount)
-    //     {
-    //         GameObject newText = Instantiate(distanceTextPrefab);
-    //         TextMeshPro tmp = newText.GetComponent<TextMeshPro>();
-    //         textPool.Add(tmp);
-    //     }
-    //
-    //     for (int i = 0; i < pointCount; i++)
-    //     {
-    //         int nextIndex = (i + 1) % pointCount;
-    //
-    //         linePool[i].gameObject.SetActive(true);
-    //         linePool[i].SetPosition(0, checkpoints[i].transform.position);
-    //         linePool[i].SetPosition(1, checkpoints[nextIndex].transform.position);
-    //
-    //         float distanceInM = Vector3.Distance(checkpoints[i].transform.position, checkpoints[nextIndex].transform.position) * 1f;
-    //         textPool[i].gameObject.SetActive(true);
-    //         textPool[i].text = $"{distanceInM:F2} m";
-    //         textPool[i].transform.position = (checkpoints[i].transform.position + checkpoints[nextIndex].transform.position) / 2;
-    //         // Cập nhật trạng thái line khi đang chọn checkpoint
-    //         if (selectedCheckpoint == checkpoints[i] || selectedCheckpoint == checkpoints[nextIndex])
-    //         {
-    //             linePool[i].startWidth = linePool[i].endWidth = 0.05f; // to hơn khi thao tác
-    //             linePool[i].material.color = Color.blue; // màu khác biệt để dễ nhận diện
-    //         }
-    //         else
-    //         {
-    //             linePool[i].startWidth = linePool[i].endWidth = 0.02f; // mặc định
-    //             linePool[i].material.color = Color.black;
-    //         }
-    //
-    //         Debug.Log($"[UpdateLinesAndDistances] Cạnh {i + 1}: {distanceInM:F2} m | " +
-    //                     $"Start: {checkpoints[i].transform.position} | End: {checkpoints[nextIndex].transform.position}");
-    //     }
-    //
-    //     // Ẩn các line và text dư thừa (nếu có)
-    //     for (int i = pointCount; i < linePool.Count; i++)
-    //         linePool[i].gameObject.SetActive(false);
-    //
-    //     for (int i = pointCount; i < textPool.Count; i++)
-    //         textPool[i].gameObject.SetActive(false);
-    // }
 
     public void DrawPreviewLine(Vector3 start, Vector3 end)
     {
@@ -260,7 +197,7 @@ public class DrawingTool : MonoBehaviour
 
         // Hiển thị text
         previewText.gameObject.SetActive(true);
-        previewText.text = $"{distanceInM:F2} m";
+        previewText.text = $"{distanceInM:F2}";
 
         Vector3 textPos = (start + end) / 2 + new Vector3(0, 0.05f, 0); // Đẩy lên cao một chút
         previewText.transform.position = textPos + previewText.transform.up * wallTextOffset;

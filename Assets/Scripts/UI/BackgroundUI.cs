@@ -15,7 +15,7 @@ public class BackgroundUI : MonoBehaviour
     private Canvas canvas;
 
     private Action clickCallback;
-    
+
     public static BackgroundUI Instance
     {
         get
@@ -38,27 +38,36 @@ public class BackgroundUI : MonoBehaviour
 
     private void SceneManagerOnsceneUnloaded(Scene arg0)
     {
-        if(background)
+        if (background)
             background.transform.parent = null;
     }
 
     private void SceneManagerOnsceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
-        TryInitBackground();
-        canvas = GameObject.FindFirstObjectByType<Canvas>();
-        background.gameObject.transform.parent = canvas.transform;
-        ResetEverything();
+        // TryInitBackground();
+        // canvas = GameObject.FindFirstObjectByType<Canvas>();
+        // background.gameObject.transform.parent = canvas.transform;
+        // ResetEverything();
     }
 
+    private Coroutine playDelayCoroutine;
+    
     public void Show(GameObject target, Action onClickCallback)
     {
+        if (playDelayCoroutine != null)
+        {
+            CoroutineManager.Stop(playDelayCoroutine);
+        }
         clickCallback = onClickCallback;
-        CoroutineManager.Run(PlayDelay(target));
+        playDelayCoroutine = CoroutineManager.Run(PlayDelay(target));
     }
+    
 
     private IEnumerator PlayDelay(GameObject target)
     {
         TryInitBackground();
+
+        yield return new WaitForEndOfFrame();
 
         if (target)
         {
@@ -66,7 +75,6 @@ public class BackgroundUI : MonoBehaviour
             int targetIndex = target.transform.GetSiblingIndex();
             int newIndex = Mathf.Max(0, targetIndex - (background.transform.GetSiblingIndex() < targetIndex ? 1 : 0));
             background.transform.SetSiblingIndex(newIndex);
-
         }
         else
         {
@@ -76,7 +84,7 @@ public class BackgroundUI : MonoBehaviour
         SetBackgroundActive(true);
         yield return null;
     }
-
+    
     private void TryInitBackground()
     {
         if (!background)
@@ -87,9 +95,9 @@ public class BackgroundUI : MonoBehaviour
             background.gameObject.name = "Background Black";
 
             canvas = GameObject.FindFirstObjectByType<Canvas>();
-            
+
             background.transform.SetParent(canvas.transform);
-            
+
             ResetEverything();
 
             var backgroundRect = background.GetComponent<RectTransform>();
@@ -99,16 +107,16 @@ public class BackgroundUI : MonoBehaviour
             backgroundRect.anchorMax = Vector2.one;
             backgroundRect.sizeDelta = Vector2.zero;
 
-            backgroundRect.offsetMax = new Vector2(500,500);
-            backgroundRect.offsetMin = new Vector2(-500,-500);
+            backgroundRect.offsetMax = new Vector2(500, 500);
+            backgroundRect.offsetMin = new Vector2(-500, -500);
 
             var entry = new EventTrigger.Entry();
             entry.eventID = EventTriggerType.PointerClick;
             entry.callback.AddListener((eventData) => OnClick((PointerEventData)eventData));
-            
+
             var eventTrigger = backgroundRect.AddComponent<EventTrigger>();
             eventTrigger.triggers.Add(entry);
-            
+
             SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
             SceneManager.sceneUnloaded += SceneManagerOnsceneUnloaded;
             backgroundRect.gameObject.SetActive(false);
@@ -127,6 +135,10 @@ public class BackgroundUI : MonoBehaviour
 
     public void Hide()
     {
+        if (playDelayCoroutine != null)
+        {
+            CoroutineManager.Stop(playDelayCoroutine);
+        }
         SetBackgroundActive(false);
     }
 

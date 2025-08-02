@@ -9,10 +9,23 @@ public class ButtonDeleteAllRoomsHandler : MonoBehaviour
     public GameObject panelSuccess;        // Panel báo xoá thành công
 
     // Gọi khi nhấn nút Delete (bật panel xác nhận)
+
+    private const string PopupWarning = "BẠN THỰC SỰ MUỐN XÓA TOÀN BỘ DỮ LIỆU CHỨ? \n DỮ LIỆU XÓA KHÔNG THỂ KHÔI PHỤC!";
+    
     public void OnClickDelete()
     {
-        if (panelDeleteConfirm != null)
-            panelDeleteConfirm.SetActive(true);
+        panelDeleteConfirm.gameObject.SetActive(true);
+        // var popup = Instantiate(ModularPopup.Prefab);
+        // popup.AutoFindCanvasAndSetup();
+        // popup.Header = PopupWarning;
+        // popup.ClickYesEvent = OnConfirmDelete;
+        // popup.ClickNoEvent = OnCancelDelete;
+        // popup.EventWhenClickButtons = () =>
+        // {
+        //     BackgroundUI.Instance.Hide();
+        // };
+        // popup.autoClearWhenClick = true;
+        // BackgroundUI.Instance.Show(popup.gameObject,null);
     }
 
     // Gọi khi nhấn "Xác nhận" trong panel
@@ -46,7 +59,6 @@ public class ButtonDeleteAllRoomsHandler : MonoBehaviour
     // Gọi khi nhấn "Huỷ"
     public void OnCancelDelete()
     {
-        if (panelDeleteConfirm != null)
-            panelDeleteConfirm.SetActive(false);
+        
     }
 }

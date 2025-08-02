@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Text;
 
 /// <summary>
 /// Một đoạn đường thẳng đại diện cho tường, cửa hoặc cửa sổ
@@ -48,6 +49,7 @@ public class WallLine
 public class Room
 {
     public string ID { get; private set; }  // ID chỉ đọc từ bên ngoài
+    public string groupID;
 
     public List<Vector2> checkpoints = new List<Vector2>(); // polygon chính
     public List<Vector2> extraCheckpoints = new List<Vector2>(); // điểm lẻ trong phòng
@@ -60,6 +62,7 @@ public class Room
     public Room()
     {
         ID = GenerateID(); // Tự tạo ID khi khởi tạo
+        groupID = ID;
     }
 
     private string GenerateID()
@@ -76,6 +79,8 @@ public class Room
     public Room(Room other)
     {
         ID = other.ID;
+        groupID = other.groupID;
+        
         headingCompass = other.headingCompass;
         Compass = other.Compass;
 

@@ -6,9 +6,8 @@ public class PanelToggleController : MonoBehaviour
     [Header("Toggle Elements")]
     public Button toggleButton; // Button để click
 
+    public Button closeBtn;
     public GameObject targetPanel; // Panel để mở/đóng
-
-    private bool isPanelOpen = false;
 
     [SerializeField] private InputCreateRectangularRoom inputCreateRectangularRoom;
 
@@ -21,31 +20,25 @@ public class PanelToggleController : MonoBehaviour
 
         if (targetPanel != null)
             targetPanel.SetActive(false); // Ban đầu tắt panel
+
+        if (closeBtn)
+        {
+            closeBtn.onClick.AddListener(() =>
+            {
+                Show(false);
+            });
+        }
     }
 
     void TogglePanel()
     {
         if (targetPanel == null) return;
 
-        isPanelOpen = !isPanelOpen;
-        targetPanel.SetActive(isPanelOpen);
-
-        Debug.Log(isPanelOpen ? "Panel Opened" : "Panel Closed");
-        if (isPanelOpen)
-        {
-            inputCreateRectangularRoom.FocusOnInputField();
-             BackgroundUI.Instance.Show(targetPanel, () =>
-             {
-                 HideWhenOk();
-             });
-            
-        }
+        Show(true);
     }
 
-    public void HideWhenOk()
+    public void Show(bool isShow)
     {
-        targetPanel.SetActive(false);
-        isPanelOpen = false;
-        BackgroundUI.Instance.Hide();
+        targetPanel.SetActive(isShow);
     }
 }

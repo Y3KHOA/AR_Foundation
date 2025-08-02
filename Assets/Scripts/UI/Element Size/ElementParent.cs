@@ -5,20 +5,27 @@ public class ElementParent : MonoBehaviour
 {
     [Header("Rect Transform")]
     [SerializeField] private RectTransform itemBar;
+
     [SerializeField] private RectTransform actionView;
     [SerializeField] private RectTransform canvas;
+
     [Header("References")]
     [SerializeField] private CompassMenu compassMenu;
 
     [SerializeField] private Button toggleButton;
     public bool isActiveBar = false;
 
+    private ToggleColorImage cachedToggleBtn;
+
     private void Start()
     {
+        cachedToggleBtn = toggleButton.GetComponent<ToggleColorImage>();
         toggleButton.onClick.AddListener(() =>
         {
             isActiveBar = !isActiveBar;
+            cachedToggleBtn.Toggle(isActiveBar);
         });
+        cachedToggleBtn.Toggle(isActiveBar);
         itemBar.gameObject.SetActive(false);
 
         CalculatorRatio();
@@ -44,7 +51,7 @@ public class ElementParent : MonoBehaviour
             CalculatorRatio();
 
             actionView.anchorMax = !isActiveBar ? new Vector2(1, 1) : new Vector2(ratio, 1);
-            actionView.anchorMin = !isActiveBar ? new Vector2(0, 0) : new Vector2(0, 0);
+            actionView.anchorMin = new Vector2(0, 0);
             actionView.offsetMin = Vector2.zero;
             actionView.offsetMax = Vector2.zero;
 

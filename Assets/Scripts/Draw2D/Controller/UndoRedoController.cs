@@ -4,47 +4,77 @@ using System.Collections.Generic;
 public class UndoRedoController : MonoBehaviour
 {
     public static UndoRedoController Instance;
-    private List<IUndoRedoCommand> undoStack;
-    private List<IUndoRedoCommand> redoStack;
 
+    [SerializeField] private int maxStackCount = 20;
+    
+    private List<IUndoRedoCommand> undoList;
+    private List<IUndoRedoCommand> redoList;
+    
     private void Awake()
     {
         Instance = this;
-        undoStack = new List<IUndoRedoCommand>();
-        redoStack = new List<IUndoRedoCommand>();
-    }
 
+        undoList = new List<IUndoRedoCommand>();
+        redoList = new List<IUndoRedoCommand>();
+    }
+#if UNITY_EDITOR
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.F))
         {
             Undo();
         }
-    }
 
-    public void AddToRedo(IUndoRedoCommand undoRedoCommand)
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Redo();
+        }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            RoomStorage.CheckDuplicateRoomID();
+        }
+    }
+#endif
+    public void AddToUndo(IUndoRedoCommand command)
     {
-        undoStack.Add(undoRedoCommand);
-        redoStack.Clear();
+        Debug.Log("Add to undo stack");
+
+        undoList.Add(command);
+        
+        redoList.Clear(); // Clear redo khi có hành động mới
+     
+        if (undoList.Count > maxStackCount)
+        {
+            Debug.Log("Số lượng command vượt quá số lượng tối đa, đã xóa command trễ nhất");
+            undoList.RemoveAt(0);
+        }
+        
     }
 
     public void Undo()
     {
-        ExtractFunc(undoStack, redoStack, true);
+        if (undoList.Count == 0) return;
+
+        IUndoRedoCommand command = undoList[^1];
+        undoList.Remove(command);
+        command.Undo();
+        redoList.Add(command);
     }
 
-    private void ExtractFunc(List<IUndoRedoCommand> sourceStack, List<IUndoRedoCommand> takeStack, bool isUndo)
+    public void Redo()
     {
-        if (sourceStack.Count > 0)
-        {
-            IUndoRedoCommand undoRedoCommand = sourceStack[^1];
-            if (isUndo)
-            {
-                Debug.Log("Undo");
-                undoRedoCommand.Undo();
-            }
-            sourceStack.Remove(undoRedoCommand);
-            takeStack.Add(undoRedoCommand);
-        }
+        if (redoList.Count == 0) return;
+
+        IUndoRedoCommand command = redoList[^1];
+        redoList.Remove(command);
+        command.Redo();
+        undoList.Add(command);
+    }
+
+    public void ClearData()
+    {
+        undoList.Clear();
+        redoList.Clear();
     }
 }
