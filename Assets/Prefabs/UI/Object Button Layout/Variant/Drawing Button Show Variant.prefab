@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -856.2643, y: 459.01566}
+  m_AnchoredPosition: {x: -1500.8435, y: 825.8157}
   m_SizeDelta: {x: 666.719, y: 101.463}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9115453473901189127
@@ -1083,7 +1083,7 @@ PrefabInstance:
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_characterSpacing
-      value: -3.32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1007349380006791465, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
@@ -1127,13 +1127,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4640603603002490087, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -72.407
+      objectReference: {fileID: 0}
+    - target: {fileID: 4640603603002490087, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
       propertyPath: m_SizeDelta.y
-      value: -61.0617
+      value: -61.062
       objectReference: {fileID: 0}
     - target: {fileID: 4640603603002490087, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -5.11718
+      value: 9.088013
       objectReference: {fileID: 0}
     - target: {fileID: 4640603603002490087, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
@@ -1353,7 +1358,7 @@ PrefabInstance:
     - target: {fileID: 8725301019022835279, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_fontSize
-      value: 39.9
+      value: 43.8
       objectReference: {fileID: 0}
     - target: {fileID: 8725301019022835279, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
@@ -1368,7 +1373,17 @@ PrefabInstance:
     - target: {fileID: 8725301019022835279, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
       propertyPath: m_fontSizeBase
-      value: 39.9
+      value: 34.72
+      objectReference: {fileID: 0}
+    - target: {fileID: 8725301019022835279, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
+      propertyPath: m_TextWrappingMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8725301019022835279, guid: dd6cfb22d40301c4fb4f079aeff3591e,
+        type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8725301019022835279, guid: dd6cfb22d40301c4fb4f079aeff3591e,
         type: 3}
